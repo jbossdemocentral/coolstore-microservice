@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Red Hat Cool Store</title>
+	<script src="vendor/jquery/dist/jquery.min.js"></script>
+	<script src="vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="vendor/angular/angular.min.js"></script>
+	<script src="vendor/angular-route/angular-route.min.js"></script>
+
+	<script src="vendor/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+
+	<!-- PatternFly Custom Componets -  Sidebar, Popovers and Datatables Customizations -->
+	<!-- Note: jquery.dataTables.js must occur in the html source before patternfly*.js.-->
+	<script src="vendor/patternfly/dist/js/patternfly.min.js"></script>
+    <script src="vendor/angular-patternfly/dist/angular-patternfly.min.js"></script>
+	
+	<!-- MatchHeight - Used to make sure dashboard cards are the same height -->
+	<script src="vendor/matchHeight/jquery.matchHeight-min.js"></script>
+
+	<!-- Isotope - Masonry layout for storefront -->
+	<script src="vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+	<script src="vendor/isotope/dist/isotope.pkgd.min.js"></script>
+	
+	<script src="http://192.168.99.100:8181/auth/js/keycloak.js"></script>
+	<script src="js/app.js"></script>
+	<script src="js/routes.js"></script>
+	<script src="js/controllers.js"></script>
+	<script src="js/services/cart.js"></script>
+	<script src="js/directives/header.js"></script>
+	<link rel="stylesheet" href="css/coolstore.css" />
+
+	<link rel="stylesheet" href="vendor/patternfly/dist/css/patternfly.min.css" />
+	<link rel="stylesheet" href="vendor/patternfly/dist/css/patternfly-additions.min.css" />
+
+     <link rel="stylesheet" href="vendor/angular-patternfly/dist/styles/angular-patternfly.min.css" />
+ 
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ 
+ </head>
+<body>
+
+<div header></div>
+<pf-notification-list></pf-notification-list>
+<div ng-view></div>
+
+</body>
+</html>

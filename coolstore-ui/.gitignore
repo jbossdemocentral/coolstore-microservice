@@ -1,0 +1,8 @@
+target/
+.DS_Store
+*.classpath
+*.settings
+*.tern*
+.security/
+*.jar
+src/main/webapp/vendor

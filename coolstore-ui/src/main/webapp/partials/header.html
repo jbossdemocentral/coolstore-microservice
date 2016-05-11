@@ -1,0 +1,42 @@
+<nav class="navbar navbar-default navbar-pf" role="navigation">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse-1">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#/">
+          <img ng-src="imgs/logo.png" alt="Red Hat Logo" />
+        </a>
+      </div>
+      <div class="collapse navbar-collapse navbar-collapse-1">
+        <ul class="nav navbar-nav navbar-utility">
+          <li>
+            <a ng-href="#/cart"><span class="fa fa-shopping-cart"></span>&nbsp;Shopping Cart <strong>{{cartTotal | currency}}</strong> ({{itemCount}} item(s))</a>
+          </li>
+          <li class="dropdown">
+            <a ng-href="#/" class="dropdown-toggle" data-toggle="dropdown">
+              <span class="pficon pficon-user"></span>
+              {{userInfo.name}} <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+              <li>
+                <a ng-href="#/"><span class="pficon pficon-user"></span>&nbsp;Profile</a>
+              </li>
+              <li>
+                <a href="" ng-click="logout()"><span class="fa fa-sign-out"></span>&nbsp;Logout</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-primary">
+          <li ng-class="{ active: isActive('/')}">
+            <a ng-href="#/" class="active">Red Hat Cool Store</a>
+          </li>
+          <li ng-class="{ active: isActive('/cart')}">
+            <a ng-href="#/cart">Your Shopping Cart</a>
+          </li>
+        </ul>
+      </div>
+    </nav>

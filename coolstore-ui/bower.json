@@ -1,0 +1,16 @@
+{
+  "name": "coolstore-patternfly",
+  "description": "A JBoss Developer BRMS demo featuring CoolStore and Patternfly",
+  "authors": [
+    "Red Hat"
+  ],
+  "license": "Apache-2.0",
+  "private": true,
+  "devDependencies": {
+    "patternfly": "^3.3.2",
+    "angular-patternfly": "^3.3.2",
+    "isotope": "^2.2.2",
+    "imagesloaded": "^4.1.0",
+    "angular-route": "^1.5.3"
+  }
+}

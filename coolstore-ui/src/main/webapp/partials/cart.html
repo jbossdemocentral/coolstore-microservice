@@ -1,0 +1,92 @@
+
+<div class="row example-container">
+
+	<div class="col-md-8 list-view-container">
+
+		<div ng-switch="(cart.shoppingCartItemList.length > 0).toString()">
+			<div ng-switch-when="true">
+				<div pf-list-view items="items" config="config"
+					action-buttons="actionButtons">
+
+					<div class="list-view-pf-description">
+
+							<div class="media">
+							  <div class="media-left">
+							      <img	class="media-object" ng-src="imgs/{{item.product.name}}.jpg"
+							      		alt="{{item.product.name}}">
+							  </div>
+							  <div class="media-body">
+							  
+							    <h2 class="media-heading">{{item.product.name}}</h2>
+							    <div class="p-t-8">
+							    	<span class="label label-default">Quantity: {{item.quantity}}</span>
+								</div>
+								<div class="p-t-8">
+									{{item.product.desc}}
+								</div>
+							  </div>
+							</div>
+					</div>
+				</div>
+			</div>
+			<div ng-switch-when="false">
+				<h1>You have not added any items to your Shopping Cart!</h1>
+				<a ng-href="#/" class="btn btn-default btn-lg">Return to Store</a>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-md-4 panel panel-primary">
+		<div class="panel-heading">
+			<h3 class="panel-title">Shopping Summary</h3>
+		</div>
+		<div class="panel-body">
+
+			<h3>Cart Total: {{subtotal | currency}}</h3>
+			<h3>Promotional Item Savings: {{cart.cartItemPromoSavings |
+				currency}}</h3>
+			<h3>Subtotal: {{cart.cartItemTotal | currency}}</h3>
+			<h3>Shipping: {{cart.shippingTotal | currency}}</h3>
+			<h3>Promotional Shipping Savings: {{cart.shippingPromoSavings |
+				currency}}</h3>
+			<h2>
+				Total Order Amount: <strong>{{cart.cartTotal | currency}}</strong>
+			</h2>
+		</div>
+		<div class="panel-footer">
+			<button ng-disabled="cart.shoppingCartItemList.length <= 0"
+				class="btn btn-primary btn-lg" data-toggle="modal"
+				data-target="#checkoutModal" type="button">Checkout</button>
+			<a ng-href="#/" class="btn btn-default btn-lg">Keep Shopping</a>
+		</div>
+	</div>
+</div>
+
+
+<div class="modal fade" id="checkoutModal" tabindex="-1" role="dialog"
+	aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-hidden="true">
+					<span class="pficon pficon-close"></span>
+				</button>
+				<h4 class="modal-title" id="myModalLabel">Final Order Summary</h4>
+			</div>
+			<div class="modal-body">
+				<h1>Thank you for your order!</h1>
+				<p>
+					Your order total of <strong>{{cart.cartTotal | currency}}</strong>
+					will be processed when you click Checkout.
+				</p>
+			</div>
+			<div class="modal-footer">
+				<a ng-click="checkout()" data-dismiss="modal"
+					class="btn btn-primary btn-lg">Checkout</a>
+				<a data-dismiss="modal"
+					class="btn btn-default btn-lg">Cancel</a>
+			</div>
+		</div>
+	</div>
+</div>

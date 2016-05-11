@@ -1,0 +1,49 @@
+
+<div class="container container-cards-pf">
+		<div class="row">
+			<div	ng-repeat="item in products" class="col-md-4 item" pf-card show-top-border="true"
+					head-title="{{item.product.name}}"
+					sub-title="{{item.product.desc}}">
+				<div class="row">
+				  <div class="col-xs-12">
+					<img class="img-responsive img-circle" ng-src="imgs/{{item.product.name}}.jpg"></img>
+				  </div>
+				</div>							
+
+				<div class="row coolstore-row">
+				  <div class="col-xs-12">
+
+					<span><h1>{{item.product.price | currency}}</h1></span>					
+					<form class="form-inline">
+					  <div class="form-group">
+					    <select name="quan" ng-model="item.quantity" class="form-control" id="quan">
+					    	<option value="1" selected>1</option>
+					    	<option value="2">2</option>
+					    	<option value="3">3</option>
+					    	<option value="4">4</option>
+					    	<option value="5">5</option>
+				    	</select>
+				    	
+					  </div>
+					  <button ng-click="addToCart(item)" type="submit" class="btn btn-default">Add To Cart</button>
+					</form>
+				  </div>
+				</div>
+			</div>				
+		</div>
+				
+</div>
+
+<script type="text/javascript">
+		$('div.container > div.row').imagesLoaded(function() {
+			setTimeout(function() {
+			console.log("loading masonry");
+			$('div.container > div.row').isotope({
+				itemSelector: '.item',
+				columnWidth: '.item',
+				layoutMode: 'masonry'
+			});
+			}, 1000);
+		});
+
+</script>

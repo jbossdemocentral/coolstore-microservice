@@ -1,0 +1,15 @@
+{
+  "author": "Red Hat",
+  "name": "coolstore-patternfly",
+  "repository": "jbossdemocentral/brms-coolstore-demo-angular-patternfly",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "description": "A JBoss Developer BRMS demo featuring CoolStore and Patternfly",
+  "homepage": "https://github.com/jbossdemocentral/brms-coolstore-demo-angular-patternfly",
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=0.10.10"
+  }
+}
