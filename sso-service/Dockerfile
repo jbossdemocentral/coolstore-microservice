@@ -13,7 +13,7 @@ RUN chown jboss /tmp/keycloak-config.json /tmp/keycloak-setup.cli
 USER jboss
 
 RUN sed -i 's/KEYCLOAK_CONFIG_FILE/\/tmp\/keycloak-config.json/' /tmp/keycloak-setup.cli && \
-  ${JBOSS_HOME}/bin/jboss-cli.sh --file=/tmp/keycloak-setup.cli && 
+  ${JBOSS_HOME}/bin/jboss-cli.sh --file=/tmp/keycloak-setup.cli && \
   rm -rf ${JBOSS_HOME}/standalone/configuration/standalone_xml_history/current
 
 # Exposed default keycloak port
