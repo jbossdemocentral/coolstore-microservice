@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo "Running decisionserver assemble"
+/opt/local/s2i/bin/assemble
+
+echo "Running Cool Microservice assemble"
