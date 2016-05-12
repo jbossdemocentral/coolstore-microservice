@@ -18,7 +18,7 @@ function wait_for_server() {
 }
 
 echo "=> Starting server"
-$JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml >dev/null &
+$JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml > /dev/null &
 
 echo "=> Waiting for the server to boot"
 wait_for_server
