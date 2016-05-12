@@ -1,6 +1,30 @@
-#!/bin/sh
+#!/bin/bash
 
 echo "Running decisionserver assemble"
 /usr/local/s2i/assemble
 
 echo "Running Cool Microservice assemble"
+
+cd ${JBOSS_HOME}
+curl -q 'http://downloads.jboss.org/keycloak/1.9.4.Final/adapters/keycloak-oidc/keycloak-eap6-adapter-dist-1.9.4.Final.tar.gz' | tar -xzv
+
+JBOSS_CLI=$JBOSS_HOME/bin/jboss-cli.sh
+
+function wait_for_server() {
+  until `$JBOSS_CLI -c "ls /deployment" &> /dev/null`; do
+  	echo "Waiting..."
+    sleep 3
+  done
+}
+
+echo "=> Starting server"
+$JBOSS_HOME/bin/standalone.sh -c standalone-openshift.xml >dev/null &
+
+echo "=> Waiting for the server to boot"
+wait_for_server
+
+echo "=> Executing the commands"
+$JBOSS_CLI -c --file=${JBOSS_HOME}/bin/adapter-install.cli
+
+echo "=> Shutting down server"
+$JBOSS_CLI -c ":shutdown"
