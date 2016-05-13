@@ -1,0 +1,308 @@
+<a href="https://github.com/patternfly/angular-patternfly/edit/master/src/views/listview/list-view-directive.js" class="improve-docs"><i class="icon-edit"> </i>Improve this doc</a><a href="https://github.com/patternfly/angular-patternfly/blob/70ca227/src/views/listview/list-view-directive.js#L292" class="view-source"><i class="icon-eye-open"> </i>View source</a><h1><code ng:non-bindable="">pfListView</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">patternfly.views</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="patternfly-views-directive-page patternfly-views-directive-pflistview-page"><p>Directive for rendering a list view.
+<br><br></p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as attribute<pre class="prettyprint linenums">&lt;ANY pf-list-view
+     items="{array}"
+     config="{object}"
+     action-buttons="{array}"
+     enable-button-for-item-fn="{function (action, item))}"
+     menu-actions="{array}"
+     update-menu-action-for-item-fn="{function (action, item))}"&gt;
+   ...
+&lt;/ANY&gt;</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>items</td><td><a href="" class="label type-hint type-hint-array">array</a></td><td><div class="patternfly-views-directive-page patternfly-views-directive-pflistview-page"><p>Array of items to display in the list view</p>
+</div></td></tr><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="patternfly-views-directive-page patternfly-views-directive-pflistview-page"><p>Configuration settings for the list view:</p>
+<ul style='list-style-type: none'>
+<li>.showSelectBox          - (boolean) Show item selection boxes for each item, default is true
+<li>.selectItems            - (boolean) Allow row selection, default is false
+<li>.dlbClick               - (boolean) Handle double clicking (item remains selected on a double click). Default is false.
+<li>.multiSelect            - (boolean) Allow multiple row selections, selectItems must also be set, not applicable when dblClick is true. Default is false
+<li>.selectionMatchProp     - (string) Property of the items to use for determining matching, default is &#39;uuid&#39;
+<li>.selectedItems          - (array) Current set of selected items
+<li>.checkDisabled          - ( function(item) ) Function to call to determine if an item is disabled, default is none
+<li>.onCheckBoxChange       - ( function(item) ) Called to notify when a checkbox selection changes, default is none
+<li>.onSelect               - ( function(item, event) ) Called to notify of item selection, default is none
+<li>.onSelectionChange      - ( function(items) ) Called to notify when item selections change, default is none
+<li>.onClick                - ( function(item, event) ) Called to notify when an item is clicked, default is none
+<li>.onDblClick             - ( function(item, event) ) Called to notify when an item is double clicked, default is none
+</ul></div></td></tr><tr><td>actionButtons</td><td><a href="" class="label type-hint type-hint-array">array</a></td><td><div class="patternfly-views-directive-page patternfly-views-directive-pflistview-page"><p>List of action buttons in each row</p>
+<ul style='list-style-type: none'>
+  <li>.name - (String) The name of the action, displayed on the button
+  <li>.title - (String) Optional title, used for the tooltip
+  <li>.actionFn - (function(action)) Function to invoke when the action selected
+</ul></div></td></tr><tr><td>enableButtonForItemFn</td><td><a href="" class="label type-hint type-hint-function">function (action, item)</a></td><td><div class="patternfly-views-directive-page patternfly-views-directive-pflistview-page"><p>function(action, item) Used to enabled/disable an action button based on the current item</p>
+</div></td></tr><tr><td>menuActions</td><td><a href="" class="label type-hint type-hint-array">array</a></td><td><div class="patternfly-views-directive-page patternfly-views-directive-pflistview-page"><p>List of actions for dropdown menu in each row</p>
+<ul style='list-style-type: none'>
+  <li>.name - (String) The name of the action, displayed on the button
+  <li>.title - (String) Optional title, used for the tooltip
+  <li>.actionFn - (function(action)) Function to invoke when the action selected
+  <li>.isVisible - (Boolean) set to false to hide the action
+  <li>.isDisabled - (Boolean) set to true to disable the action
+  <li>.isSeparator - (Boolean) set to true if this is a placeholder for a separator rather than an action
+</ul></div></td></tr><tr><td>updateMenuActionForItemFn</td><td><a href="" class="label type-hint type-hint-function">function (action, item)</a></td><td><div class="patternfly-views-directive-page patternfly-views-directive-pflistview-page"><p>function(action, item) Used to update a menu action based on the current item</p>
+</div></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="patternfly-views-directive-page patternfly-views-directive-pflistview-page"><h4 id="example_source">Source</h4>
+<div source-edit="patternfly.views" source-edit-deps="angular.js patternfly.utils script.js" source-edit-html="index.html-51" source-edit-css="" source-edit-js="script.js-52" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="index.html">
+<pre class="prettyprint linenums" ng-set-text="index.html-51" ng-html-wrap-loaded="patternfly.views angular.js patternfly.utils script.js"></pre>
+<script type="text/ng-template" id="index.html-51">
+  <div ng-controller="ViewCtrl" class="row example-container">
+    <div class="col-md-12 list-view-container">
+      <div pf-list-view class="example-list-view" id="exampleListView"
+                        config="config" items="items"
+                        action-buttons="actionButtons"
+                        enable-button-for-item-fn="enableButtonForItemFn"
+                        menu-actions="menuActions"
+                        update-menu-action-for-item-fn="updateMenuActionForItemFn">
+        <div class="list-view-pf-description">
+          <div class="list-group-item-heading">
+            {{item.name}}
+          </div>
+          <div class="list-group-item-text">
+            {{item.address}}
+          </div>
+        </div>
+        <div class="list-view-pf-additional-info">
+          <div class="list-view-pf-additional-info-item">
+            {{item.city}}
+          </div>
+          <div class="list-view-pf-additional-info-item">
+            {{item.state}}
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr class="col-md-12">
+    <div class="col-md-12">
+      <form role="form">
+        <div class="form-group">
+          <label>Selection</label>
+          </br>
+          <label class="radio-inline">
+            <input type="radio" ng-model="selectType" value="checkbox" ng-change="updateSelectionType()">Checkbox</input>
+          </label>
+          <label class="radio-inline">
+            <input type="radio" ng-model="selectType" value="row" ng-change="updateSelectionType()">Row</input>
+          </label>
+          <label class="radio-inline">
+            <input type="radio" ng-model="selectType" value="none" ng-change="updateSelectionType()">None</input>
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-12">
+      <form role="form">
+        <div class="form-group">
+          <label class="checkbox-inline">
+            <input type="checkbox" ng-model="config.dblClick">Double Click</input>
+          </label>
+          <label class="checkbox-inline">
+            <input type="checkbox" ng-model="config.multiSelect" ng-disabled="config.dblClick">Multi Select</input>
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-12">
+      <form role="form">
+        <div class="form-group">
+          <label class="checkbox-inline">
+            <input type="checkbox" ng-model="showDisabled">Show Disabled Rows</input>
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-12">
+      <label style="font-weight:normal;vertical-align:center;">Events: </label>
+    </div>
+    <div class="col-md-12">
+      <textarea rows="10" class="col-md-12">{{eventText}}</textarea>
+    </div>
+  </div>
+</script>
+</div>
+<div class="tab-pane" title="script.js">
+<pre class="prettyprint linenums" ng-set-text="script.js-52"></pre>
+<script type="text/ng-template" id="script.js-52">
+angular.module('patternfly.views').controller('ViewCtrl', ['$scope',
+    function ($scope) {
+      $scope.eventText = '';
+      var handleSelect = function (item, e) {
+        $scope.eventText = item.name + ' selected\r\n' + $scope.eventText;
+      };
+      var handleSelectionChange = function (selectedItems, e) {
+        $scope.eventText = selectedItems.length + ' items selected\r\n' + $scope.eventText;
+      };
+      var handleClick = function (item, e) {
+        $scope.eventText = item.name + ' clicked\r\n' + $scope.eventText;
+      };
+      var handleDblClick = function (item, e) {
+        $scope.eventText = item.name + ' double clicked\r\n' + $scope.eventText;
+      };
+      var handleCheckBoxChange = function (item, selected, e) {
+        $scope.eventText = item.name + ' checked: ' + item.selected + '\r\n' + $scope.eventText;
+      };
+
+      var checkDisabledItem = function(item) {
+        return $scope.showDisabled && (item.name === "John Smith");
+      };
+
+      $scope.enableButtonForItemFn = function(action, item) {
+        return (action.name !=='Action 2') || (item.name !== "Frank Livingston");
+      };
+
+      $scope.updateMenuActionForItemFn = function(action, item) {
+        if (action.name === 'Another Action') {
+          action.isVisible = (item.name !== "John Smith");
+        }
+      };
+
+      $scope.selectType = 'checkbox';
+      $scope.updateSelectionType = function() {
+        if ($scope.selectType === 'checkbox') {
+          $scope.config.selectItems = false;
+          $scope.config.showSelectBox = true;
+        } else if ($scope.selectType === 'row') {
+          $scope.config.selectItems = true;
+          $scope.config.showSelectBox = false;
+        } else {
+          $scope.config.selectItems = false
+          $scope.config.showSelectBox = false;
+        }
+      };
+
+      $scope.showDisabled = false;
+
+      $scope.config = {
+       selectItems: false,
+       multiSelect: false,
+       dblClick: false,
+       selectionMatchProp: 'name',
+       selectedItems: [],
+       checkDisabled: checkDisabledItem,
+       showSelectBox: true,
+       onSelect: handleSelect,
+       onSelectionChange: handleSelectionChange,
+       onCheckBoxChange: handleCheckBoxChange,
+       onClick: handleClick,
+       onDblClick: handleDblClick
+      };
+
+      $scope.items = [
+        {
+          name: "Fred Flintstone",
+          address: "20 Dinosaur Way",
+          city: "Bedrock",
+          state: "Washingstone"
+        },
+        {
+          name: "John Smith",
+          address: "415 East Main Street",
+          city: "Norfolk",
+          state: "Virginia"
+        },
+        {
+          name: "Frank Livingston",
+          address: "234 Elm Street",
+          city: "Pittsburgh",
+          state: "Pennsylvania"
+        },
+        {
+          name: "Linda McGovern",
+          address: "22 Oak Street",
+          city: "Denver",
+          state: "Colorado"
+        },
+        {
+          name: "Jim Beam",
+          address: "72 Bourbon Way",
+          city: "Nashville",
+          state: "Tennessee"
+        },
+        {
+          name: "Holly Nichols",
+          address: "21 Jump Street",
+          city: "Hollywood",
+          state: "California"
+        },
+        {
+          name: "Marie Edwards",
+          address: "17 Cross Street",
+          city: "Boston",
+          state: "Massachusetts"
+        },
+        {
+          name: "Pat Thomas",
+          address: "50 Second Street",
+          city: "New York",
+          state: "New York"
+        },
+      ];
+
+      var performAction = function (action, item) {
+        $scope.eventText = item.name + " : " + action.name + "\r\n" + $scope.eventText;
+      };
+
+      $scope.actionButtons = [
+        {
+          name: 'Action 1',
+          title: 'Perform an action',
+          actionFn: performAction
+        },
+        {
+          name: 'Action 2',
+          title: 'Do something else',
+          actionFn: performAction
+        }
+      ];
+      $scope.menuActions = [
+        {
+          name: 'Action',
+          title: 'Perform an action',
+          actionFn: performAction
+        },
+        {
+          name: 'Another Action',
+          title: 'Do something else',
+          actionFn: performAction
+        },
+        {
+          name: 'Disabled Action',
+          title: 'Unavailable action',
+          actionFn: performAction,
+          isDisabled: true
+        },
+        {
+          name: 'Something Else',
+          title: '',
+          actionFn: performAction
+        },
+        {
+          isSeparator: true
+        },
+        {
+          name: 'Grouped Action 1',
+          title: 'Do something',
+          actionFn: performAction
+        },
+        {
+          name: 'Grouped Action 2',
+          title: 'Do something similar',
+          actionFn: performAction
+        }
+      ];
+    }
+  ]);
+</script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="patternfly.views" ng-set-html="index.html-51" ng-eval-javascript="script.js-52"></div>
+</div></div>
+</div>
