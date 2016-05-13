@@ -2,14 +2,14 @@
 
 angular.module("app")
 
-.factory('cart', ['$http', '$q', function($http, $q) {
+.factory('cart', ['$http', '$q', 'PRODUCT_REST_ENDPOINT', function($http, $q, PRODUCT_REST_ENDPOINT) {
 	var factory = {}, cart;
 			
 	factory.checkout = function() {
 		var deferred = $q.defer();
 		$http({
 			   method: 'POST',
-			   url: 'rest/products/checkout'
+			   url: PRODUCT_REST_ENDPOINT + '/rest/products/checkout'
 		   }).then(function(resp) {
 			    cart = resp.data;
 			   	deferred.resolve(resp.data);			   
@@ -24,7 +24,7 @@ angular.module("app")
 		cart.shoppingCartItemList = [];
 		$http({
 			   method: 'GET',
-			   url: 'rest/products/cart',
+			   url: PRODUCT_REST_ENDPOINT + '/rest/products/cart',
 		   }).then(function(resp) {
 			    cart = resp.data;
 		   }, function(err) {
@@ -40,7 +40,7 @@ angular.module("app")
 		var deferred = $q.defer();
 		$http({
 			   method: 'POST',
-			   url: 'rest/products/cart/delete',
+			   url: PRODUCT_REST_ENDPOINT + '/rest/products/cart/delete',
 			   data: [{
 				   product: product,
 				   quantity: quantity
@@ -59,7 +59,7 @@ angular.module("app")
 		var deferred = $q.defer();
 		$http({
 			   method: 'POST',
-			   url: 'rest/products/cart',
+			   url: PRODUCT_REST_ENDPOINT + '/rest/products/cart',
 			   data: [{
 				   product: product,
 				   quantity: quantity
@@ -78,7 +78,7 @@ angular.module("app")
 		var deferred = $q.defer();
 	   $http({
 		   method: 'GET',
-		   url: 'rest/products/list'
+		   url: PRODUCT_REST_ENDPOINT + '/rest/products/list'
 	   }).then(function(resp) {
 		  deferred.resolve(resp.data); 
 	   }, function(err) {

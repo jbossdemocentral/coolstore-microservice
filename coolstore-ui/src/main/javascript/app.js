@@ -37,6 +37,8 @@ angular.element(document).ready(function($http) {
 
 });
 
+module.constant('PRODUCT_REST_ENDPOINT', '##PRODUCT_REST_ENDPOINT##');
+
 module.config([ '$httpProvider', function($httpProvider) {
   $httpProvider.interceptors.push([ '$q', 'Auth', function($q, Auth) {
     return {
