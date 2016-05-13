@@ -42,7 +42,7 @@
       <dependencies>
          <dependency>
             <groupId>org.jboss.bom.brms</groupId>
-            <artifactId>jboss-brms-bpmsuite-bom</artifactId>
+            <artifactId>jboss-javaee-6.0-with-brms-bpmsuite</artifactId>
             <type>pom</type>
             <scope>import</scope>
             <version>6.2.0.GA-redhat-1</version>
@@ -57,7 +57,33 @@
       </dependencies>
    </dependencyManagement>
    <dependencies>
+
+  <dependency>
+    <groupId>org.drools</groupId>
+    <artifactId>drools-compiler</artifactId>
+    <version>LATEST</version>
+  </dependency>
+  <dependency>
+    <groupId>org.kie</groupId>
+    <artifactId>kie-api</artifactId>
+    <version>LATEST</version>
+  </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
       <dependency>
+         <groupId>javax</groupId>
+         <artifactId>javaee-web-api</artifactId>
+         <version>6.0</version>
+         <scope>provided</scope>
+      </dependency>
+
+
+<!--       <dependency>
          <groupId>org.kie</groupId>
          <artifactId>kie-internal</artifactId>
          <version>6.4.0.Final</version>
@@ -103,7 +129,7 @@
          <artifactId>guava</artifactId>
          <version>10.0.1</version>
       </dependency>
-   </dependencies>
+ -->   </dependencies>
    <build>
       <plugins>
          <plugin>
