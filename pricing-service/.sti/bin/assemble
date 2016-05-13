@@ -1,7 +1,9 @@
 #!/bin/bash
 echo "Fixing web.xml to ${AUTH_URL}"
 sed -i -e "s|##SSO_AUTH_URL##|${AUTH_URL}|" /tmp/src/src/main/webapp/WEB-INF/keycloak.json
+sed -i -e "s|##SSO_AUTH_URL##|${AUTH_URL}|" /tmp/src/src/main/webapp/index.html
 
+echo ""
 echo "Running decisionserver assemble"
 /usr/local/s2i/assemble
 
