@@ -2,6 +2,7 @@
 target/
 .DS_Store
 *.classpath
+*.project
 *.settings
 .security/
 *.jar
