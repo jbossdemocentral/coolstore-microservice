@@ -6,3 +6,4 @@ target/
 *.settings
 .security/
 *.jar
+*.war
