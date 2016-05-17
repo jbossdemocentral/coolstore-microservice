@@ -1,9 +1,0 @@
-#!/bin/bash
-echo "Fixing web.xml to ${AUTH_URL}"
-sed -i -e "s|##SSO_AUTH_URL##|${AUTH_URL}|" /tmp/src/src/main/webapp/keycloak.json
-sed -i -e "s|##SSO_AUTH_URL##|${AUTH_URL}|" /tmp/src/src/main/webapp/index.html
-sed -i -e "s|##PRODUCT_REST_ENDPOINT##|${PRODUCT_REST_ENDPOINT}|" /tmp/src/src/main/javascript/app.js
-
-echo "Running eap assemble"
-/usr/local/s2i/assemble
-
