@@ -10,17 +10,15 @@ USER jboss
 
 # perform the build
 
-COPY pom.xml src ${JBOSS_HOME}/cool-project
+COPY pom.xml src ${JBOSS_HOME}/cool-project/
 
 RUN mvn package -f ${JBOSS_HOME}/cool-project/pom.xml && cp ${JBOSS_HOME}/cool-project/target/coolstore-1.0.0.war ${JBOSS_HOME}/standalone/deployments
 
 # install adapter
 
-WORKDIR /opt/jboss/wildfly
+WORKDIR ${JBOSS_HOME}
 
 RUN curl -L https://downloads.jboss.org/keycloak/$KEYCLOAK_VERSION/adapters/keycloak-oidc/keycloak-wildfly-adapter-dist-$KEYCLOAK_VERSION.tar.gz | tar zx
-
-WORKDIR /opt/jboss
 
 # Standalone.xml modifications.
 RUN sed -i -e 's/<extensions>/&\n        <extension module="org.keycloak.keycloak-adapter-subsystem"\/>/' $JBOSS_HOME/standalone/configuration/standalone-openshift.xml && \
