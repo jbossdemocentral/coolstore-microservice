@@ -6,13 +6,15 @@ MAINTAINER James Falkner <jfalkner@redhat.com>
 
 ENV KEYCLOAK_VERSION 1.9.4.Final
 
-USER jboss
+USER root
 
 # perform the build
 
 COPY projects ${JBOSS_HOME}/projects/
 
-RUN mvn package -f ${JBOSS_HOME}/projects/cool-project/pom.xml -DskipTests && cp ${JBOSS_HOME}/projects/cool-project/target/coolstore-1.0.0.war ${JBOSS_HOME}/standalone/deployments
+RUN mvn package -f ${JBOSS_HOME}/projects/cool-project/pom.xml -DskipTests && cp ${JBOSS_HOME}/projects/cool-project/target/coolstore-1.0.0.war ${JBOSS_HOME}/standalone/deployments && chown -R jboss ${JBOSS_HOME}/standalone/deployments 
+
+USER jboss
 
 # install adapter
 
