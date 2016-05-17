@@ -6,6 +6,12 @@ MAINTAINER James Falkner <jfalkner@redhat.com>
 
 ENV KEYCLOAK_VERSION 1.9.4.Final
 
+USER jboss
+
+# add maven mirror
+
+RUN sed -i -e 's/<mirrors>/&\n    <mirror>\n      <id>sti-mirror</id>\n      <url>${env.MAVEN_MIRROR_URL}</url>\n      <mirrorOf>external:*</mirrorOf>\n    </mirror>/' ${HOME}/.m2/settings.xml
+
 USER root
 
 # perform the build
