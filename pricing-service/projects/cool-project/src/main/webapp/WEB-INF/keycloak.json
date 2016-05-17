@@ -6,5 +6,6 @@
   "resource": "coolstore services",
   "credentials": {
     "secret": "632b4765-673e-489b-8134-16bbc4217971"
-  }
+  },
+  "enable-cors": true
 }
