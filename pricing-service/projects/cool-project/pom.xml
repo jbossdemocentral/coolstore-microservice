@@ -9,6 +9,20 @@
 	<name>coolstore</name>
 	<repositories>
 		<repository>
+			<id>mirror</id>
+			<name>Local Mirror</name>
+			<url>http://nexus.ci.svc.cluster.local:8081/content/groups/public/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
 			<id>jboss-maven-repository</id>
 			<name>JBoss Maven Repository</name>
 			<url>http://maven.repository.redhat.com/ga/</url>
