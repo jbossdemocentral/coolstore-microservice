@@ -12,7 +12,7 @@ USER jboss
 
 COPY pom.xml src ${JBOSS_HOME}/cool-project/
 
-RUN mvn package -f ${JBOSS_HOME}/cool-project/pom.xml && cp ${JBOSS_HOME}/cool-project/target/coolstore-1.0.0.war ${JBOSS_HOME}/standalone/deployments
+RUN mvn package -f ${JBOSS_HOME}/cool-project/pom.xml -DskipTests && cp ${JBOSS_HOME}/cool-project/target/coolstore-1.0.0.war ${JBOSS_HOME}/standalone/deployments
 
 # install adapter
 
