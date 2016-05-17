@@ -7,6 +7,19 @@
 	<packaging>war</packaging>
 	<name>Red Hat Cool Store Web UI</name>
 
+	<properties>
+		<!-- Explicitly declaring the source encoding eliminates the following 
+			message: -->
+		<!-- [WARNING] Using platform encoding (UTF-8 actually) to copy filtered 
+			resources, i.e. build is platform dependent! -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- Timestamp format for the maven.build.timestamp property -->
+		<!-- You can reference property in pom.xml or filtered resources (must 
+			enable third-party plugin if using Maven < 2.1) -->
+		<maven.build.timestamp.format>yyyyMMdd'T'HHmmss</maven.build.timestamp.format>
+
+		<project.encoding>UTF-8</project.encoding>
+	</properties>
 
 	<build>
 		<!-- Maven will append the version to the finalName (which is the name 
@@ -16,6 +29,7 @@
 		<resources>
 			<resource>
 				<directory>src/main/javascript</directory>
+				<targetPath>${basedir}/target/${project.artifactId}/js</targetPath>
 				<filtering>true</filtering>
 			</resource>
 			<resource>
@@ -28,7 +42,9 @@
 				<targetPath>${basedir}/target/${project.artifactId}</targetPath>
 				<includes>
 					<include>imgs/**</include>
+					<include>*.json</include>
 				</includes>
+				<filtering>true</filtering>
 			</resource>
 		</resources>
 
@@ -74,8 +90,8 @@
 					<failOnMissingWebXml>false</failOnMissingWebXml>
 				</configuration>
 			</plugin>
-			<!-- The JBoss AS plugin deploys your war to a local JBoss AS container -->
-			<!-- To use, run: mvn package jboss-as:deploy -->
+
+
 		</plugins>
 	</build>
 
@@ -104,21 +120,6 @@
 
 
 	</profiles>
-
-	<properties>
-		<!-- Explicitly declaring the source encoding eliminates the following 
-			message: -->
-		<!-- [WARNING] Using platform encoding (UTF-8 actually) to copy filtered 
-			resources, i.e. build is platform dependent! -->
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<!-- Timestamp format for the maven.build.timestamp property -->
-		<!-- You can reference property in pom.xml or filtered resources (must 
-			enable third-party plugin if using Maven < 2.1) -->
-		<maven.build.timestamp.format>yyyyMMdd'T'HHmmss</maven.build.timestamp.format>
-
-		<project.encoding>UTF-8</project.encoding>
-	</properties>
-
 	<repositories>
 		<repository>
 			<id>jboss-maven-repository</id>
