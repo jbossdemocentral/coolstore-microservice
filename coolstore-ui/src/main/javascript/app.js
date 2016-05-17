@@ -40,6 +40,9 @@ angular.element(document).ready(function($http) {
 module.constant('PRODUCT_REST_ENDPOINT', '${env.REST_ENDPOINT}');
 
 module.config([ '$httpProvider', function($httpProvider) {
+
+  $httpProvider.defaults.withCredentials = true;
+
   $httpProvider.interceptors.push([ '$q', 'Auth', function($q, Auth) {
     return {
       'request' : function(config) {
