@@ -18,6 +18,8 @@ WORKDIR ${JBOSS_HOME}
 
 RUN curl -L https://downloads.jboss.org/keycloak/$KEYCLOAK_VERSION/adapters/keycloak-oidc/keycloak-wildfly-adapter-dist-$KEYCLOAK_VERSION.tar.gz | tar zx
 
+RUN nl -ba ${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml
+
 RUN sed 's/standalone.xml/standalone-openshift.xml/g' ${JBOSS_HOME}/bin/adapter-install-offline.cli | ${JBOSS_HOME}/bin/jboss-cli.sh
 
 USER root
