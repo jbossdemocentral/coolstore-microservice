@@ -1,4 +1,4 @@
-# Use keycloak base
+# Use EAP 7 base
 FROM jboss-eap-7-beta/eap70-openshift
 
 # Maintainer details
