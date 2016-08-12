@@ -1,6 +1,6 @@
 {
-  "name": "coolstore-patternfly",
-  "description": "A JBoss Developer BRMS demo featuring CoolStore and Patternfly",
+  "name": "coolstore-microservice",
+  "description": "A JBoss Developer retail demo featuring a pricing microservice, angular UI microservice, protected by Red Hat SSO",
   "authors": [
     "Red Hat"
   ],

@@ -10,7 +10,9 @@
   "private": true,
   "description": "A JBoss Developer retail demo featuring a pricing microservice, angular UI microservice, protected by Red Hat SSO",
   "homepage": "https://developers.redhat.com",
-  "dependencies": {},
+  "dependencies": {
+ 	"express": "^4.13.4",
+  },
   "devDependencies": {
   	"bower": ">=1.7.9"
   },
