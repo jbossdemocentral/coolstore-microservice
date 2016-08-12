@@ -9,7 +9,7 @@ var config =
   "credentials": {
     "secret": process.env.SSO_SECRET || 'VLMl8QIr'
   },
-  "resource": 'coolstore-1.0.0',
+  "resource": 'coolstore-ui',
   "ssl-required": 'external'
 };
 
