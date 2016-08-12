@@ -1,15 +1,23 @@
 {
   "author": "Red Hat",
-  "name": "coolstore-patternfly",
-  "repository": "jbossdemocentral/brms-coolstore-demo-angular-patternfly",
+  "contributors": [
+  	"James Falkner <jfalkner@redhat.com> (https://developers.redhat.com)"
+  ],
+  "name": "coolstore-microservice",
+  "repository": "jbossdemocentral/coolstore-microservice",
   "version": "1.0.0",
   "license": "Apache-2.0",
   "private": true,
-  "description": "A JBoss Developer BRMS demo featuring CoolStore and Patternfly",
-  "homepage": "https://github.com/jbossdemocentral/brms-coolstore-demo-angular-patternfly",
+  "description": "A JBoss Developer retail demo featuring a pricing microservice, angular UI microservice, protected by Red Hat SSO",
+  "homepage": "https://developers.redhat.com",
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+  	"bower": ">=1.7.9"
+  },
   "engines": {
     "node": ">=0.10.10"
+  },
+  "scripts": {
+    "postinstall": "node_modules/.bin/bower install"
   }
 }
