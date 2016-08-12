@@ -2,14 +2,14 @@
 
 angular.module("app")
 
-.factory('cart', ['$http', '$q', 'PRODUCT_REST_ENDPOINT', function($http, $q, PRODUCT_REST_ENDPOINT) {
+.factory('cart', ['$http', '$q', 'COOLSTORE_CONFIG', function($http, $q, COOLSTORE_CONFIG) {
 	var factory = {}, cart;
 			
 	factory.checkout = function() {
 		var deferred = $q.defer();
 		$http({
 			   method: 'POST',
-			   url: PRODUCT_REST_ENDPOINT + '/products/checkout'
+			   url: COOLSTORE_CONFIG.REST_ENDPOINT + '/products/checkout'
 		   }).then(function(resp) {
 			    cart = resp.data;
 			   	deferred.resolve(resp.data);			   
@@ -24,7 +24,7 @@ angular.module("app")
 		cart.shoppingCartItemList = [];
 		$http({
 			   method: 'GET',
-			   url: PRODUCT_REST_ENDPOINT + '/products/cart',
+			   url: COOLSTORE_CONFIG.REST_ENDPOINT + '/products/cart',
 		   }).then(function(resp) {
 			    cart = resp.data;
 		   }, function(err) {
@@ -40,7 +40,7 @@ angular.module("app")
 		var deferred = $q.defer();
 		$http({
 			   method: 'POST',
-			   url: PRODUCT_REST_ENDPOINT + '/products/cart/delete',
+			   url: COOLSTORE_CONFIG.REST_ENDPOINT + '/products/cart/delete',
 			   data: [{
 				   product: product,
 				   quantity: quantity
@@ -59,7 +59,7 @@ angular.module("app")
 		var deferred = $q.defer();
 		$http({
 			   method: 'POST',
-			   url: PRODUCT_REST_ENDPOINT + '/products/cart',
+			   url: COOLSTORE_CONFIG.REST_ENDPOINT + '/products/cart',
 			   data: [{
 				   product: product,
 				   quantity: quantity
@@ -78,7 +78,7 @@ angular.module("app")
 		var deferred = $q.defer();
 	   $http({
 		   method: 'GET',
-		   url: PRODUCT_REST_ENDPOINT + '/products/list'
+		   url: COOLSTORE_CONFIG.REST_ENDPOINT + '/products/list'
 	   }).then(function(resp) {
 		  deferred.resolve(resp.data); 
 	   }, function(err) {

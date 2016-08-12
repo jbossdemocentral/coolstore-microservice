@@ -1,74 +1,79 @@
 'use strict';
-
-var module = angular.module('app', [ 'ngRoute', 'patternfly' ]), auth = {
-  logout : function() {
-  }
+console.log("in global");
+var module = angular.module('app', ['ngRoute', 'patternfly']), auth = {
+    logout: function () {
+    }
 };
 
-angular.element(document).ready(function($http) {
-  var keycloakAuth = new Keycloak('keycloak.json');
-  auth.loggedIn = false;
+angular.element(document).ready(function () {
 
-  keycloakAuth.init({
-    onLoad : 'login-required'
-  }).success(function() {
-    auth.loggedIn = true;
-    auth.authz = keycloakAuth;
-    auth.logout = function() {
-      console.log('*** LOGOUT');
-      auth.loggedIn = false;
-      auth.authz = null;
-      auth.userInfo = {};
-      keycloakAuth.logout();
-    }
-    module.factory('Auth', function() {
-      return auth;
-    });
-    keycloakAuth.loadUserInfo().success(function(userInfo) {
-      auth.userInfo = userInfo;
-    });
+    // get config
+    var initInjector = angular.injector(["ng"]);
+    var $http = initInjector.get("$http");
+    $http.get("coolstore.json").then(function (response) {
+        module.constant("COOLSTORE_CONFIG", response.data);
+        var keycloakAuth = new Keycloak('keycloak.json');
+        auth.loggedIn = false;
 
-    angular.bootstrap(document, [ "app" ], {
-      strictDi : true
+        keycloakAuth.init({
+            onLoad: 'login-required'
+        }).success(function () {
+            auth.loggedIn = true;
+            auth.authz = keycloakAuth;
+            auth.logout = function () {
+                console.log('*** LOGOUT');
+                auth.loggedIn = false;
+                auth.authz = null;
+                auth.userInfo = {};
+                keycloakAuth.logout();
+            };
+            module.factory('Auth', function () {
+                return auth;
+            });
+            keycloakAuth.loadUserInfo().success(function (userInfo) {
+                auth.userInfo = userInfo;
+            });
+
+            angular.bootstrap(document, ["app"], {
+                strictDi: true
+            });
+        }).error(function (msg) {
+            alert("Could not load page");
+        });
     });
-  }).error(function() {
-    window.location.reload();
-  });
 
 });
 
-module.constant('PRODUCT_REST_ENDPOINT', '${env.REST_ENDPOINT}');
+module.config(['$httpProvider', function ($httpProvider) {
 
-module.config([ '$httpProvider', function($httpProvider) {
+    $httpProvider.defaults.withCredentials = true;
 
-  $httpProvider.defaults.withCredentials = true;
+    $httpProvider.interceptors.push(['$q', 'Auth', function ($q, Auth) {
+        return {
+            'request': function (config) {
+                var deferred = $q.defer();
+                if (Auth.authz && Auth.authz.token) {
+                    Auth.authz.updateToken(5).success(function () {
+                        config.headers = config.headers || {};
+                        config.headers.Authorization = 'Bearer ' + Auth.authz.token;
 
-  $httpProvider.interceptors.push([ '$q', 'Auth', function($q, Auth) {
-    return {
-      'request' : function(config) {
-        var deferred = $q.defer();
-        if (Auth.authz && Auth.authz.token) {
-          Auth.authz.updateToken(5).success(function() {
-            config.headers = config.headers || {};
-            config.headers.Authorization = 'Bearer ' + Auth.authz.token;
+                        deferred.resolve(config);
+                    }).error(function () {
+                        deferred.reject('Failed to refresh token');
+                    });
+                }
+                return deferred.promise;
 
-            deferred.resolve(config);
-          }).error(function() {
-            deferred.reject('Failed to refresh token');
-          });
+            },
+            'responseError': function (response) {
+                if (response.status == 401) {
+                    console.log('session timeout?');
+                    auth.logout();
+                }
+                return $q.reject(response);
+
+            }
         }
-        return deferred.promise;
-
-      },
-      'responseError' : function(response) {
-        if (response.status == 401) {
-          console.log('session timeout?');
-          auth.logout();
-        }
-        return $q.reject(response);
-
-      }
-    }
-  } ]);
-} ]);
+    }]);
+}]);
 

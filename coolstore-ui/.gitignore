@@ -7,3 +7,5 @@ target/
 *.tern*
 .security/
 *.jar
+*.iml
+*.log
