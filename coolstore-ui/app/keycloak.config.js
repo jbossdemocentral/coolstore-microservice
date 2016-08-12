@@ -6,11 +6,9 @@ var config =
   "auth-server-url" : process.env.SSO_URL || 'https://secure-sso-testsso2.shadowman.com/auth',
   "realm": process.env.SSO_REALM || 'myrealm',
   "realm-public-key": process.env.SSO_PUBLIC_KEY || pk,
-  "credentials": {
-    "secret": process.env.SSO_SECRET || 'VLMl8QIr'
-  },
   "resource": 'coolstore-ui',
-  "ssl-required": 'external'
+  "ssl-required": 'external',
+  "public-client": true
 };
 
 module.exports = config;
