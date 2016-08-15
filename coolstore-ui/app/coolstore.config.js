@@ -1,6 +1,6 @@
 var config =
 {
-  REST_ENDPOINT: process.env.REST_ENDPOINT || 'https://secure-pricing-testsso2.shadowman.com/rest'
+  REST_ENDPOINT: process.env.REST_ENDPOINT || 'https://arestserver.com/rest'
 };
 
 module.exports = config;

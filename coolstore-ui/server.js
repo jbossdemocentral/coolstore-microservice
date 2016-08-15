@@ -2,6 +2,7 @@
 var express = require('express'),
     http = require('http'),
     https = require('https'),
+    request = require('request'),
     fs      = require('fs'),
     app     = express(),
     path = require("path"),
@@ -31,8 +32,59 @@ app.use(express.static(path.join(__dirname, '/views')));
 app.use('/app', express.static(path.join(__dirname, '/app')));
 app.use('/bower_components',  express.static(path.join(__dirname, '/bower_components')));
 
+// register client
+console.log("registering client '" + process.env.SSO_CLIENT_ID + "' in realm '" + process.env.SSO_REALM + "' at " + process.env.SSO_URL ||  process.env.SSO_SERVICE_URL);
 
-//app.listen(port, ip);
+// request.debug = true;
+request.post({
+  uri: (process.env.SSO_URL || process.env.SSO_SERVICE_URL) + '/realms/' + process.env.SSO_REALM + '/protocol/openid-connect/token',
+  strictSSL: false,
+  json: true,
+  form: {
+    username: process.env.SSO_USERNAME,
+    password: process.env.SSO_PASSWORD,
+    grant_type: 'password',
+    client_id: 'admin-cli'
+  }
+
+}, function(err, resp, body) {
+  if (!err && resp.statusCode == 200) {
+    // register client
+    request.post({
+      uri: (process.env.SSO_URL || process.env.SSO_SERVICE_URL) + '/admin/realms/' + process.env.SSO_REALM + '/clients',
+      strictSSL: false,
+      auth: {
+        bearer: body.access_token
+      },
+      json: {
+        clientId: process.env.SSO_CLIENT_ID || 'aclient',
+        enabled: true,
+        protocol: "openid-connect",
+        redirectUris: [
+          process.env.APP_ROUTE+ '/*',
+          process.env.SECURE_APP_ROUTE+ '/*'
+        ],
+        webOrigins: [
+          "*"
+        ],
+        "bearerOnly": false,
+        "publicClient": true
+      }
+    }, function(err, resp, body) {
+      if (!err && resp.statusCode == 201) {
+        console.log("Client registered");
+      } else {
+        console.log("error registering client: " + JSON.stringify(body));
+      }
+    });
+  } else {
+    console.log("error fetching admin token: " + JSON.stringify(body));
+  }
+});
+
+console.log("coolstore config: " + JSON.stringify(coolstoreConfig));
+console.log("keycloak config: " + JSON.stringify(keycloakConfig));
+
 var keys = {
   key: fs.readFileSync('key.pem'),
   cert: fs.readFileSync('cert.pem')
