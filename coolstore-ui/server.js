@@ -49,13 +49,14 @@ request.post({
 
 }, function(err, resp, body) {
   if (!err && resp.statusCode == 200) {
+    var token = body.access_token;
 
     // register client
     request.post({
       uri: (process.env.SSO_URL || process.env.SSO_SERVICE_URL) + '/admin/realms/' + process.env.SSO_REALM + '/clients',
       strictSSL: false,
       auth: {
-        bearer: body.access_token
+        bearer: token
       },
       json: {
         clientId: process.env.SSO_CLIENT_ID || 'aclient',
@@ -84,21 +85,21 @@ request.post({
       uri: (process.env.SSO_URL || process.env.SSO_SERVICE_URL) + '/admin/realms/' + process.env.SSO_REALM + '/roles',
       strictSSL: false,
       auth: {
-        bearer: body.access_token
+        bearer: token
       },
       json: {
         name: 'user'
       }
     }, function(err, resp, body) {
       if (!err && resp.statusCode == 201) {
-        console.log("Role 'user' created registered");
+        console.log("Role 'user' created");
 
         // create user and assign to role
         request.post({
           uri: (process.env.SSO_URL || process.env.SSO_SERVICE_URL) + '/admin/realms/' + process.env.SSO_REALM + '/users',
           strictSSL: false,
           auth: {
-            bearer: body.access_token
+            bearer: token
           },
           json: {
             username: 'appuser',

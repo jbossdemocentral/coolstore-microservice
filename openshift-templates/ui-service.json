@@ -10,16 +10,11 @@
         }
     },
     "labels": {
-      "application": "ui-service",
+      "application": "ui",
         "createdBy": "template-ui-service",
         "template": "template-ui-service"
     },
     "parameters": [
-        {
-            "description": "A local Maven Mirror",
-            "name": "MAVEN_MIRROR_URL",
-            "value": "http://nexus.ci.svc.cluster.local:8081/content/groups/public/"
-        },
         {
             "description": "URL to Red Hat SSO authentication endpoint, e.g.: https://secure-sso-<project>.<default-domain-suffix>/auth",
             "name": "SSO_URL",
@@ -41,10 +36,11 @@
             "name": "HOSTNAME_HTTPS",
             "value": "",
             "required": true
-        }
+        },
         {
             "description": "Pricing service REST endpoint, e.g.: https://secure-pricing-<project>.<default-domain-suffix>/rest",
             "name": "REST_ENDPOINT",
+            "value": "",
             "required": true
         },
         {
@@ -60,8 +56,7 @@
             "from": "[a-zA-Z0-9]{8}",
             "generate": "expression",
             "required": true
-        },
-
+        }
     ],
     "objects": [
 
@@ -131,14 +126,7 @@
             },
             "spec": {
                 "strategy": {
-                    "type": "Rolling",
-                    "rollingParams": {
-                        "updatePeriodSeconds": 1,
-                        "intervalSeconds": 1,
-                        "timeoutSeconds": 600,
-                        "maxUnavailable": "25%",
-                        "maxSurge": "25%"
-                    },
+                    "type": "Recreate",
                     "resources": {}
                 },
                 "triggers": [
