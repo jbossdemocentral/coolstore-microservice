@@ -135,7 +135,7 @@ request.post({
 
                     console.log("fetching available roles");
                     request.get({
-                        uri: (process.env.SSO_URL || process.env.SSO_SERVICE_URL) + '/admin/realms/' + process.env.SSO_REALM + '/users/' + body[0].id + '/role-mappings/realm/available',
+                        uri: (process.env.SSO_URL || process.env.SSO_SERVICE_URL) + '/admin/realms/' + process.env.SSO_REALM + '/users/' + userObj.id + '/role-mappings/realm/available',
                         strictSSL: false,
                         auth: {
                             bearer: token
@@ -158,6 +158,22 @@ request.post({
                         }, function (err, resp, body) {
                             console.log("Role assignment result: " + resp.statusCode + " " + resp.statusMessage + " " + JSON.stringify(body));
                         });
+                    });
+
+                    // set temporary password
+                    request.put({
+                        uri: (process.env.SSO_URL || process.env.SSO_SERVICE_URL) + '/admin/realms/' + process.env.SSO_REALM + '/users/' + userObj.id + '/reset-password' ,
+                        strictSSL: false,
+                        auth: {
+                            bearer: token
+                        },
+                        json: {
+                            type: 'password',
+                            value: 'password',
+                            temporary: true
+                        }
+                    }, function(err, resp, body) {
+                        console.log("Reset password result: " + resp.statusCode + " " + resp.statusMessage + " " + JSON.stringify(body));
                     });
                 });
             });
