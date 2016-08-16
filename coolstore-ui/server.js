@@ -49,6 +49,7 @@ request.post({
 
 }, function(err, resp, body) {
   if (!err && resp.statusCode == 200) {
+
     // register client
     request.post({
       uri: (process.env.SSO_URL || process.env.SSO_SERVICE_URL) + '/admin/realms/' + process.env.SSO_REALM + '/clients',
@@ -61,8 +62,8 @@ request.post({
         enabled: true,
         protocol: "openid-connect",
         redirectUris: [
-          process.env.APP_ROUTE+ '/*',
-          process.env.SECURE_APP_ROUTE+ '/*'
+          'http://' + process.env.HOSTNAME_HTTP + '/*',
+          'https://' + process.env.HOSTNAME_HTTPS + '/*'
         ],
         webOrigins: [
           "*"
@@ -77,6 +78,55 @@ request.post({
         console.log("error registering client: " + JSON.stringify(body));
       }
     });
+
+    // create role
+    request.post({
+      uri: (process.env.SSO_URL || process.env.SSO_SERVICE_URL) + '/admin/realms/' + process.env.SSO_REALM + '/roles',
+      strictSSL: false,
+      auth: {
+        bearer: body.access_token
+      },
+      json: {
+        name: 'user'
+      }
+    }, function(err, resp, body) {
+      if (!err && resp.statusCode == 201) {
+        console.log("Role 'user' created registered");
+
+        // create user and assign to role
+        request.post({
+          uri: (process.env.SSO_URL || process.env.SSO_SERVICE_URL) + '/admin/realms/' + process.env.SSO_REALM + '/users',
+          strictSSL: false,
+          auth: {
+            bearer: body.access_token
+          },
+          json: {
+            username: 'appuser',
+            enabled: true,
+            emailVerified: true,
+            firstName: 'Joe',
+            lastName: 'User',
+            email: 'joeuser@nowhere.com',
+            realmRoles: ['user'],
+            credentials: [{
+              type: 'password',
+              value: 'password',
+              temporary: false
+            }]
+          }
+        }, function(err, resp, body) {
+          if (!err && resp.statusCode == 201) {
+            console.log("User 'appuser' created");
+          } else {
+            console.log("error creating user 'appuser': " + JSON.stringify(body));
+          }
+        });
+      } else {
+        console.log("error creating role 'user': " + JSON.stringify(body));
+      }
+    });
+
+
   } else {
     console.log("error fetching admin token: " + JSON.stringify(body));
   }

@@ -1,0 +1,326 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "ui-service",
+        "annotations": {
+            "description": "An application for the Red Hat coolstore using a microservice architecture and Red Hat SSO",
+            "iconClass": "icon-java",
+            "tags": "microservice,jboss,angularjs,keycloak,sso"
+        }
+    },
+    "labels": {
+      "application": "ui-service",
+        "createdBy": "template-ui-service",
+        "template": "template-ui-service"
+    },
+    "parameters": [
+        {
+            "description": "A local Maven Mirror",
+            "name": "MAVEN_MIRROR_URL",
+            "value": "http://nexus.ci.svc.cluster.local:8081/content/groups/public/"
+        },
+        {
+            "description": "URL to Red Hat SSO authentication endpoint, e.g.: https://secure-sso-<project>.<default-domain-suffix>/auth",
+            "name": "SSO_URL",
+            "required": true
+        },
+        {
+            "description": "SSO Public Key. Public key is required to be passed into the template to avoid man-in-the-middle security vulnerability",
+            "name": "SSO_PUBLIC_KEY",
+            "required": true
+        },
+        {
+            "description": "Hostname of unsecured route to this app, e.g.: ui-<project>.<domain>",
+            "name": "HOSTNAME_HTTP",
+            "value": "",
+            "required": true
+        },
+        {
+            "description": "Hostname of secured route to this app, e.g.: secure-ui-<project>.<domain>",
+            "name": "HOSTNAME_HTTPS",
+            "value": "",
+            "required": true
+        }
+        {
+            "description": "Pricing service REST endpoint, e.g.: https://secure-pricing-<project>.<default-domain-suffix>/rest",
+            "name": "REST_ENDPOINT",
+            "required": true
+        },
+        {
+            "description": "A-MQ cluster admin password",
+            "name": "MQ_CLUSTER_PASSWORD",
+            "from": "[a-zA-Z0-9]{8}",
+            "generate": "expression",
+            "required": true
+        },
+        {
+            "description": "JGroups cluster password",
+            "name": "JGROUPS_CLUSTER_PASSWORD",
+            "from": "[a-zA-Z0-9]{8}",
+            "generate": "expression",
+            "required": true
+        },
+
+    ],
+    "objects": [
+
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "ui"
+            },
+            "spec": {
+                "tags": [
+                    {
+                        "name": "latest"
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "ui"
+            },
+            "spec": {
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChange": {}
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "https://github.com/jamesfalkner/coolstore-microservice"
+                    },
+                    "contextDir": "coolstore-ui"
+                },
+                "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "namespace": "openshift",
+                            "name": "nodejs:4"
+                        }
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "ui:latest"
+                    }
+                }
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "ui",
+                "labels": {
+                    "app": "ui"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Rolling",
+                    "rollingParams": {
+                        "updatePeriodSeconds": 1,
+                        "intervalSeconds": 1,
+                        "timeoutSeconds": 600,
+                        "maxUnavailable": "25%",
+                        "maxSurge": "25%"
+                    },
+                    "resources": {}
+                },
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "ui"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "ui:latest"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "selector": {
+                    "deploymentconfig": "ui"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "deploymentconfig": "ui"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "ui",
+                                "image": "ui",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "SSO_SERVICE_URL",
+                                        "value": "${SSO_URL}"
+                                    },
+                                    {
+                                        "name": "SSO_URL",
+                                        "value": "${SSO_URL}"
+                                    },
+                                    {
+                                        "name": "SSO_REALM",
+                                        "value": "myrealm"
+                                    },
+                                    {
+                                        "name": "SSO_USERNAME",
+                                        "value": "ssoservice"
+                                    },
+                                    {
+                                        "name": "SSO_PASSWORD",
+                                        "value": "ssoservicepass"
+                                    },
+                                    {
+                                        "name": "SSO_PUBLIC_KEY",
+                                        "value": "${SSO_PUBLIC_KEY}"
+                                    },
+                                    {
+                                        "name": "REST_ENDPOINT",
+                                        "value": "${REST_ENDPOINT}"
+                                    },
+                                    {
+                                        "name": "SSO_CLIENT_ID",
+                                        "value": "coolstore-ui"
+                                    },
+                                    {
+                                        "name": "HOSTNAME_HTTP",
+                                        "value": "${HOSTNAME_HTTP}"
+                                    },
+                                    {
+                                        "name": "HOSTNAME_HTTPS",
+                                        "value": "${HOSTNAME_HTTPS}"
+                                    }
+                                ],
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "imagePullPolicy": "Always"
+                            }
+                        ],
+                        "restartPolicy": "Always",
+                        "terminationGracePeriodSeconds": 30,
+                        "dnsPolicy": "ClusterFirst",
+                        "securityContext": {}
+                    }
+                }
+            },
+            "status": {}
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "secure-ui",
+                "labels": {
+                    "app": "ui"
+                }
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "protocol": "TCP",
+                        "port": 8443,
+                        "targetPort": 8443
+                    }
+                ],
+                "selector": {
+                    "deploymentconfig": "ui"
+                }
+            }
+        },
+
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "ui",
+                "labels": {
+                    "app": "ui"
+                }
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "8080-tcp",
+                        "protocol": "TCP",
+                        "port": 8080,
+                        "targetPort": 8080
+                    }
+                ],
+                "selector": {
+                    "deploymentconfig": "ui"
+                }
+            }
+        },
+
+
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "secure-ui",
+                "labels": {
+                    "application": "ui"
+                }
+            },
+            "spec": {
+                "host": "${HOSTNAME_HTTPS}",
+                "to": {
+                    "kind": "Service",
+                    "name": "secure-ui"
+                },
+                "tls": {
+                    "termination": "passthrough"
+                }
+            }
+        },
+
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "ui",
+                "labels": {
+                    "app": "ui"
+                }
+            },
+            "spec": {
+                "host": "${HOSTNAME_HTTP}",
+                "to": {
+                    "kind": "Service",
+                    "name": "ui"
+                }
+            }
+        }
+    ]
+}
