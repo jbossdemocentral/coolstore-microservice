@@ -4,7 +4,7 @@ This is an example demo showing a retail store consisting of a trio of microserv
 
 It demonstrates how to wire up small microservices into a larger application using microservice architectural principals.
 
-![Store Screenshot](/../screenshots/screenshots/store.jpg?raw=true "Store Screenshot")
+![Store Screenshot](/../screenshots/screenshots/store.png?raw=true "Store Screenshot")
 
 Services
 --------
