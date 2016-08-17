@@ -130,7 +130,7 @@ This service is implemented as a Node.js runtime with embedded HTTP server. At r
       HOSTNAME_HTTP=ui-PROJECT.DOMAIN \
       HOSTNAME_HTTPS=secure-ui-PROJECT.DOMAIN \
       REST_ENDPOINT=http://pricing-PROJECT.DOMAIN/rest \
-      SECURE_REST_ENDPOINT=https://secure-pricing-PROJECT.DOMAIN/rest \ |
+      SECURE_REST_ENDPOINT=https://secure-pricing-PROJECT.DOMAIN/rest | \
       oc create -f -
 ```
 
