@@ -36,6 +36,12 @@ Running the demo consists of 3 main steps, one for each of the services listed a
 It is assumed you have installed OpenShift, either using [Red Hat's CDK](http://developers.redhat.com/products/cdk/overview/) or a complete install, and can login to the
 web console or use the `oc` CLI tool.
 
+It is also assumed that the necessary JBoss xPaaS ImageStreams are available in the `openshift` namespace. If you have not installed these, you can do so as follows:
+
+    $ oc create -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
+
+In particular you need the `redhat-sso70-openshift` and `jboss-eap70-openshift` ImageStream definitions.
+
 Note: SSL/TLS Self-Signed Certificates
 --------------------------------------
 For demo purposes, you will most likely be using self-signed certificates, which will be apparent when
