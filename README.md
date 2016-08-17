@@ -73,6 +73,8 @@ Deploy SSO service on OpenShift using the OpenShift `oc` CLI
 This will build and deploy an instance of Red Hat SSO server (based on [Keycloak](https://keycloak.org)) using
 Red Hat's [xPaaS SSO image](https://access.redhat.com/documentation/en/red-hat-xpaas/version-0/red-hat-xpaas-sso-image/).
 
+During the deployment of the SSO service, a new SSO realm `myrealm` is created, along with the administrative users necessary for accessing the SSO REST interface later on.
+
 1. Create and deploy SSO service, wait for it to complete.
 ```
     oc process -f sso-service.json | oc create -f -
@@ -87,6 +89,8 @@ Red Hat's [xPaaS SSO image](https://access.redhat.com/documentation/en/red-hat-x
 
 Deploy Pricing Service using the OpenShift `oc` CLI
 ---------------------------------------------------
+This service relies on the Red Hat SSO xPaaS image for JBoss EAP 7. At runtime, this image will automatically register itself as a *bearer-only* SSO client.
+Access to the `/rest` endpoint is protected by Red Hat SSO by declaring it to be so in [web.xml](pricing-service/src/main/webapp/WEB-INF/web.xml) by using the [Keycloak REST API](http://www.keycloak.org/docs/rest-api/).
 
 1. Create and deploy service, substituting values for SSO_URL (don't forget the `/auth` suffix) and SSO_PUBLIC_KEY, wait for it to complete. 
 ```
@@ -104,6 +108,11 @@ If you have created a [local Maven mirror](https://blog.openshift.com/improving-
 
 Deploy the UI Service using the OpenShift `oc` CLI
 --------------------------------------------------
+This service is implemented as a Node.js runtime with embedded HTTP server. At runtime, the image will automatically register several items into the SSO service:
+
+* A *public* SSO client within realm `myrealm` and valid redirects back to the UI (for redirecting to/from the SSO login page)
+* A realm-level role named `user`
+* A User named `appuser` that has been granted the `user` role.
 
 1. Create and deploy service, substituting the appropriate values for the various services:
 ```
