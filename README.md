@@ -12,6 +12,13 @@ There are three individual microservices that make up this app:
 2. Pricing Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves prices for retail products
 3. UI Service - A frontend based on [AngularJS](https://angularjs.org) and [PatternFly](http://patternfly.org) running in a [Node.js](https://access.redhat.com/documentation/en/openshift-enterprise/3.2/paged/using-images/chapter-1-source-to-image-s2i) container.
 
+A simple visualization of the runtime components of this demo:
+
+![Architecture Screenshot](/../screenshots/screenshots/arch.jpg?raw=true "Architecture Screenshot")
+
+Notice the UI pods only expose an HTTP endpoint - when users access the UI service through HTTPS, OpenShift handles the TLS termination at the routing layer. The other pods expose both HTTP and HTTPS endpoints and are exposed directly to the browser (necessary for SSO login/logout and AJAX calls to the pricing service)
+
+
 Demo Credentials and other identifiers
 --------------------------------------
 1. SSO Realm Name: `myrealm`
