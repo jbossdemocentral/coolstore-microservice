@@ -38,23 +38,27 @@ Create project and associated service accounts and permissions
 In the following steps, substitute your desired project name for PROJECT, and assume your OpenShift domain is DOMAIN.
 
 1. Clone this repository
+```
+    $ git clone https://github.com/jamesfalkner/coolstore-microservice
+    $ cd coolstore-microservice/openshift-templates
+```
 
-    git clone https://github.com/jamesfalkner/coolstore-microservice
-    cd coolstore-microservice/openshift-templates
-    
 1. Login and Create a new project
+```
+    $ oc login https://DOMAIN:8443
+    $ oc new-project PROJECT
+```   
 
-    oc login https://DOMAIN:8443
-    oc new-project PROJECT
-    
 1. Create OpenShift objects for SSL/TLS crypto secrets and associated service account:
-
-    oc create -f secrets/coolstore-secrets.json
+```
+    $ oc create -f secrets/coolstore-secrets.json
+```
 
 1. Add roles to service account to allow for kubernetes clustering access
-
-    oc policy add-role-to-user view system:serviceaccount:PROJECT:default -n PROJECT
-    oc policy add-role-to-user view system:serviceaccount:PROJECT:sso-service-account -n PROJECT
+```
+    $ oc policy add-role-to-user view system:serviceaccount:PROJECT:default -n PROJECT
+    $ oc policy add-role-to-user view system:serviceaccount:PROJECT:sso-service-account -n PROJECT
+```
 
 Deploy SSO service on OpenShift using the OpenShift `oc` CLI
 ------------------------------------------------------------
@@ -63,38 +67,39 @@ This will build and deploy an instance of Red Hat SSO server (based on [Keycloak
 Red Hat's [xPaaS SSO image](https://access.redhat.com/documentation/en/red-hat-xpaas/version-0/red-hat-xpaas-sso-image/).
 
 1. Create and deploy SSO service, wait for it to complete.
-
+```
     oc process -f sso-service.json | oc create -f -
-
+```
     You can view the process of the deployment using
-    
+```    
     oc logs -f dc/sso
-    
-1. Once it completes, you can test it by accessing https://secure-sso-PROJECT.DOMAIN/auth or clicking on the associated route from the project overview page within the OpenShift web console.
+```  
+1. Once it completes, you can test it by accessing `https://secure-sso-PROJECT.DOMAIN/auth` or clicking on the associated route from the project overview page within the OpenShift web console.
 
-1. Obtain the public key for the automatically-created realm `myrealm` by visiting https://secure-sso-PROJECT.DOMAIN/auth/realms/myrealm in your browser. You'll need in the next steps.
+1. Obtain the public key for the automatically-created realm `myrealm` by visiting `https://secure-sso-PROJECT.DOMAIN/auth/realms/myrealm` in your browser. You'll need in the next steps.
 
 Deploy Pricing Service using the OpenShift `oc` CLI
 ---------------------------------------------------
 
 1. Create and deploy service, substituting values for SSO_URL (don't forget the `/auth` suffix) and SSO_PUBLIC_KEY, wait for it to complete. 
-
+```
     oc process -f pricing-service.json \
       SSO_URL=https://secure-sso-PROJECT.DOMAIN/auth \
       SSO_PUBLIC_KEY=<PUBLIC_KEY> | \
       oc create -f -
-
+```
 If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. 
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
-
+```
     oc logs -f bc/pricing
- 
+``` 
+
 Deploy the UI Service using the OpenShift `oc` CLI
 --------------------------------------------------
 
 1. Create and deploy service, substituting the appropriate values for the various services:
-
+```
     oc process -f ui-service.json \
       SSO_URL=https://secure-sso-PROJECT.DOMAIN/auth \
       SSO_PUBLIC_KEY='<PUBLIC KEY>' \
@@ -103,14 +108,20 @@ Deploy the UI Service using the OpenShift `oc` CLI
       REST_ENDPOINT=http://pricing-PROJECT.DOMAIN/rest \
       SECURE_REST_ENDPOINT=https://secure-pricing-PROJECT.DOMAIN/rest \ |
       oc create -f -
+```
 
 1. Wait for it to complete. You can follow the build logs with
-
+```
     oc logs -f bc/ui
-    
+```    
+
 Access the Demo
 ---------------
-Once all of the above completes, your demo should be running and you can access the UI using http://ui-PROJECT.DOMAIN you can access the secure variant using https://secure-ui-PROJECT.DOMAIN 
+Once all of the above completes, your demo should be running and you can access the UI using `http://ui-PROJECT.DOMAIN` or the secure variant using `https://secure-ui-PROJECT.DOMAIN` 
+
+You can also click the links to the various services within the OpenShift web console by navigating to your newly-created project.
+
+You can log into the store using username `appuser` and password `password`. You will be prompted to change your password upon first login.
 
 Notes
 -----
