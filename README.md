@@ -38,9 +38,11 @@ web console or use the `oc` CLI tool.
 
 It is also assumed that the necessary JBoss xPaaS ImageStreams are available in the `openshift` namespace. If you have not installed these, you can do so as follows:
 
+    $ oc delete -n openshift imagestream nodejs
     $ oc create -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
-
-In particular you need the `redhat-sso70-openshift` and `jboss-eap70-openshift` ImageStream definitions.
+    $ oc create -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
+    
+In particular you need the latest `redhat-sso70-openshift`, `jboss-eap70-openshift`, and `nodejs` ImageStream definitions.
 
 Note: SSL/TLS Self-Signed Certificates
 --------------------------------------
