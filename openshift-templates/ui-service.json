@@ -38,8 +38,14 @@
             "required": true
         },
         {
-            "description": "Pricing service REST endpoint, e.g.: https://secure-pricing-<project>.<default-domain-suffix>/rest",
+            "description": "Pricing service REST endpoint, e.g.: http://pricing-<project>.<default-domain-suffix>/rest",
             "name": "REST_ENDPOINT",
+            "value": "",
+            "required": true
+        },
+        {
+            "description": "Pricing service secure REST endpoint, e.g.: https://secure-pricing-<project>.<default-domain-suffix>/rest",
+            "name": "SECURE_REST_ENDPOINT",
             "value": "",
             "required": true
         },
@@ -198,6 +204,10 @@
                                         "value": "${REST_ENDPOINT}"
                                     },
                                     {
+                                        "name": "SECURE_REST_ENDPOINT",
+                                        "value": "${SECURE_REST_ENDPOINT}"
+                                    },
+                                    {
                                         "name": "SSO_CLIENT_ID",
                                         "value": "coolstore-ui"
                                     },
@@ -228,29 +238,6 @@
             "kind": "Service",
             "apiVersion": "v1",
             "metadata": {
-                "name": "secure-ui",
-                "labels": {
-                    "app": "ui"
-                }
-            },
-            "spec": {
-                "ports": [
-                    {
-                        "protocol": "TCP",
-                        "port": 8443,
-                        "targetPort": 8443
-                    }
-                ],
-                "selector": {
-                    "deploymentconfig": "ui"
-                }
-            }
-        },
-
-        {
-            "kind": "Service",
-            "apiVersion": "v1",
-            "metadata": {
                 "name": "ui",
                 "labels": {
                     "app": "ui"
@@ -270,8 +257,6 @@
                 }
             }
         },
-
-
         {
             "kind": "Route",
             "apiVersion": "v1",
@@ -285,10 +270,10 @@
                 "host": "${HOSTNAME_HTTPS}",
                 "to": {
                     "kind": "Service",
-                    "name": "secure-ui"
+                    "name": "ui"
                 },
                 "tls": {
-                    "termination": "passthrough"
+                    "termination": "edge"
                 }
             }
         },

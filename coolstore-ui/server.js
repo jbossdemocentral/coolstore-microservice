@@ -1,7 +1,6 @@
 //  OpenShift sample Node application
 var express = require('express'),
     http = require('http'),
-    https = require('https'),
     request = require('request'),
     fs = require('fs'),
     app = express(),
@@ -184,15 +183,8 @@ request.post({
 console.log("coolstore config: " + JSON.stringify(coolstoreConfig));
 console.log("keycloak config: " + JSON.stringify(keycloakConfig));
 
-var keys = {
-    key: fs.readFileSync('key.pem'),
-    cert: fs.readFileSync('cert.pem')
-};
-
 http.createServer(app).listen(port);
-https.createServer(keys, app).listen(secport);
 
 console.log('HTTP Server running on http://%s:%s', ip, port);
-console.log('HTTPS Server running on https://%s:%s', ip, secport);
 
 module.exports = app;

@@ -2,14 +2,14 @@
 
 angular.module("app")
 
-.factory('cart', ['$http', '$q', 'COOLSTORE_CONFIG', function($http, $q, COOLSTORE_CONFIG) {
+.factory('cart', ['$http', '$q', 'COOLSTORE_CONFIG', '$location', function($http, $q, COOLSTORE_CONFIG, $location) {
 	var factory = {}, cart;
 			
 	factory.checkout = function() {
 		var deferred = $q.defer();
 		$http({
 			   method: 'POST',
-			   url: COOLSTORE_CONFIG.REST_ENDPOINT + '/products/checkout'
+			   url: ($location.protocol() === 'https' ? COOLSTORE_CONFIG.SECURE_REST_ENDPOINT : COOLSTORE_CONFIG.REST_ENDPOINT) + '/products/checkout'
 		   }).then(function(resp) {
 			    cart = resp.data;
 			   	deferred.resolve(resp.data);			   
@@ -24,7 +24,7 @@ angular.module("app")
 		cart.shoppingCartItemList = [];
 		$http({
 			   method: 'GET',
-			   url: COOLSTORE_CONFIG.REST_ENDPOINT + '/products/cart',
+			   url: ($location.protocol() === 'https' ? COOLSTORE_CONFIG.SECURE_REST_ENDPOINT : COOLSTORE_CONFIG.REST_ENDPOINT) + '/products/cart',
 		   }).then(function(resp) {
 			    cart = resp.data;
 		   }, function(err) {
@@ -40,7 +40,7 @@ angular.module("app")
 		var deferred = $q.defer();
 		$http({
 			   method: 'POST',
-			   url: COOLSTORE_CONFIG.REST_ENDPOINT + '/products/cart/delete',
+			   url: ($location.protocol() === 'https' ? COOLSTORE_CONFIG.SECURE_REST_ENDPOINT : COOLSTORE_CONFIG.REST_ENDPOINT) + '/products/cart/delete',
 			   data: [{
 				   product: product,
 				   quantity: quantity
@@ -59,7 +59,7 @@ angular.module("app")
 		var deferred = $q.defer();
 		$http({
 			   method: 'POST',
-			   url: COOLSTORE_CONFIG.REST_ENDPOINT + '/products/cart',
+			   url: ($location.protocol() === 'https' ? COOLSTORE_CONFIG.SECURE_REST_ENDPOINT : COOLSTORE_CONFIG.REST_ENDPOINT) + '/products/cart',
 			   data: [{
 				   product: product,
 				   quantity: quantity
@@ -78,7 +78,7 @@ angular.module("app")
 		var deferred = $q.defer();
 	   $http({
 		   method: 'GET',
-		   url: COOLSTORE_CONFIG.REST_ENDPOINT + '/products/list'
+		   url: ($location.protocol() === 'https' ? COOLSTORE_CONFIG.SECURE_REST_ENDPOINT : COOLSTORE_CONFIG.REST_ENDPOINT) + '/products/list'
 	   }).then(function(resp) {
 		  deferred.resolve(resp.data); 
 	   }, function(err) {

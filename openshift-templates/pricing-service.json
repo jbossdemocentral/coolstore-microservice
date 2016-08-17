@@ -204,6 +204,18 @@
                                 ],
                                 "env": [
                                     {
+                                        "name": "OPENSHIFT_KUBE_PING_LABELS",
+                                        "value": "application=pricing"
+                                    },
+                                    {
+                                        "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "fieldPath": "metadata.namespace"
+                                            }
+                                        }
+                                    },
+                                    {
                                         "name": "HTTPS_KEYSTORE_DIR",
                                         "value": "/etc/eap-secret-volume"
                                     },
