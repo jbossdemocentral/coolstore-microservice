@@ -117,7 +117,7 @@ If you have created a [local Maven mirror](https://blog.openshift.com/improving-
     oc logs -f bc/pricing
 ``` 
 
-To confirm successful deployment, visit `http://secure-pricing-PROJECT.DOMAIN` in your browser (or click on the link within the OpenShift web console). You should see the pricing service API documentation page and you can explore the API.
+To confirm successful deployment, visit `https://secure-pricing-PROJECT.DOMAIN` in your browser (or click on the link within the OpenShift web console). You should see the pricing service API documentation page and you can explore the API.
 
 ![Swagger Screenshot](/../screenshots/screenshots/swagger.png?raw=true "Swagger Screenshot")
 
