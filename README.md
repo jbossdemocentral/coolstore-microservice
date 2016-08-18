@@ -90,7 +90,7 @@ During the deployment of the SSO service, a new SSO realm `myrealm` is created, 
 ```
     oc process -f sso-service.json | oc create -f -
 ```
-    You can view the process of the deployment using
+You can view the process of the deployment using:
 ```    
     oc logs -f dc/sso
 ```  
