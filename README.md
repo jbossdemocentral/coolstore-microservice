@@ -117,6 +117,10 @@ If you have created a [local Maven mirror](https://blog.openshift.com/improving-
     oc logs -f bc/pricing
 ``` 
 
+To confirm successful deployment, visit `http://secure-pricing-PROJECT.DOMAIN` in your browser (or click on the link within the OpenShift web console). You should see the pricing service API documentation page and you can explore the API.
+
+![Swagger Screenshot](/../screenshots/screenshots/swagger.png?raw=true "Swagger Screenshot")
+
 Deploy the UI Service using the OpenShift `oc` CLI
 --------------------------------------------------
 This service is implemented as a Node.js runtime with embedded HTTP server. At runtime, the image will automatically register several items into the SSO service:

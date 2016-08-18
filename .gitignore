@@ -1,5 +1,6 @@
 *.zip
 target/
+out/
 .DS_Store
 *.classpath
 *.project
