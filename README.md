@@ -36,9 +36,10 @@ Running the demo consists of 3 main steps, one for each of the services listed a
 It is assumed you have installed OpenShift, either using [Red Hat's CDK](http://developers.redhat.com/products/cdk/overview/) or a complete install, and can login to the
 web console or use the `oc` CLI tool.
 
-It is also assumed that the necessary JBoss xPaaS ImageStreams are available in the `openshift` namespace. If you have not installed these, you can do so as follows:
+It is also assumed that the necessary updated JBoss xPaaS ImageStreams are available in the `openshift` namespace. If you have not installed these, you can do so as follows:
 
-    $ oc delete -n openshift imagestream nodejs
+    $ oc delete -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
+    $ oc delete -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
     $ oc create -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
     $ oc create -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
     
