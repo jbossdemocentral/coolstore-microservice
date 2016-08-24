@@ -61,6 +61,9 @@ public class ApiGatewayController {
 
         return productList.thenCombine(inventoryList, (products, inventory) -> {
 
+            System.out.println("Products result: " + products);
+            System.out.println("Inventory result: " + inventory);
+
             // create inventory map
             Map<String, String> iMap = new HashMap<>();
             inventory.forEach(mi -> {
