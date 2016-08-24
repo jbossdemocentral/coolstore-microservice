@@ -67,7 +67,7 @@ public abstract class GenericFeignClient<T> {
         return HystrixFeign.builder()
             // Use apache HttpClient which contains the ZipKin Interceptors
             .client(new ApacheHttpClient(httpclient))
-            .logger(new Logger.ErrorLogger()).logLevel(Level.BASIC)
+            .logger(new Logger.ErrorLogger()).logLevel(Level.FULL)
             .target(classType, url, fallBack);
     }
 
