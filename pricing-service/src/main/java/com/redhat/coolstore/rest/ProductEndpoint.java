@@ -76,7 +76,6 @@ public class ProductEndpoint implements Serializable {
 			throw ex;
 		}
 		
-		System.out.println("cart after adding: pricing items: " + shoppingCart);
 		return shoppingCart;
 	}
 
@@ -105,7 +104,6 @@ public class ProductEndpoint implements Serializable {
 		}
 		
 		shoppingCartService.priceShoppingCart(shoppingCart);
-		System.out.println("cart after removing: pricing items: " + shoppingCart);
 		return shoppingCart;
 	}
 

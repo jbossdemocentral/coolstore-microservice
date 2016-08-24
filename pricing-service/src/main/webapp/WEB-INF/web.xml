@@ -3,25 +3,7 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          version="3.0">
 
-    <module-name>coolstore-rest-api</module-name>
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>coolstore-rest-api</web-resource-name>
-            <url-pattern>/rest/*</url-pattern>
-        </web-resource-collection>
-        <auth-constraint>
-            <role-name>user</role-name>
-        </auth-constraint>
-    </security-constraint>
-
-    <login-config>
-        <auth-method>KEYCLOAK</auth-method>
-    </login-config>
-
-    <security-role>
-        <role-name>user</role-name>
-    </security-role>
-
+    <module-name>coolstore-pricing-service</module-name>
     <servlet>
         <servlet-name>Jersey2Config</servlet-name>
         <servlet-class>io.swagger.jaxrs.config.DefaultJaxrsConfig</servlet-class>
@@ -31,7 +13,7 @@
         </init-param>
         <init-param>
             <param-name>swagger.api.basepath</param-name>
-            <param-value>/rest</param-value>
+            <param-value>/api</param-value>
         </init-param>
         <load-on-startup>2</load-on-startup>
     </servlet>
