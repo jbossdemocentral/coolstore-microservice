@@ -58,7 +58,8 @@ public class FeignClientFactory {
                 public Inventory getAvailability(String itemId) {
                     Inventory p = new Inventory();
                     p.itemId = itemId;
-                    p.availability = "You Wish!";
+                    p.location = null;
+                    p.quantity = -1;
                     return p;
                 }
             });

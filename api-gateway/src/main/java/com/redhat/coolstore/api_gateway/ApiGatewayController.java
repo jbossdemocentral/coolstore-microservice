@@ -45,6 +45,7 @@ public class ApiGatewayController {
 
     /**
      * Returns a CompletableFuture that retrieves the availability of an item from the Inventory service.
+     *
      * @param itemId The item to query
      * @return A completablefuture for getting the Inventory for this item
      */
@@ -69,24 +70,18 @@ public class ApiGatewayController {
 
         return productList.thenCompose((List<Product> products) -> {
 
-                    List<CompletableFuture<Product>> all = products.stream()
-                            .map(p -> productList.thenCombine(getInventory(p.itemId),
-                                    (pl, a) -> {
-                                        p.availability = a.availability;
-                                        return p;
-                                    }))
-                            .collect(Collectors.toList());
+            List<CompletableFuture<Product>> all = products.stream()
+                    .map(p -> productList.thenCombine(getInventory(p.itemId),
+                            (pl, a) -> {
+                                p.availability = a;
+                                return p;
+                            }))
+                    .collect(Collectors.toList());
 
-                    return CompletableFuture.allOf(all.toArray(new CompletableFuture[all.size()])).thenApply(v -> all.stream()
-                            .map(CompletableFuture::join)
-                            .collect(Collectors.toList()));
-                }).get();
+            return CompletableFuture.allOf(all.toArray(new CompletableFuture[all.size()])).thenApply(v -> all.stream()
+                    .map(CompletableFuture::join)
+                    .collect(Collectors.toList()));
+        }).get();
 
-        }
-
-        @RequestMapping(method = RequestMethod.GET, value = "/health")
-        @ApiOperation("Used to verify the health of the service")
-        public String health () {
-            return "I'm ok";
-        }
     }
+}

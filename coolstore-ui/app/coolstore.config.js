@@ -1,7 +1,7 @@
 var config =
 {
-  REST_ENDPOINT: process.env.REST_ENDPOINT || 'https://arestserver.com/rest',
-  SECURE_REST_ENDPOINT: process.env.SECURE_REST_ENDPOINT || 'https://arestserver.com/rest',
+  API_ENDPOINT: process.env.API_ENDPOINT || 'https://arestserver.com/rest',
+  SECURE_API_ENDPOINT: process.env.SECURE_API_ENDPOINT || 'https://arestserver.com/rest',
   
 };
 

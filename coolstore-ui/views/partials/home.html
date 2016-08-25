@@ -13,7 +13,8 @@
 				<div class="row coolstore-row">
 				  <div class="col-xs-12">
 
-					<span><h1>{{item.product.price | currency}}</h1></span>					
+					  <div>
+					<span><h1>{{item.product.price | currency}}</h1></span><div style="float:right"><em>{{item.product.availability.quantity}} at {{item.product.availability.location}} store!</em></div></div>
 					<form class="form-inline">
 					  <div class="form-group">
 					    <select name="quan" ng-model="item.quantity" class="form-control" id="quan">

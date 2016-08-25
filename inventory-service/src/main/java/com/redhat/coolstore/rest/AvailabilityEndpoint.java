@@ -18,9 +18,6 @@ import com.redhat.coolstore.service.InventoryService;
 @Path("/availability")
 public class AvailabilityEndpoint implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -7227732980791688773L;
 
 	@Inject

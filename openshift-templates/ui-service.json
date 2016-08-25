@@ -38,14 +38,14 @@
             "required": true
         },
         {
-            "description": "Pricing service REST endpoint, e.g.: http://pricing-<project>.<default-domain-suffix>/rest",
-            "name": "REST_ENDPOINT",
+            "description": "API Gateway REST endpoint, e.g.: http://api-gateway-<project>.<default-domain-suffix>/api",
+            "name": "API_ENDPOINT",
             "value": "",
             "required": true
         },
         {
-            "description": "Pricing service secure REST endpoint, e.g.: https://secure-pricing-<project>.<default-domain-suffix>/rest",
-            "name": "SECURE_REST_ENDPOINT",
+            "description": "API Gateway service secure REST endpoint, e.g.: https://secure-api-gateway-<project>.<default-domain-suffix>/api",
+            "name": "API_REST_ENDPOINT",
             "value": "",
             "required": true
         },
@@ -200,12 +200,12 @@
                                         "value": "${SSO_PUBLIC_KEY}"
                                     },
                                     {
-                                        "name": "REST_ENDPOINT",
-                                        "value": "${REST_ENDPOINT}"
+                                        "name": "API_ENDPOINT",
+                                        "value": "${API_ENDPOINT}"
                                     },
                                     {
-                                        "name": "SECURE_REST_ENDPOINT",
-                                        "value": "${SECURE_REST_ENDPOINT}"
+                                        "name": "SECURE_API_ENDPOINT",
+                                        "value": "${SECURE_API_ENDPOINT}"
                                     },
                                     {
                                         "name": "SSO_CLIENT_ID",

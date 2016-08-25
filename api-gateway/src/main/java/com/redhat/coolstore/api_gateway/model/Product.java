@@ -6,5 +6,5 @@ public class Product  {
 	public String name;
 	public String desc;
 	public double price;
-	public String availability;
+	public Inventory availability;
 }

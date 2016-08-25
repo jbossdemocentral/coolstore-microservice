@@ -1,42 +1,36 @@
 package com.redhat.coolstore.model;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 
+@XmlRootElement
 public class Inventory implements Serializable {
 
     private static final long serialVersionUID = -7304814269819778382L;
+
+    @XmlElement
     private String itemId;
-    private String availability;
+    @XmlElement
+    private int quantity;
+    @XmlElement
+    private String location;
 
     public Inventory() {
 
     }
 
-    public Inventory(String itemId, String availability) {
+    public Inventory(String itemId, int quantity, String location) {
         super();
         this.itemId = itemId;
-        this.availability = availability;
+        this.quantity = quantity;
+        this.location = location;
     }
 
-    public String getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
-    }
-
-    public String getAvailability() {
-        return availability;
-    }
-
-    public void setAvailability(String availability) {
-        this.availability = availability;
-    }
 
     @Override
     public String toString() {
-        return "Inventory [itemId=" + itemId + ", availability=" + availability + "]";
+        return "Inventory [itemId=" + itemId + ", availability=" + quantity + "/" + location + "]";
     }
 
 
