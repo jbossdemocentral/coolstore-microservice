@@ -12,7 +12,8 @@
     "labels": {
       "application": "ui",
         "createdBy": "template-ui-service",
-        "template": "template-ui-service"
+        "template": "template-ui-service",
+        "hystrix.enabled": true
     },
     "parameters": [
         {

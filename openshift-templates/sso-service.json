@@ -12,7 +12,8 @@
     "labels": {
         "application": "sso",
         "createdBy": "template-sso-service",
-        "template": "template-sso-service"
+        "template": "template-sso-service",
+        "hystrix.enabled": true
     },
     "parameters": [
         {

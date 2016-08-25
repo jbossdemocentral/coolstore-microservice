@@ -210,6 +210,22 @@ You can also click the links to the various services within the OpenShift web co
 
 You can log into the store using username `appuser` and password `password`. You will be prompted to change your password upon first login.
 
+Optional: Install [Kubeflix](https://github.com/fabric8io/kubeflix) (Hystrix Dashboard and Turbine server for metrics reporting on the services)
+------------------------------------------------------------------------------------------------------------------------------------------------
+This service provides [Kubernetes](http://kubernetes.io/) integration with [Netlix](https://netflix.github.io/) open source components such as [Hystrix](https://github.com/Netflix/Hystrix), [Turbine](https://github.com/Netflix/Turbine) and [Ribbon](https://github.com/Netflix/Ribbon).
+
+Turbine is meant to discover and aggregate Hystrix metrics streams, so that its possible to extract and display meaningful information (e.g. display the aggregate stream on the dashboard).
+
+To install:
+```
+    $ oc create -f http://central.maven.org/maven2/io/fabric8/kubeflix/packages/kubeflix/1.0.17/kubeflix-1.0.17-kubernetes.yml
+    $ oc new-app kubeflix
+    $ oc expose service hystrix-dashboard
+    $ oc policy add-role-to-user admin system:serviceaccount:PROJECT_NAME:turbine
+```
+
+Once installed, Visit `http://hystrix-dashboard-PROJECT.DOMAIN` and click *Monitor Stream*. In a separate window, as you access the demo, you can see the load on the various services and whether their circuits are open.
+
 Troubleshooting
 ---------------
 * If you attempt to deploy any of the services, and nothing happens, it may just be taking a while to download the Docker builder images. Visit the OpenShift web console and navigate to

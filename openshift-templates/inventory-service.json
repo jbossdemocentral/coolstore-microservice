@@ -12,7 +12,8 @@
   "labels": {
     "application": "inventory",
     "createdBy": "template-inventory-service",
-    "template": "template-inventory-service"
+    "template": "template-inventory-service",
+    "hystrix.enabled": true
   },
   "parameters": [
     {
