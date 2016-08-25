@@ -68,7 +68,7 @@ public abstract class GenericFeignClient<T> {
         String url = String.format("http://%s:8080/", serviceName);
         return HystrixFeign.builder()
                 .client(new ApacheHttpClient(httpclient))
-                .logger(new Logger.ErrorLogger()).logLevel(Level.FULL)
+                .logger(new Logger.ErrorLogger()).logLevel(Level.BASIC)
                 .decoder(new JacksonDecoder())
                 .target(classType, url, fallBack);
     }

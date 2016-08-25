@@ -242,7 +242,7 @@
                                         "scheme": "HTTP"
                                     },
                                     "timeoutSeconds": 1,
-                                    "periodSeconds": 15,
+                                    "periodSeconds": 5,
                                     "successThreshold": 1,
                                     "failureThreshold": 3
                                 },
@@ -253,7 +253,7 @@
                                         "scheme": "HTTP"
                                     },
                                     "timeoutSeconds": 1,
-                                    "periodSeconds": 15,
+                                    "periodSeconds": 5,
                                     "successThreshold": 1,
                                     "failureThreshold": 3
                                 },
