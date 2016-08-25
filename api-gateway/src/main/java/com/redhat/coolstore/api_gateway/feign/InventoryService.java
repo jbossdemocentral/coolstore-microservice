@@ -16,13 +16,16 @@
  */
 package com.redhat.coolstore.api_gateway.feign;
 
+import com.redhat.coolstore.api_gateway.model.Inventory;
+import com.redhat.coolstore.api_gateway.model.Product;
 import feign.RequestLine;
 
 import javax.json.JsonArray;
+import java.util.List;
 
 public interface InventoryService {
 
     @RequestLine("GET /api/inventory")
-    JsonArray list();
+    List<Inventory> list();
 
 }

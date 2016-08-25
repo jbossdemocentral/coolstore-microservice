@@ -16,11 +16,16 @@
  */
 package com.redhat.coolstore.api_gateway;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
+import com.redhat.coolstore.api_gateway.model.Inventory;
+import com.redhat.coolstore.api_gateway.model.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -51,12 +56,12 @@ public class ApiGatewayController {
     @CrossOrigin
     @RequestMapping(method = RequestMethod.GET, value = "/products/list", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Get a list of products")
-    public String list() throws ExecutionException, InterruptedException {
+    public List<Product> list() throws ExecutionException, InterruptedException {
 
-        final CompletableFuture<JsonArray> productList = CompletableFuture.supplyAsync(() ->
+        final CompletableFuture<List<Product>> productList = CompletableFuture.supplyAsync(() ->
                 feignClientFactory.getPricingClient().getService().list());
 
-        final CompletableFuture<JsonArray> inventoryList = CompletableFuture.supplyAsync(() ->
+        final CompletableFuture<List<Inventory>> inventoryList = CompletableFuture.supplyAsync(() ->
                 feignClientFactory.getInventoryClient().getService().list());
 
         return productList.thenCombine(inventoryList, (products, inventory) -> {
@@ -66,19 +71,13 @@ public class ApiGatewayController {
 
             // create inventory map
             Map<String, String> iMap = new HashMap<>();
-            inventory.forEach(mi -> {
-                iMap.put(((JsonObject) mi).getString("itemId"), ((JsonObject) mi).getString("availability"));
-            });
+            inventory.forEach(i -> iMap.put(i.itemId, i.availability));
 
-            JsonArrayBuilder result = Json.createArrayBuilder();
-            products.forEach(p -> {
-                JsonObjectBuilder o = Json.createObjectBuilder();
-                ((JsonObject) p).forEach(o::add);
-                o.add("availability", iMap.get(((JsonObject) p).getString("itemId")));
-                result.add(o.build());
-            });
-            return result.build();
-        }).get().toString();
+            products.forEach(p -> p.availability = iMap.get(p.itemId));
+
+            return products;
+
+        }).get();
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/health")

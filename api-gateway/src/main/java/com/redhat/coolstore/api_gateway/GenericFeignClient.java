@@ -16,6 +16,8 @@
  */
 package com.redhat.coolstore.api_gateway;
 
+import feign.jackson.JacksonDecoder;
+import feign.jackson.JacksonEncoder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
@@ -26,7 +28,6 @@ import feign.hystrix.HystrixFeign;
 
 /**
  * This class constructs a Feign Client to be invoked
- *
  */
 public abstract class GenericFeignClient<T> {
 
@@ -38,10 +39,10 @@ public abstract class GenericFeignClient<T> {
 
     /**
      * We need the following information to instantiate a FeignClient
-     * 
-     * @param classType Service that will be invoked
+     *
+     * @param classType   Service that will be invoked
      * @param serviceName the name of the service. It will be used in the hostname and in zipking tracing
-     * @param fallback the fallback implementation
+     * @param fallback    the fallback implementation
      */
     public GenericFeignClient(Class<T> classType, String serviceName, T fallback) {
         this.classType = classType;
@@ -56,19 +57,20 @@ public abstract class GenericFeignClient<T> {
     /**
      * This is were the "magic" happens: it creates a Feign, which is a proxy interface for remote calling a REST endpoint with
      * Hystrix fallback support.
-     **
+     * *
+     *
      * @return The feign pointing to the service URL and with Hystrix fallback.
      */
     protected T createFeign() {
         final CloseableHttpClient httpclient =
-            HttpClients.custom()
-                .build();
+                HttpClients.custom()
+                        .build();
         String url = String.format("http://%s:8080/", serviceName);
         return HystrixFeign.builder()
-            // Use apache HttpClient which contains the ZipKin Interceptors
-            .client(new ApacheHttpClient(httpclient))
-            .logger(new Logger.ErrorLogger()).logLevel(Level.FULL)
-            .target(classType, url, fallBack);
+                .client(new ApacheHttpClient(httpclient))
+                .logger(new Logger.ErrorLogger()).logLevel(Level.FULL)
+                .decoder(new JacksonDecoder())
+                .target(classType, url, fallBack);
     }
 
 }
