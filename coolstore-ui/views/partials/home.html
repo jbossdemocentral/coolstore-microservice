@@ -14,7 +14,7 @@
 				  <div class="col-xs-12">
 
 					  <div>
-					<span><h1>{{item.product.price | currency}}</h1></span><div style="float:right"><em>{{item.product.availability.quantity}} at {{item.product.availability.location}} store!</em></div></div>
+					<span><h1>{{item.product.price | currency}}</h1></span><div style="float:right"><em><label title="{{item.product.availability.quantity}} in our store in {{item.product.availability.location}}" class="label label-{{item.product.availability.quantity < 15 ? 'warning' : 'primary'}}">{{item.product.availability.quantity}} left!</label></div></div>
 					<form class="form-inline">
 					  <div class="form-group">
 					    <select name="quan" ng-model="item.quantity" class="form-control" id="quan">
