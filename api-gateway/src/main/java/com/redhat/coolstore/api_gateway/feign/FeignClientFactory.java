@@ -55,13 +55,11 @@ public class FeignClientFactory {
             super(InventoryService.class, "inventory-service",  new InventoryService() {
 
                 @Override
-                public List<Inventory> list() {
-                    List<Inventory> temp = new ArrayList<>();
+                public Inventory getAvailability(String itemId) {
                     Inventory p = new Inventory();
-                    p.itemId = "0";
+                    p.itemId = itemId;
                     p.availability = "You Wish!";
-                    temp.add(p);
-                    return temp;
+                    return p;
                 }
             });
         }
