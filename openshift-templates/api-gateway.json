@@ -13,7 +13,7 @@
     "application": "api-gateway",
     "createdBy": "template-api-gateway",
     "template": "template-api-gateway",
-    "hystrix.enabled": true
+    "hystrix.enabled": "true"
   },
   "parameters": [
     {

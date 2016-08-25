@@ -13,7 +13,7 @@
         "application": "sso",
         "createdBy": "template-sso-service",
         "template": "template-sso-service",
-        "hystrix.enabled": true
+        "hystrix.enabled": "true"
     },
     "parameters": [
         {

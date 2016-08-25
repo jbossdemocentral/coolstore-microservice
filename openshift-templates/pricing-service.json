@@ -13,7 +13,7 @@
     "application": "pricing",
     "createdBy": "template-pricing-service",
     "template": "template-pricing-service",
-    "hystrix.enabled": true
+    "hystrix.enabled": "true"
   },
   "parameters": [
     {
