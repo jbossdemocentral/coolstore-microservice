@@ -192,28 +192,24 @@
                   }
                 ],
                 "livenessProbe": {
-                  "exec": {
-                    "command": [
-                      "/bin/bash",
-                      "-c",
-                      "/opt/eap/bin/livenessProbe.sh"
-                    ]
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080,
+                    "scheme": "HTTP"
                   },
                   "timeoutSeconds": 1,
-                  "periodSeconds": 10,
+                  "periodSeconds": 15,
                   "successThreshold": 1,
                   "failureThreshold": 3
                 },
                 "readinessProbe": {
-                  "exec": {
-                    "command": [
-                      "/bin/bash",
-                      "-c",
-                      "/opt/eap/bin/readinessProbe.sh"
-                    ]
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080,
+                    "scheme": "HTTP"
                   },
                   "timeoutSeconds": 1,
-                  "periodSeconds": 10,
+                  "periodSeconds": 15,
                   "successThreshold": 1,
                   "failureThreshold": 3
                 },

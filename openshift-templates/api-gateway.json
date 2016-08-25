@@ -1,500 +1,495 @@
 {
-    "kind": "Template",
-    "apiVersion": "v1",
-    "metadata": {
+  "kind": "Template",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "api-gateway",
+    "annotations": {
+      "description": "The API Gateway",
+      "iconClass": "icon-java",
+      "tags": "microservice,jboss,angularjs,keycloak,sso"
+    }
+  },
+  "labels": {
+    "application": "api-gateway",
+    "createdBy": "template-api-gateway",
+    "template": "template-api-gateway"
+  },
+  "parameters": [
+    {
+      "description": "A local Maven Mirror, e.g.: http://nexus.ci.svc.cluster.local:8081/content/groups/public/",
+      "name": "MAVEN_MIRROR_URL",
+      "value": ""
+    },
+    {
+      "description": "URL to Red Hat SSO authentication endpoint, e.g.: https://secure-sso-<project>.<default-domain-suffix>/auth",
+      "name": "SSO_URL",
+      "required": true
+    },
+    {
+      "description": "SSO Public Key. Public key is recommended to be passed into the template to avoid man-in-the-middle security vulnerability",
+      "name": "SSO_PUBLIC_KEY",
+      "value": "",
+      "required": true
+    },
+    {
+      "description": "A-MQ cluster admin password",
+      "name": "MQ_CLUSTER_PASSWORD",
+      "from": "[a-zA-Z0-9]{8}",
+      "generate": "expression",
+      "required": true
+    },
+    {
+      "description": "JGroups cluster password",
+      "name": "JGROUPS_CLUSTER_PASSWORD",
+      "from": "[a-zA-Z0-9]{8}",
+      "generate": "expression",
+      "required": true
+    }
+  ],
+  "objects": [
+    {
+      "kind": "ImageStream",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "api-gateway"
+      },
+      "spec": {
+        "tags": [
+          {
+            "name": "latest"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "BuildConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "api-gateway"
+      },
+      "spec": {
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          },
+          {
+            "type": "ImageChange",
+            "imageChange": {}
+          }
+        ],
+        "source": {
+          "type": "Git",
+          "git": {
+            "uri": "https://github.com/jamesfalkner/coolstore-microservice"
+          },
+          "contextDir": "api-gateway"
+        },
+        "strategy": {
+          "type": "Source",
+          "sourceStrategy": {
+            "from": {
+              "kind": "ImageStreamTag",
+              "namespace": "openshift",
+              "name": "jboss-eap70-openshift:1.4"
+            },
+            "env": [
+              {
+                "name": "MAVEN_MIRROR_URL",
+                "value": "${MAVEN_MIRROR_URL}"
+              }
+            ],
+            "forcePull": true
+          }
+        },
+        "output": {
+          "to": {
+            "kind": "ImageStreamTag",
+            "name": "api-gateway:latest"
+          }
+        }
+      }
+    },
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "api-gateway"
+      },
+      "spec": {
+        "strategy": {
+          "type": "Recreate",
+          "resources": {}
+        },
+        "triggers": [
+          {
+            "type": "ImageChange",
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": [
+                "api-gateway"
+              ],
+              "from": {
+                "kind": "ImageStreamTag",
+                "name": "api-gateway:latest"
+              }
+            }
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 1,
+        "selector": {
+          "deploymentConfig": "api-gateway"
+        },
+        "template": {
+          "metadata": {
+            "name": "api-gateway",
+            "labels": {
+              "deploymentConfig": "api-gateway"
+            }
+          },
+          "spec": {
+            "volumes": [
+              {
+                "name": "sso-saml-keystore-volume",
+                "secret": {
+                  "secretName": "sso-app-secret"
+                }
+              },
+              {
+                "name": "eap-keystore-volume",
+                "secret": {
+                  "secretName": "sso-app-secret"
+                }
+              },
+              {
+                "name": "eap-jgroups-keystore-volume",
+                "secret": {
+                  "secretName": "sso-app-secret"
+                }
+              },
+              {
+                "name": "sso-truststore-volume",
+                "secret": {
+                  "secretName": "sso-app-secret"
+                }
+              }
+            ],
+            "containers": [
+              {
+                "name": "api-gateway",
+                "image": "api-gateway",
+                "ports": [
+                  {
+                    "name": "jolokia",
+                    "containerPort": 8778,
+                    "protocol": "TCP"
+                  },
+                  {
+                    "name": "http",
+                    "containerPort": 8080,
+                    "protocol": "TCP"
+                  },
+                  {
+                    "name": "https",
+                    "containerPort": 8443,
+                    "protocol": "TCP"
+                  },
+                  {
+                    "name": "ping",
+                    "containerPort": 8888,
+                    "protocol": "TCP"
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "OPENSHIFT_KUBE_PING_LABELS",
+                    "value": "application=api-gateway"
+                  },
+                  {
+                    "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.namespace"
+                      }
+                    }
+                  },
+                  {
+                    "name": "HTTPS_KEYSTORE_DIR",
+                    "value": "/etc/eap-secret-volume"
+                  },
+                  {
+                    "name": "HTTPS_SECRET",
+                    "value": "sso-app-secret"
+                  },
+                  {
+                    "name": "HTTPS_KEYSTORE",
+                    "value": "keystore.jks"
+                  },
+                  {
+                    "name": "HTTPS_KEYSTORE_TYPE",
+                    "value": "JKS"
+                  },
+                  {
+                    "name": "HTTPS_NAME",
+                    "value": "jboss"
+                  },
+                  {
+                    "name": "HTTPS_PASSWORD",
+                    "value": "mykeystorepass"
+                  },
+                  {
+                    "name": "MQ_CLUSTER_PASSWORD",
+                    "value": "${MQ_CLUSTER_PASSWORD}"
+                  },
+                  {
+                    "name": "JGROUPS_ENCRYPT_SECRET",
+                    "value": "sso-app-secret"
+                  },
+                  {
+                    "name": "JGROUPS_ENCRYPT_KEYSTORE_DIR",
+                    "value": "/etc/jgroups-encrypt-secret-volume"
+                  },
+                  {
+                    "name": "JGROUPS_ENCRYPT_KEYSTORE",
+                    "value": "jgroups.jceks"
+                  },
+                  {
+                    "name": "JGROUPS_ENCRYPT_NAME",
+                    "value": "secret-key"
+                  },
+                  {
+                    "name": "JGROUPS_ENCRYPT_PASSWORD",
+                    "value": "password"
+                  },
+                  {
+                    "name": "JGROUPS_CLUSTER_PASSWORD",
+                    "value": "${JGROUPS_CLUSTER_PASSWORD}"
+                  },
+                  {
+                    "name": "AUTO_DEPLOY_EXPLODED",
+                    "value": "false"
+                  },
+                  {
+                    "name": "SSO_URL",
+                    "value": "${SSO_URL}"
+                  },
+                  {
+                    "name": "SSO_SERVICE_URL",
+                    "value": "${SSO_URL}"
+                  },
+                  {
+                    "name": "SSO_REALM",
+                    "value": "myrealm"
+                  },
+                  {
+                    "name": "SSO_BEARER_ONLY",
+                    "value": "true"
+                  },
+                  {
+                    "name": "SSO_USERNAME",
+                    "value": "ssoservice"
+                  },
+                  {
+                    "name": "SSO_PASSWORD",
+                    "value": "ssoservicepass"
+                  },
+                  {
+                    "name": "SSO_PUBLIC_KEY",
+                    "value": "${SSO_PUBLIC_KEY}"
+                  },
+                  {
+                    "name": "SSO_SAML_KEYSTORE_SECRET",
+                    "value": "sso-app-secret"
+                  },
+                  {
+                    "name": "SSO_SAML_KEYSTORE",
+                    "value": "keystore.jks"
+                  },
+                  {
+                    "name": "SSO_SAML_KEYSTORE_DIR",
+                    "value": "/etc/sso-saml-secret-volume"
+                  },
+                  {
+                    "name": "SSO_SAML_CERTIFICATE_NAME",
+                    "value": "jboss"
+                  },
+                  {
+                    "name": "SSO_SAML_KEYSTORE_PASSWORD",
+                    "value": "mykeystorepass"
+                  },
+                  {
+                    "name": "SSO_ENABLE_CORS",
+                    "value": "true"
+                  },
+                  {
+                    "name": "SSO_SAML_LOGOUT_PAGE",
+                    "value": "/"
+                  },
+                  {
+                    "name": "SSO_DISABLE_SSL_CERTIFICATE_VALIDATION",
+                    "value": "true"
+                  },
+                  {
+                    "name": "SSO_TRUSTSTORE"
+                  },
+                  {
+                    "name": "SSO_TRUSTSTORE_DIR",
+                    "value": "/etc/sso-secret-volume"
+                  },
+                  {
+                    "name": "SSO_TRUSTSTORE_PASSWORD"
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "sso-saml-keystore-volume",
+                    "readOnly": true,
+                    "mountPath": "/etc/sso-saml-secret-volume"
+                  },
+                  {
+                    "name": "eap-keystore-volume",
+                    "readOnly": true,
+                    "mountPath": "/etc/eap-secret-volume"
+                  },
+                  {
+                    "name": "eap-jgroups-keystore-volume",
+                    "readOnly": true,
+                    "mountPath": "/etc/jgroups-encrypt-secret-volume"
+                  },
+                  {
+                    "name": "sso-truststore-volume",
+                    "readOnly": true,
+                    "mountPath": "/etc/sso-secret-volume"
+                  }
+                ],
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080,
+                    "scheme": "HTTP"
+                  },
+                  "timeoutSeconds": 1,
+                  "periodSeconds": 15,
+                  "successThreshold": 1,
+                  "failureThreshold": 3
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080,
+                    "scheme": "HTTP"
+                  },
+                  "timeoutSeconds": 1,
+                  "periodSeconds": 15,
+                  "successThreshold": 1,
+                  "failureThreshold": 3
+                },
+                "lifecycle": {
+                  "preStop": {
+                    "exec": {
+                      "command": [
+                        "/opt/eap/bin/jboss-cli.sh",
+                        "-c",
+                        ":shutdown(timeout=60)"
+                      ]
+                    }
+                  }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "imagePullPolicy": "Always"
+              }
+            ],
+            "restartPolicy": "Always",
+            "terminationGracePeriodSeconds": 75,
+            "dnsPolicy": "ClusterFirst",
+            "serviceAccountName": "sso-service-account",
+            "serviceAccount": "sso-service-account",
+            "securityContext": {}
+          }
+        }
+      },
+      "status": {}
+    },
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
         "name": "api-gateway",
         "annotations": {
-            "description": "The API Gateway",
-            "iconClass": "icon-java",
-            "tags": "microservice,jboss,angularjs,keycloak,sso"
+          "description": "The api-gateway service's http port."
         }
+      },
+      "spec": {
+        "ports": [
+          {
+            "protocol": "TCP",
+            "port": 8080,
+            "targetPort": 8080
+          }
+        ],
+        "selector": {
+          "deploymentConfig": "api-gateway"
+        }
+      }
     },
-    "labels": {
-      "application": "api-gateway",
-        "createdBy": "template-api-gateway",
-        "template": "template-api-gateway"
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "secure-api-gateway",
+        "annotations": {
+          "description": "The api-gateway service's secure https port."
+        }
+      },
+      "spec": {
+        "ports": [
+          {
+            "protocol": "TCP",
+            "port": 8443,
+            "targetPort": 8443
+          }
+        ],
+        "selector": {
+          "deploymentConfig": "api-gateway"
+        }
+      }
     },
-    "parameters": [
-        {
-            "description": "A local Maven Mirror, e.g.: http://nexus.ci.svc.cluster.local:8081/content/groups/public/",
-            "name": "MAVEN_MIRROR_URL",
-            "value": ""
-        },
-        {
-            "description": "URL to Red Hat SSO authentication endpoint, e.g.: https://secure-sso-<project>.<default-domain-suffix>/auth",
-            "name": "SSO_URL",
-            "required": true
-        },
-        {
-            "description": "SSO Public Key. Public key is recommended to be passed into the template to avoid man-in-the-middle security vulnerability",
-            "name": "SSO_PUBLIC_KEY",
-            "value": "",
-            "required": true
-        },
-        {
-            "description": "A-MQ cluster admin password",
-            "name": "MQ_CLUSTER_PASSWORD",
-            "from": "[a-zA-Z0-9]{8}",
-            "generate": "expression",
-            "required": true
-        },
-        {
-            "description": "JGroups cluster password",
-            "name": "JGROUPS_CLUSTER_PASSWORD",
-            "from": "[a-zA-Z0-9]{8}",
-            "generate": "expression",
-            "required": true
+    {
+      "kind": "Route",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "api-gateway",
+        "annotations": {
+          "description": "Route for application's api-gateway http service."
         }
-    ],
-    "objects": [
-        {
-            "kind": "ImageStream",
-            "apiVersion": "v1",
-            "metadata": {
-                "name": "api-gateway"
-            },
-            "spec": {
-                "tags": [
-                    {
-                        "name": "latest"
-                    }
-                ]
-            }
-        },
-        {
-            "kind": "BuildConfig",
-            "apiVersion": "v1",
-            "metadata": {
-                "name": "api-gateway"
-            },
-            "spec": {
-                "triggers": [
-                    {
-                        "type": "ConfigChange"
-                    },
-                    {
-                        "type": "ImageChange",
-                        "imageChange": {}
-                    }
-                ],
-                "source": {
-                    "type": "Git",
-                    "git": {
-                        "uri": "https://github.com/jamesfalkner/coolstore-microservice"
-                    },
-                    "contextDir": "api-gateway"
-                },
-                "strategy": {
-                    "type": "Source",
-                    "sourceStrategy": {
-                        "from": {
-                            "kind": "ImageStreamTag",
-                            "namespace": "openshift",
-                            "name": "jboss-eap70-openshift:1.4"
-                        },
-                        "env": [
-                            {
-                                "name": "MAVEN_MIRROR_URL",
-                                "value": "${MAVEN_MIRROR_URL}"
-                            }
-                        ],
-                        "forcePull": true
-                    }
-                },
-                "output": {
-                    "to": {
-                        "kind": "ImageStreamTag",
-                        "name": "api-gateway:latest"
-                    }
-                }
-            }
-        },
-        {
-            "kind": "DeploymentConfig",
-            "apiVersion": "v1",
-            "metadata": {
-                "name": "api-gateway"
-            },
-            "spec": {
-                "strategy": {
-                    "type": "Recreate",
-                    "resources": {}
-                },
-                "triggers": [
-                    {
-                        "type": "ImageChange",
-                        "imageChangeParams": {
-                            "automatic": true,
-                            "containerNames": [
-                                "api-gateway"
-                            ],
-                            "from": {
-                                "kind": "ImageStreamTag",
-                                "name": "api-gateway:latest"
-                            }
-                        }
-                    },
-                    {
-                        "type": "ConfigChange"
-                    }
-                ],
-                "replicas": 1,
-                "selector": {
-                    "deploymentConfig": "api-gateway"
-                },
-                "template": {
-                    "metadata": {
-                        "name": "api-gateway",
-                        "labels": {
-                            "deploymentConfig": "api-gateway"
-                        }
-                    },
-                    "spec": {
-                        "volumes": [
-                            {
-                                "name": "sso-saml-keystore-volume",
-                                "secret": {
-                                    "secretName": "sso-app-secret"
-                                }
-                            },
-                            {
-                                "name": "eap-keystore-volume",
-                                "secret": {
-                                    "secretName": "sso-app-secret"
-                                }
-                            },
-                            {
-                                "name": "eap-jgroups-keystore-volume",
-                                "secret": {
-                                    "secretName": "sso-app-secret"
-                                }
-                            },
-                            {
-                                "name": "sso-truststore-volume",
-                                "secret": {
-                                    "secretName": "sso-app-secret"
-                                }
-                            }
-                        ],
-                        "containers": [
-                            {
-                                "name": "api-gateway",
-                                "image": "api-gateway",
-                                "ports": [
-                                    {
-                                        "name": "jolokia",
-                                        "containerPort": 8778,
-                                        "protocol": "TCP"
-                                    },
-                                    {
-                                        "name": "http",
-                                        "containerPort": 8080,
-                                        "protocol": "TCP"
-                                    },
-                                    {
-                                        "name": "https",
-                                        "containerPort": 8443,
-                                        "protocol": "TCP"
-                                    },
-                                    {
-                                        "name": "ping",
-                                        "containerPort": 8888,
-                                        "protocol": "TCP"
-                                    }
-                                ],
-                                "env": [
-                                    {
-                                        "name": "OPENSHIFT_KUBE_PING_LABELS",
-                                        "value": "application=api-gateway"
-                                    },
-                                    {
-                                        "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
-                                        "valueFrom": {
-                                            "fieldRef": {
-                                                "fieldPath": "metadata.namespace"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "name": "HTTPS_KEYSTORE_DIR",
-                                        "value": "/etc/eap-secret-volume"
-                                    },
-                                    {
-                                        "name": "HTTPS_SECRET",
-                                        "value": "sso-app-secret"
-                                    },
-                                    {
-                                        "name": "HTTPS_KEYSTORE",
-                                        "value": "keystore.jks"
-                                    },
-                                    {
-                                        "name": "HTTPS_KEYSTORE_TYPE",
-                                        "value": "JKS"
-                                    },
-                                    {
-                                        "name": "HTTPS_NAME",
-                                        "value": "jboss"
-                                    },
-                                    {
-                                        "name": "HTTPS_PASSWORD",
-                                        "value": "mykeystorepass"
-                                    },
-                                    {
-                                        "name": "MQ_CLUSTER_PASSWORD",
-                                        "value": "${MQ_CLUSTER_PASSWORD}"
-                                    },
-                                    {
-                                        "name": "JGROUPS_ENCRYPT_SECRET",
-                                        "value": "sso-app-secret"
-                                    },
-                                    {
-                                        "name": "JGROUPS_ENCRYPT_KEYSTORE_DIR",
-                                        "value": "/etc/jgroups-encrypt-secret-volume"
-                                    },
-                                    {
-                                        "name": "JGROUPS_ENCRYPT_KEYSTORE",
-                                        "value": "jgroups.jceks"
-                                    },
-                                    {
-                                        "name": "JGROUPS_ENCRYPT_NAME",
-                                        "value": "secret-key"
-                                    },
-                                    {
-                                        "name": "JGROUPS_ENCRYPT_PASSWORD",
-                                        "value": "password"
-                                    },
-                                    {
-                                        "name": "JGROUPS_CLUSTER_PASSWORD",
-                                        "value": "${JGROUPS_CLUSTER_PASSWORD}"
-                                    },
-                                    {
-                                        "name": "AUTO_DEPLOY_EXPLODED",
-                                        "value": "false"
-                                    },
-                                    {
-                                        "name": "SSO_URL",
-                                        "value": "${SSO_URL}"
-                                    },
-                                    {
-                                        "name": "SSO_SERVICE_URL",
-                                        "value": "${SSO_URL}"
-                                    },
-                                    {
-                                        "name": "SSO_REALM",
-                                        "value": "myrealm"
-                                    },
-                                    {
-                                        "name": "SSO_BEARER_ONLY",
-                                        "value": "true"
-                                    },
-                                    {
-                                        "name": "SSO_USERNAME",
-                                        "value": "ssoservice"
-                                    },
-                                    {
-                                        "name": "SSO_PASSWORD",
-                                        "value": "ssoservicepass"
-                                    },
-                                    {
-                                        "name": "SSO_PUBLIC_KEY",
-                                        "value": "${SSO_PUBLIC_KEY}"
-                                    },
-                                    {
-                                        "name": "SSO_SAML_KEYSTORE_SECRET",
-                                        "value": "sso-app-secret"
-                                    },
-                                    {
-                                        "name": "SSO_SAML_KEYSTORE",
-                                        "value": "keystore.jks"
-                                    },
-                                    {
-                                        "name": "SSO_SAML_KEYSTORE_DIR",
-                                        "value": "/etc/sso-saml-secret-volume"
-                                    },
-                                    {
-                                        "name": "SSO_SAML_CERTIFICATE_NAME",
-                                        "value": "jboss"
-                                    },
-                                    {
-                                        "name": "SSO_SAML_KEYSTORE_PASSWORD",
-                                        "value": "mykeystorepass"
-                                    },
-                                    {
-                                        "name": "SSO_ENABLE_CORS",
-                                        "value": "true"
-                                    },
-                                    {
-                                        "name": "SSO_SAML_LOGOUT_PAGE",
-                                        "value": "/"
-                                    },
-                                    {
-                                        "name": "SSO_DISABLE_SSL_CERTIFICATE_VALIDATION",
-                                        "value": "true"
-                                    },
-                                    {
-                                        "name": "SSO_TRUSTSTORE"
-                                    },
-                                    {
-                                        "name": "SSO_TRUSTSTORE_DIR",
-                                        "value": "/etc/sso-secret-volume"
-                                    },
-                                    {
-                                        "name": "SSO_TRUSTSTORE_PASSWORD"
-                                    }
-                                ],
-                                "volumeMounts": [
-                                    {
-                                        "name": "sso-saml-keystore-volume",
-                                        "readOnly": true,
-                                        "mountPath": "/etc/sso-saml-secret-volume"
-                                    },
-                                    {
-                                        "name": "eap-keystore-volume",
-                                        "readOnly": true,
-                                        "mountPath": "/etc/eap-secret-volume"
-                                    },
-                                    {
-                                        "name": "eap-jgroups-keystore-volume",
-                                        "readOnly": true,
-                                        "mountPath": "/etc/jgroups-encrypt-secret-volume"
-                                    },
-                                    {
-                                        "name": "sso-truststore-volume",
-                                        "readOnly": true,
-                                        "mountPath": "/etc/sso-secret-volume"
-                                    }
-                                ],
-                                "livenessProbe": {
-                                    "exec": {
-                                        "command": [
-                                            "/bin/bash",
-                                            "-c",
-                                            "/opt/eap/bin/livenessProbe.sh"
-                                        ]
-                                    },
-                                    "timeoutSeconds": 1,
-                                    "periodSeconds": 10,
-                                    "successThreshold": 1,
-                                    "failureThreshold": 3
-                                },
-                                "readinessProbe": {
-                                    "exec": {
-                                        "command": [
-                                            "/bin/bash",
-                                            "-c",
-                                            "/opt/eap/bin/readinessProbe.sh"
-                                        ]
-                                    },
-                                    "timeoutSeconds": 1,
-                                    "periodSeconds": 10,
-                                    "successThreshold": 1,
-                                    "failureThreshold": 3
-                                },
-                                "lifecycle": {
-                                    "preStop": {
-                                        "exec": {
-                                            "command": [
-                                                "/opt/eap/bin/jboss-cli.sh",
-                                                "-c",
-                                                ":shutdown(timeout=60)"
-                                            ]
-                                        }
-                                    }
-                                },
-                                "terminationMessagePath": "/dev/termination-log",
-                                "imagePullPolicy": "Always"
-                            }
-                        ],
-                        "restartPolicy": "Always",
-                        "terminationGracePeriodSeconds": 75,
-                        "dnsPolicy": "ClusterFirst",
-                        "serviceAccountName": "sso-service-account",
-                        "serviceAccount": "sso-service-account",
-                        "securityContext": {}
-                    }
-                }
-            },
-            "status": {}
-        },
-        {
-            "kind": "Service",
-            "apiVersion": "v1",
-            "metadata": {
-                "name": "api-gateway",
-                "annotations": {
-                    "description": "The api-gateway service's http port."
-                }
-            },
-            "spec": {
-                "ports": [
-                    {
-                        "protocol": "TCP",
-                        "port": 8080,
-                        "targetPort": 8080
-                    }
-                ],
-                "selector": {
-                    "deploymentConfig": "api-gateway"
-                }
-            }
-        },
-        {
-            "kind": "Service",
-            "apiVersion": "v1",
-            "metadata": {
-                "name": "secure-api-gateway",
-                "annotations": {
-                    "description": "The api-gateway service's secure https port."
-                }
-            },
-            "spec": {
-                "ports": [
-                    {
-                        "protocol": "TCP",
-                        "port": 8443,
-                        "targetPort": 8443
-                    }
-                ],
-                "selector": {
-                    "deploymentConfig": "api-gateway"
-                }
-            }
-        },
-        {
-            "kind": "Route",
-            "apiVersion": "v1",
-            "metadata": {
-                "name": "api-gateway",
-                "annotations": {
-                    "description": "Route for application's api-gateway http service."
-                }
-            },
-            "spec": {
-                "to": {
-                    "kind": "Service",
-                    "name": "api-gateway"
-                }
-            }
-        },
-        {
-            "kind": "Route",
-            "apiVersion": "v1",
-            "metadata": {
-                "name": "secure-api-gateway",
-                "annotations": {
-                    "description": "Route for application's api-gateway https service."
-                }
-            },
-            "spec": {
-                "to": {
-                    "kind": "Service",
-                    "name": "secure-api-gateway"
-                },
-                "tls": {
-                    "termination": "passthrough"
-                }
-            }
+      },
+      "spec": {
+        "to": {
+          "kind": "Service",
+          "name": "api-gateway"
         }
-
-    ]
+      }
+    },
+    {
+      "kind": "Route",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "secure-api-gateway",
+        "annotations": {
+          "description": "Route for application's api-gateway https service."
+        }
+      },
+      "spec": {
+        "to": {
+          "kind": "Service",
+          "name": "secure-api-gateway"
+        },
+        "tls": {
+          "termination": "passthrough"
+        }
+      }
+    }
+  ]
 }

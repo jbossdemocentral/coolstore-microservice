@@ -220,11 +220,16 @@ you see successful creation of users and roles. For example look for messages li
 oc set env dc/sso SSO_URL=<the right one> SSO_PUBLIC_KEY=<the right one> HOSTNAME_HTTP=<the right one> HOSTNAME_HTTPS=<the right one>
 ```
 Once fixed, the UI should automatically re-build and re-deploy.
+* If you see *Client not found.* on the SSO login page, may need to scale the UI service down to 0 and back to 1, to force a re-registration of the client into Red Hat SSO.
 * If you get an *Error! Error retrieving products* when accessing the secure UI frontend, this is due to the use of a different self-signed certificates by OpenShift when the UI tries to access the secured API gateway.
 You can do one of two things:
     * Use the insecure UI in your browser, i.e. go to http://ui-PROJECT.DOMAIN 
     * Visit https://secure-api-gateway-PROJECT.DOMAIN in a separate browser tab, accept the security exception (and ignore the *Unauthorized* error you may see), then return to the original tab and reload the page.
-
+* If you stop and restart the SSO service, this will change the value for `SSO_PUBLIC_KEY` so you'll need to reconfigure the API Gateway and UI services to reflect this:
+```
+oc set env dc/api-gateway SSO_PUBLIC_KEY='<New Public key>'
+oc set env dc/ui SSO_PUBLIC_KEY='<New Public key>'
+```
 Notes
 -----
 * You can optionally install the 3 templates into OpenShift for use via the GUI using `oc create -f openshift-templates -n openshift`. Once created, you can then deploy the services in your projects using *Add To Project* 
