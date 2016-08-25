@@ -245,7 +245,7 @@
                   "periodSeconds": 5,
                   "successThreshold": 1,
                   "failureThreshold": 10,
-                  "initialDelaySeconds": 30
+                  "initialDelaySeconds": 15
                 },
                 "readinessProbe": {
                   "httpGet": {
@@ -257,7 +257,7 @@
                   "periodSeconds": 5,
                   "successThreshold": 1,
                   "failureThreshold": 10,
-                  "initialDelaySeconds": 30
+                  "initialDelaySeconds": 15
                 },
                 "lifecycle": {
                   "preStop": {
