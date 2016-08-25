@@ -45,7 +45,7 @@
         },
         {
             "description": "API Gateway service secure REST endpoint, e.g.: https://secure-api-gateway-<project>.<default-domain-suffix>/api",
-            "name": "API_REST_ENDPOINT",
+            "name": "SECURE_API_ENDPOINT",
             "value": "",
             "required": true
         },

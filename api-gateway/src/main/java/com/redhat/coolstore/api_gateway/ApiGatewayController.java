@@ -84,4 +84,10 @@ public class ApiGatewayController {
         }).get();
 
     }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/health")
+    @ApiOperation("Used to verify the health of the service")
+    public String health() {
+        return "I'm ok";
+    }
 }

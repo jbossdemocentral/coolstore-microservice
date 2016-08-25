@@ -138,7 +138,7 @@ If you have created a [local Maven mirror](https://blog.openshift.com/improving-
     oc logs -f bc/pricing
 ``` 
 
-To confirm this service is reachable from the API Gateway, use:
+To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
 ```
     $ oc get pods
     $ oc rsh [API-GATEWAY-POD-NAME] curl http://pricing-service:8080/api/products/list
@@ -165,7 +165,7 @@ If you have created a [local Maven mirror](https://blog.openshift.com/improving-
     oc logs -f bc/inventory
 ``` 
 
-To confirm this service is reachable from the API Gateway, use:
+To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
 ```
     $ oc get pods
     $ oc rsh [API-GATEWAY-POD-NAME] curl http://inventory-service:8080/api/availability/329299
@@ -192,8 +192,8 @@ This service is implemented as a Node.js runtime with embedded HTTP server. At r
       SSO_PUBLIC_KEY='<PUBLIC KEY>' \
       HOSTNAME_HTTP=ui-PROJECT.DOMAIN \
       HOSTNAME_HTTPS=secure-ui-PROJECT.DOMAIN \
-      REST_ENDPOINT=http://pricing-PROJECT.DOMAIN/rest \
-      SECURE_REST_ENDPOINT=https://secure-pricing-PROJECT.DOMAIN/rest | \
+      API_ENDPOINT=http://api-gateway-PROJECT.DOMAIN/api \
+      SECURE_API_ENDPOINT=https://secure-api-gateway-PROJECT.DOMAIN/api | \
       oc create -f -
 ```
 
@@ -209,6 +209,21 @@ Once all of the above completes, your demo should be running and you can access 
 You can also click the links to the various services within the OpenShift web console by navigating to your newly-created project.
 
 You can log into the store using username `appuser` and password `password`. You will be prompted to change your password upon first login.
+
+Troubleshooting
+---------------
+* If you attempt to deploy any of the services, and nothing happens, it may just be taking a while to download the Docker builder images. Visit the OpenShift web console and navigate to
+Browse->Events and look for errors, and re-run the 'oc delete ; oc create' commands to re-install the images (as outlined at the beginning.)
+* If you access the demo, and are redirected to the Red Hat SSO login page with an error *invalid redirect uri* - this means that the UI deployment failed to register itself and the `appuser` user into Red Hat SSO. Run `oc logs dc/sso` and verify that
+you see successful creation of users and roles. For example look for messages like *Fetch user 'appuser' result: 200 OK*. If you see errors (or you see nothing) chances are you specified an incorrect value for one of the `SSO_URL`, `SSO_PUBLIC_KEY`, `HOSTNAME_HTTP` or `HOSTNAME_HTTPS` (note the last two are hostnames only, not prefixed with `http` or `https`). Verify that you are using the correct URLs, and if you need to fix them:
+```
+oc set env dc/sso SSO_URL=<the right one> SSO_PUBLIC_KEY=<the right one> HOSTNAME_HTTP=<the right one> HOSTNAME_HTTPS=<the right one>
+```
+Once fixed, the UI should automatically re-build and re-deploy.
+* If you get an *Error! Error retrieving products* when accessing the secure UI frontend, this is due to the use of a different self-signed certificates by OpenShift when the UI tries to access the secured API gateway.
+You can do one of two things:
+    * Use the insecure UI in your browser, i.e. go to http://ui-PROJECT.DOMAIN 
+    * Visit https://secure-api-gateway-PROJECT.DOMAIN in a separate browser tab, accept the security exception (and ignore the *Unauthorized* error you may see), then return to the original tab and reload the page.
 
 Notes
 -----
