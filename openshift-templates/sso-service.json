@@ -310,29 +310,6 @@
             }
         },
         {
-            "kind": "Service",
-            "apiVersion": "v1",
-            "metadata": {
-                "name": "sso",
-                "annotations": {
-                    "description": "The SSO server's http port."
-                }
-            },
-            "spec": {
-                "ports": [
-                    {
-                        "protocol": "TCP",
-                        "port": 8080,
-                        "targetPort": 8080
-                    }
-                ],
-                "selector": {
-                    "deploymentConfig": "sso"
-                }
-            }
-        },
-
-        {
             "kind": "Route",
             "apiVersion": "v1",
             "metadata": {
@@ -348,22 +325,6 @@
                 },
                 "tls": {
                     "termination": "passthrough"
-                }
-            }
-        },
-        {
-            "kind": "Route",
-            "apiVersion": "v1",
-            "metadata": {
-                "name": "sso",
-                "annotations": {
-                    "description": "Route for application's sso http service."
-                }
-            },
-            "spec": {
-                "to": {
-                    "kind": "Service",
-                    "name": "sso"
                 }
             }
         }

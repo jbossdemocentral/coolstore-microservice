@@ -2,17 +2,17 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "pricing-service",
+    "name": "inventory-service",
     "annotations": {
-      "description": "The pricing service",
+      "description": "The inventory service",
       "iconClass": "icon-java",
       "tags": "microservice,jboss,angularjs,keycloak,sso"
     }
   },
   "labels": {
-    "application": "pricing",
-    "createdBy": "template-pricing-service",
-    "template": "template-pricing-service"
+    "application": "inventory",
+    "createdBy": "template-inventory-service",
+    "template": "template-inventory-service"
   },
   "parameters": [
     {
@@ -40,7 +40,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "pricing"
+        "name": "inventory"
       },
       "spec": {
         "tags": [
@@ -54,7 +54,7 @@
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "pricing"
+        "name": "inventory"
       },
       "spec": {
         "triggers": [
@@ -71,7 +71,7 @@
           "git": {
             "uri": "https://github.com/jamesfalkner/coolstore-microservice"
           },
-          "contextDir": "pricing-service"
+          "contextDir": "inventory-service"
         },
         "strategy": {
           "type": "Source",
@@ -93,7 +93,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "pricing:latest"
+            "name": "inventory:latest"
           }
         }
       }
@@ -102,7 +102,7 @@
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "pricing"
+        "name": "inventory"
       },
       "spec": {
         "strategy": {
@@ -115,11 +115,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "pricing"
+                "inventory"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "pricing:latest"
+                "name": "inventory:latest"
               }
             }
           },
@@ -129,20 +129,20 @@
         ],
         "replicas": 1,
         "selector": {
-          "deploymentConfig": "pricing"
+          "deploymentConfig": "inventory"
         },
         "template": {
           "metadata": {
-            "name": "pricing",
+            "name": "inventory",
             "labels": {
-              "deploymentConfig": "pricing"
+              "deploymentConfig": "inventory"
             }
           },
           "spec": {
             "containers": [
               {
-                "name": "pricing",
-                "image": "pricing",
+                "name": "inventory",
+                "image": "inventory",
                 "ports": [
                   {
                     "name": "jolokia",
@@ -168,7 +168,7 @@
                 "env": [
                   {
                     "name": "OPENSHIFT_KUBE_PING_LABELS",
-                    "value": "application=pricing"
+                    "value": "application=inventory"
                   },
                   {
                     "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
@@ -247,9 +247,9 @@
       "kind": "Service",
       "apiVersion": "v1",
       "metadata": {
-        "name": "pricing-service",
+        "name": "inventory-service",
         "annotations": {
-          "description": "The pricing service's http port."
+          "description": "The inventory service's http port."
         }
       },
       "spec": {
@@ -261,7 +261,7 @@
           }
         ],
         "selector": {
-          "deploymentConfig": "pricing"
+          "deploymentConfig": "inventory"
         }
       }
     }

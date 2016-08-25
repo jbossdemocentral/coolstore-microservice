@@ -1,6 +1,6 @@
 Red Hat Cool Store Microservice Demo
 ====================================
-This is an example demo showing a retail store consisting of a trio of microservices based on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/) and [Node.js](https://access.redhat.com/documentation/en/openshift-enterprise/3.2/paged/using-images/chapter-1-source-to-image-s2i), deployed to [OpenShift](https://access.redhat.com/products/openshift-enterprise-red-hat/) and protected with [Red Hat SSO](https://access.redhat.com/documentation/en/red-hat-single-sign-on/).
+This is an example demo showing a retail store consisting of several of microservices based on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/) and [Node.js](https://access.redhat.com/documentation/en/openshift-enterprise/3.2/paged/using-images/chapter-1-source-to-image-s2i), deployed to [OpenShift](https://access.redhat.com/products/openshift-enterprise-red-hat/) and protected with [Red Hat SSO](https://access.redhat.com/documentation/en/red-hat-single-sign-on/).
 
 It demonstrates how to wire up small microservices into a larger application using microservice architectural principals.
 
@@ -8,11 +8,13 @@ It demonstrates how to wire up small microservices into a larger application usi
 
 Services
 --------
-There are three individual microservices that make up this app:
+There are several individual microservices that make up this app:
 
 1. SSO Service - for protecting RESTful pricing service, using [Red Hat SSO](https://access.redhat.com/documentation/en/red-hat-single-sign-on/)
-2. Pricing Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves prices for retail products
-3. UI Service - A frontend based on [AngularJS](https://angularjs.org) and [PatternFly](http://patternfly.org) running in a [Node.js](https://access.redhat.com/documentation/en/openshift-enterprise/3.2/paged/using-images/chapter-1-source-to-image-s2i) container.
+1. Pricing Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves products and prices for retail products
+1. Inventory Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves inventory and availability data for retail products
+1. API Gateway - Java EE + Spring Boot application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serving as a protected entry point/router/aggregator to the backend services
+1. UI Service - A frontend based on [AngularJS](https://angularjs.org) and [PatternFly](http://patternfly.org) running in a [Node.js](https://access.redhat.com/documentation/en/openshift-enterprise/3.2/paged/using-images/chapter-1-source-to-image-s2i) container.
 
 A simple visualization of the runtime components of this demo:
 
@@ -31,7 +33,7 @@ Demo Credentials and other identifiers
 
 Running the Demo
 ================
-Running the demo consists of 3 main steps, one for each of the services listed above. 
+Running the demo consists of 5 main steps, one for each of the services listed above. 
 
 It is assumed you have installed OpenShift, either using [Red Hat's CDK](http://developers.redhat.com/products/cdk/overview/) or a complete install, and can login to the
 web console or use the `oc` CLI tool.
@@ -94,18 +96,18 @@ You can view the process of the deployment using:
 ```    
     oc logs -f dc/sso
 ```  
-1. Once it completes, you can test it by accessing `https://secure-sso-PROJECT.DOMAIN/auth` or clicking on the associated route from the project overview page within the OpenShift web console.
+1. Once it completes, you can test it by accessing `https://secure-sso-PROJECT.DOMAIN/auth` or clicking on the associated route from the project overview page within the OpenShift web console. Click on *Administration Console* and login using `admin`/`admin`
 
-1. Obtain the public key for the automatically-created realm `myrealm` by visiting `https://secure-sso-PROJECT.DOMAIN/auth/realms/myrealm` in your browser. You'll need in the next steps.
+1. Obtain the public key for the automatically-created realm `myrealm` by navigating to *Realm Settings* -> *Keys*. You'll need in the next steps.
 
-Deploy Pricing Service using the OpenShift `oc` CLI
----------------------------------------------------
-This service relies on the Red Hat SSO xPaaS image for JBoss EAP 7. At runtime, this image will automatically register itself as a *bearer-only* SSO client.
-Access to the `/rest` endpoint is protected by Red Hat SSO by declaring it to be so in [web.xml](pricing-service/src/main/webapp/WEB-INF/web.xml) by using the [Keycloak REST API](http://www.keycloak.org/docs/rest-api/).
+Deploy API Gateway using the OpenShift `oc` CLI
+-----------------------------------------------
+The API Gateway relies on the Red Hat SSO xPaaS image for JBoss EAP 7. At runtime, this image will automatically register itself as a *bearer-only* SSO client.
+Access to the `/api` endpoint is protected by Red Hat SSO by declaring it to be so in [web.xml](api-gateway/src/main/webapp/WEB-INF/web.xml) by using the [Keycloak REST API](http://www.keycloak.org/docs/rest-api/).
 
 1. Create and deploy service, substituting values for SSO_URL (don't forget the `/auth` suffix) and SSO_PUBLIC_KEY, wait for it to complete. 
 ```
-    oc process -f pricing-service.json \
+    oc process -f api-gateway.json \
       SSO_URL=https://secure-sso-PROJECT.DOMAIN/auth \
       SSO_PUBLIC_KEY=<PUBLIC_KEY> | \
       oc create -f -
@@ -114,12 +116,66 @@ If you have created a [local Maven mirror](https://blog.openshift.com/improving-
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
 ```
+    oc logs -f bc/api-gateway
+``` 
+
+To confirm successful deployment, visit `https://secure-api-gateway-PROJECT.DOMAIN` in your browser (or click on the link within the OpenShift web console). You should see the pricing service API documentation page and you can explore the API.
+
+![Swagger Screenshot](/../screenshots/screenshots/swagger.png?raw=true "Swagger Screenshot")
+
+Deploy Pricing Service using the OpenShift `oc` CLI
+---------------------------------------------------
+This service relies on the standard xPaaS image for JBoss EAP 7. No route is created to this service, as it is only accessible from inside the kubernetes cluster.
+
+1. Create and deploy service: 
+```
+    oc process -f pricing-service.json | oc create -f -
+```
+If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. 
+
+1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
+```
     oc logs -f bc/pricing
 ``` 
 
-To confirm successful deployment, visit `https://secure-pricing-PROJECT.DOMAIN` in your browser (or click on the link within the OpenShift web console). You should see the pricing service API documentation page and you can explore the API.
+To confirm this service is reachable from the API Gateway, use:
+```
+    $ oc get pods
+    $ oc rsh [API-GATEWAY-POD-NAME] curl http://pricing-service:8080/api/products/list
+```
 
-![Swagger Screenshot](/../screenshots/screenshots/swagger.png?raw=true "Swagger Screenshot")
+You should get a JSON object listing the products along with invalid inventory (since you haven't deployed the inventory service yet.) e.g.:
+
+```
+[{"itemId":"329299","name":"Red Fedora","desc":"Official Red Hat Fedora","price":34.99}, ... ]
+```
+
+Deploy Inventory Service using the OpenShift `oc` CLI
+-----------------------------------------------------
+This service relies on the standard xPaaS image for JBoss EAP 7. No route is created to this service, as it is only accessible from inside the kubernetes cluster.
+
+1. Create and deploy service: 
+```
+    oc process -f inventory-service.json | oc create -f -
+```
+If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. 
+
+1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
+```
+    oc logs -f bc/inventory
+``` 
+
+To confirm this service is reachable from the API Gateway, use:
+```
+    $ oc get pods
+    $ oc rsh [API-GATEWAY-POD-NAME] curl http://inventory-service:8080/api/availability/329299
+```
+
+You should get a JSON object listing the item ID (foo) and a real availability (quantity and city) e.g.:
+
+```
+    {"itemId":"1234","availability":"36 available at Raleign store!"}
+```
 
 Deploy the UI Service using the OpenShift `oc` CLI
 --------------------------------------------------
