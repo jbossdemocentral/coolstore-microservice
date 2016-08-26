@@ -1,5 +1,5 @@
 'use strict';
-console.log("in global");
+
 var module = angular.module('app', ['ngRoute', 'patternfly']), auth = {
     logout: function () {
     }
@@ -22,7 +22,6 @@ angular.element(document).ready(function () {
             auth.accountUrl = keycloakAuth.createAccountUrl();
             auth.authz = keycloakAuth;
             auth.logout = function () {
-                console.log('*** LOGOUT');
                 auth.loggedIn = false;
                 auth.authz = null;
                 auth.userInfo = {};
@@ -34,12 +33,12 @@ angular.element(document).ready(function () {
             });
             keycloakAuth.loadUserInfo().success(function (userInfo) {
                 auth.userInfo = userInfo;
+                angular.bootstrap(document, ["app"], {
+                    strictDi: true
+                });
             });
 
-            angular.bootstrap(document, ["app"], {
-                strictDi: true
-            });
-        }).error(function (msg) {
+        }).error(function () {
             alert("Could not load page");
         });
     });
@@ -69,7 +68,6 @@ module.config(['$httpProvider', function ($httpProvider) {
             },
             'responseError': function (response) {
                 if (response.status == 401) {
-                    console.log('session timeout?');
                     auth.logout();
                 }
                 return $q.reject(response);
