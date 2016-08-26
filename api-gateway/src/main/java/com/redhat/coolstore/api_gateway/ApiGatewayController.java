@@ -60,7 +60,7 @@ public class ApiGatewayController {
      *
      * @return the list
      */
-    @CrossOrigin
+    @CrossOrigin(maxAge = 3600)
     @RequestMapping(method = RequestMethod.GET, value = "/products/list", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Get a list of products")
     public List<Product> list() throws ExecutionException, InterruptedException {

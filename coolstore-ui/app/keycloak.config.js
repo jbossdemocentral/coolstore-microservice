@@ -5,7 +5,8 @@ var config =
   "realm-public-key": process.env.SSO_PUBLIC_KEY || '',
   "resource": process.env.SSO_CLIENT_ID || 'aclientid',
   "ssl-required": 'external',
-  "public-client": true
+  "public-client": true,
+  "enable-cors": true
 };
 
 module.exports = config;

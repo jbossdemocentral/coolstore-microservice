@@ -19,12 +19,14 @@ angular.element(document).ready(function () {
             onLoad: 'login-required'
         }).success(function () {
             auth.loggedIn = true;
+            auth.accountUrl = keycloakAuth.createAccountUrl();
             auth.authz = keycloakAuth;
             auth.logout = function () {
                 console.log('*** LOGOUT');
                 auth.loggedIn = false;
                 auth.authz = null;
                 auth.userInfo = {};
+                auth.accountUrl = null;
                 keycloakAuth.logout();
             };
             module.factory('Auth', function () {

@@ -91,10 +91,13 @@ angular.module('app')
 	
 	$scope.cartTotal = 0.0;
 	$scope.itemCount = 0;
-	
+
 	$scope.logout = function() {
 		auth.logout();
 	}
+	 $scope.profile = function() {
+		 auth.authz.accountManagement();
+	 }
 	$scope.$watch(function() {
 		return cart.getCart().cartTotal || 0.0;
 	}, function(newValue) {
