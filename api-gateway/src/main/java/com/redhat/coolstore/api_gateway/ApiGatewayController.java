@@ -50,6 +50,7 @@ public class ApiGatewayController {
     @CrossOrigin(maxAge = 3600)
     @RequestMapping(method = RequestMethod.GET, value = "/products", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Get a list of products")
+    @ResponseBody
     public List<Product> list() throws ExecutionException, InterruptedException {
 
         final CompletableFuture<List<Product>> productList = CompletableFuture.supplyAsync(() ->
@@ -75,6 +76,7 @@ public class ApiGatewayController {
     @CrossOrigin(maxAge = 3600)
     @RequestMapping(method = RequestMethod.POST, value = "/products/checkout/{cartId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Cart checkout")
+    @ResponseBody
     public ShoppingCart checkout(@PathVariable String cartId) throws ExecutionException, InterruptedException {
 
         final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
@@ -86,6 +88,7 @@ public class ApiGatewayController {
     @CrossOrigin(maxAge = 3600)
     @RequestMapping(method = RequestMethod.GET, value = "/products/cart/{cartId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Get the user's cart")
+    @ResponseBody
     public ShoppingCart getCart(@PathVariable String cartId) throws ExecutionException, InterruptedException {
 
         final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
@@ -97,6 +100,7 @@ public class ApiGatewayController {
     @CrossOrigin(maxAge = 3600)
     @RequestMapping(method = RequestMethod.DELETE, value = "/products/cart/{cartId}/{itemId}/{quantity}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Delete from the user's cart")
+    @ResponseBody
     public ShoppingCart deleteFromCart(@PathVariable String cartId, @PathVariable String itemId, @PathVariable int quantity) throws ExecutionException, InterruptedException {
 
         final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
@@ -108,6 +112,7 @@ public class ApiGatewayController {
     @CrossOrigin(maxAge = 3600)
     @RequestMapping(method = RequestMethod.POST, value = "/products/cart/{cartId}/{itemId}/{quantity}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Add to user's cart")
+    @ResponseBody
     public ShoppingCart addToCart(@PathVariable String cartId, @PathVariable String itemId, @PathVariable int quantity) throws ExecutionException, InterruptedException {
 
         final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
