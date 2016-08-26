@@ -15,22 +15,25 @@ public class Inventory implements Serializable {
     private int quantity;
     @XmlElement
     private String location;
+    @XmlElement
+    private String link;
 
     public Inventory() {
 
     }
 
-    public Inventory(String itemId, int quantity, String location) {
+    public Inventory(String itemId, int quantity, String location, String link) {
         super();
         this.itemId = itemId;
         this.quantity = quantity;
         this.location = location;
+        this.link = link;
     }
 
 
     @Override
     public String toString() {
-        return "Inventory [itemId=" + itemId + ", availability=" + quantity + "/" + location + "]";
+        return "Inventory [itemId=" + itemId + ", availability=" + quantity + "/" + location + " link=" + link + "]";
     }
 
 

@@ -15,8 +15,9 @@
 
 					  <div>
 						<span><h1>{{item.product.price | currency}}</h1></span>
-						  <div ng-if="item.product.availability.quantity >= 0" style="float:right"><em><label title="{{item.product.availability.quantity}} in our store in {{item.product.availability.location}}" class="label label-{{item.product.availability.quantity < 15 ? 'warning' : 'primary'}}">{{item.product.availability.quantity}} left!</label></div>
-						  <div ng-if="item.product.availability.quantity < 0" style="float:right"><a href="#">Contact local store for availability</a></div>
+						  <div ng-if="item.product.availability.quantity > 0" style="float:right"><label title="{{item.product.availability.quantity}} in our store in {{item.product.availability.location}}" class="label label-{{item.product.availability.quantity < 15 ? 'warning' : 'primary'}}">{{item.product.availability.quantity}} left <a target="_blank" href="{{item.product.availability.link}}"><i class="icon-map-marker"></i></a>!</label></div>
+
+						  <div ng-if="item.product.availability.quantity <= 0" style="float:right"><label class="label label-warning">&nbsp;Out ot stock. <a href="{{item.product.availability.link}}">Contact {{item.product.availability.location}} store</a></label></div>
 					  </div>
 
 					  <form class="form-inline">

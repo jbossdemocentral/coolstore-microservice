@@ -14,10 +14,12 @@ public class InventoryService {
 	}
 	
 	public Inventory getInventory(String itemId) {
-
+		String location = CITIES[(int)(Math.floor(Math.random() * CITIES.length))];
+		String link = "http://maps.google.com/?q=" + location.toLowerCase();
 		return new Inventory(itemId,
 				(int)Math.floor(Math.random() * 100),
-				CITIES[(int)(Math.floor(Math.random() * CITIES.length))]);
+				CITIES[(int)(Math.floor(Math.random() * CITIES.length))],
+				link);
 
 	}
 }

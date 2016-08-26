@@ -4,12 +4,10 @@ import com.redhat.coolstore.api_gateway.GenericFeignClient;
 import com.redhat.coolstore.api_gateway.model.Inventory;
 import com.redhat.coolstore.api_gateway.model.Product;
 import com.redhat.coolstore.api_gateway.model.ShoppingCart;
-import com.redhat.coolstore.api_gateway.model.ShoppingCartItem;
 import feign.Param;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import javax.json.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,8 +74,9 @@ public class FeignClientFactory {
             super(InventoryService.class, "inventory-service", itemId -> {
                 Inventory p = new Inventory();
                 p.itemId = itemId;
-                p.location = null;
-                p.quantity = -1;
+                p.location = "Local";
+                p.link = "http://redhat.com";
+                p.quantity = 0;
                 return p;
             });
         }
