@@ -4,24 +4,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
-import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 
 import com.redhat.coolstore.model.Product;
+import com.redhat.coolstore.model.ShoppingCart;
 
 @ApplicationScoped
 @Path("/products")
 public class ProductService {
 
 	private List<Product> products;
-	
+	private Map<String, Product> productMap;
+
+	private Map<String, ShoppingCart> cartDB;
+
 	public ProductService() {
-		
-		products = new ArrayList<Product>();
+
+		cartDB = new HashMap<>();
+		products = new ArrayList<>();
 		
 		products.add(new Product("329299", "Red Fedora", "Official Red Hat Fedora", 34.99));
 		products.add(new Product("329199", "Forge Laptop Sticker", "JBoss Community Forge Project Sticker", 8.50));
@@ -31,41 +35,28 @@ public class ProductService {
 		products.add(new Product("444434", "Pebble Smart Watch", "Smart glasses and smart watches are perhaps two of the most exciting developments in recent years. ", 24.00));
 		products.add(new Product("444435", "Oculus Rift", "The world of gaming has also undergone some very unique and compelling tech advances in recent years. Virtual reality, the concept of complete immersion into a digital universe through a special headset, has been the white whale of gaming and digital technology ever since Geekstakes Oculus Rift GiveawayNintendo marketed its Virtual Boy gaming system in 1995.Lytro", 106.00));
 		products.add(new Product("444436", "Lytro Camera", "Consumers who want to up their photography game are looking at newfangled cameras like the Lytro Field camera, designed to take photos with infinite focus, so you can decide later exactly where you want the focus of each image to be. ", 44.30));
-		
+
+		productMap = products.stream().collect(Collectors.toMap(Product::getItemId, Function.identity()));
 	}
-	
+
 	public List<Product> getProducts() {
-		
-		return new ArrayList<Product>(products);
+
+		return products;
 		
 	}
-	
-	public void setProducts(List<Product> products) {
-		
-		if ( products != null ) {
-		
-			this.products = new ArrayList<Product>(products);
-			
+
+
+	public ShoppingCart getShoppingCart(String cartId) {
+		if (!cartDB.containsKey(cartId)) {
+			ShoppingCart c = new ShoppingCart();
+			cartDB.put(cartId, c);
+			return c;
 		} else {
-			
-			this.products = new ArrayList<Product>();
-		}		
-		
-	}
-	
-	public Map<String, Product> getProductMap() {
-		
-		Map<String, Product> productMap = new HashMap<String, Product>();
-		
-		for (Product p : getProducts()) {
-			
-			productMap.put(p.getItemId(), p);
-			
+			return cartDB.get(cartId);
 		}
-		
-		return productMap;
-		
 	}
-	
-	
+
+	public Product getProduct(String itemId) {
+		return productMap.get(itemId);
+	}
 }

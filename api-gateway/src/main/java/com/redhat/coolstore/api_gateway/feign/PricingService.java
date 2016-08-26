@@ -17,6 +17,9 @@
 package com.redhat.coolstore.api_gateway.feign;
 
 import com.redhat.coolstore.api_gateway.model.Product;
+import com.redhat.coolstore.api_gateway.model.ShoppingCart;
+import com.redhat.coolstore.api_gateway.model.ShoppingCartItem;
+import feign.Param;
 import feign.RequestLine;
 
 import javax.json.JsonArray;
@@ -24,10 +27,19 @@ import java.util.List;
 
 public interface PricingService {
 
-    @RequestLine("GET /api/products/list")
-    List<Product> list();
+    @RequestLine("GET /api/products")
+    List<Product> getProducts();
 
-    @RequestLine("GET /api/products/cart")
-    JsonArray cart();
+    @RequestLine("GET /api/products/cart/{cartId}")
+    ShoppingCart getCart(@Param("cartId") String cartId);
+
+    @RequestLine("POST /api/products/cart/{cartId}/{itemId}/{quantity}")
+    ShoppingCart addToCart(@Param("cartId") String cartId, @Param("itemid") String itemId, @Param("cartId") int quantity);
+
+    @RequestLine("DELETE /api/products/cart/{cartId}/{itemId}/{quantity}")
+    ShoppingCart deleteFromCart(@Param("cartId") String cartId, @Param("itemid") String itemId, @Param("cartId") int quantity);
+
+    @RequestLine("POST /api/products/checkout/{cartId}")
+    ShoppingCart checkout(@Param("cartId") String cartId);
 
 }

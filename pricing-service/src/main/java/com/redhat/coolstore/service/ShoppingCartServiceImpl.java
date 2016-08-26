@@ -58,12 +58,10 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 		sc.setShippingTotal(0);
 		sc.setShippingPromoSavings(0);
 		sc.setCartTotal(0);
-		
-		Map<String, Product> productMap = pp.getProductMap();
-		
+
 		for (ShoppingCartItem sci : sc.getShoppingCartItemList()) {
 			
-			Product p = productMap.get(sci.getProduct().getItemId());
+			Product p = pp.getProduct(sci.getProduct().getItemId());
 			
 			//if product exist, create new product to reset price
 			if ( p != null ) {

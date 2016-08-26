@@ -19,13 +19,11 @@ package com.redhat.coolstore.api_gateway;
 import com.redhat.coolstore.api_gateway.feign.FeignClientFactory;
 import com.redhat.coolstore.api_gateway.model.Inventory;
 import com.redhat.coolstore.api_gateway.model.Product;
+import com.redhat.coolstore.api_gateway.model.ShoppingCart;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -41,37 +39,26 @@ public class ApiGatewayController {
     @Autowired
     private FeignClientFactory feignClientFactory;
 
-    public static ExecutorService es = Executors.newCachedThreadPool();
+    private static ExecutorService es = Executors.newCachedThreadPool();
+
 
     /**
-     * Returns a CompletableFuture that retrieves the availability of an item from the Inventory service.
-     *
-     * @param itemId The item to query
-     * @return A completablefuture for getting the Inventory for this item
-     */
-    private CompletableFuture<Inventory> getInventory(String itemId) {
-        return CompletableFuture.supplyAsync(() ->
-                feignClientFactory.getInventoryClient().getService().getAvailability(itemId), es);
-    }
-
-    /**
-     * This /api REST endpoint uses Java 8 parallel stream to create the Feign, invoke it, and collect the result as a List that
-     * will be rendered as a JSON Array.
+     * This /api REST endpoint uses Java 8 concurrency to call two backend services to construct the result
      *
      * @return the list
      */
     @CrossOrigin(maxAge = 3600)
-    @RequestMapping(method = RequestMethod.GET, value = "/products/list", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.GET, value = "/products", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Get a list of products")
     public List<Product> list() throws ExecutionException, InterruptedException {
 
         final CompletableFuture<List<Product>> productList = CompletableFuture.supplyAsync(() ->
-                feignClientFactory.getPricingClient().getService().list(), es);
+                feignClientFactory.getPricingClient().getService().getProducts(), es);
 
         return productList.thenCompose((List<Product> products) -> {
 
             List<CompletableFuture<Product>> all = products.stream()
-                    .map(p -> productList.thenCombine(getInventory(p.itemId),
+                    .map(p -> productList.thenCombine(_getInventory(p.itemId),
                             (pl, a) -> {
                                 p.availability = a;
                                 return p;
@@ -85,9 +72,58 @@ public class ApiGatewayController {
 
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/health")
-    @ApiOperation("Used to verify the health of the service")
-    public String health() {
-        return "I'm ok";
+    @CrossOrigin(maxAge = 3600)
+    @RequestMapping(method = RequestMethod.POST, value = "/products/checkout/{cartId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation("Cart checkout")
+    public ShoppingCart checkout(@PathVariable String cartId) throws ExecutionException, InterruptedException {
+
+        final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
+                feignClientFactory.getPricingClient().getService().checkout(cartId), es);
+
+        return cart.get();
+    }
+
+    @CrossOrigin(maxAge = 3600)
+    @RequestMapping(method = RequestMethod.GET, value = "/products/cart/{cartId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation("Get the user's cart")
+    public ShoppingCart getCart(@PathVariable String cartId) throws ExecutionException, InterruptedException {
+
+        final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
+                feignClientFactory.getPricingClient().getService().getCart(cartId), es);
+
+        return cart.get();
+    }
+
+    @CrossOrigin(maxAge = 3600)
+    @RequestMapping(method = RequestMethod.DELETE, value = "/products/cart/{cartId}/{itemId}/{quantity}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation("Delete from the user's cart")
+    public ShoppingCart deleteFromCart(@PathVariable String cartId, @PathVariable String itemId, @PathVariable int quantity) throws ExecutionException, InterruptedException {
+
+        final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
+                feignClientFactory.getPricingClient().getService().deleteFromCart(cartId, itemId, quantity), es);
+
+        return cart.get();
+    }
+
+    @CrossOrigin(maxAge = 3600)
+    @RequestMapping(method = RequestMethod.POST, value = "/products/cart/{cartId}/{itemId}/{quantity}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation("Add to user's cart")
+    public ShoppingCart addToCart(@PathVariable String cartId, @PathVariable String itemId, @PathVariable int quantity) throws ExecutionException, InterruptedException {
+
+        final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
+                feignClientFactory.getPricingClient().getService().addToCart(cartId, itemId, quantity), es);
+
+        return cart.get();
+    }
+
+    /**
+     * Returns a CompletableFuture that retrieves the availability of an item from the Inventory service.
+     *
+     * @param itemId The item to query
+     * @return A completablefuture for getting the Inventory for this item
+     */
+    private CompletableFuture<Inventory> _getInventory(String itemId) {
+        return CompletableFuture.supplyAsync(() ->
+                feignClientFactory.getInventoryClient().getService().getAvailability(itemId), es);
     }
 }

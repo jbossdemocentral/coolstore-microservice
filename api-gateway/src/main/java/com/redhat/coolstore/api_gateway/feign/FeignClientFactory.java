@@ -3,6 +3,9 @@ package com.redhat.coolstore.api_gateway.feign;
 import com.redhat.coolstore.api_gateway.GenericFeignClient;
 import com.redhat.coolstore.api_gateway.model.Inventory;
 import com.redhat.coolstore.api_gateway.model.Product;
+import com.redhat.coolstore.api_gateway.model.ShoppingCart;
+import com.redhat.coolstore.api_gateway.model.ShoppingCartItem;
+import feign.Param;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +21,7 @@ public class FeignClientFactory {
     public PricingFeignClient getPricingClient() {
         return new PricingFeignClient();
     }
+
     public InventoryFeignClient getInventoryClient() {
         return new InventoryFeignClient();
     }
@@ -26,10 +30,10 @@ public class FeignClientFactory {
 
         PricingFeignClient() {
 
-            super(PricingService.class, "pricing-service",  new PricingService() {
+            super(PricingService.class, "pricing-service", new PricingService() {
 
                 @Override
-                public List<Product> list() {
+                public List<Product> getProducts() {
                     List<Product> temp = new ArrayList<>();
                     Product p = new Product();
                     p.itemId = "0";
@@ -41,9 +45,26 @@ public class FeignClientFactory {
                 }
 
                 @Override
-                public JsonArray cart() {
-                    return Json.createArrayBuilder().add("foo").build();
+                public ShoppingCart getCart(String cartId) {
+                    return null;
                 }
+
+                @Override
+                public ShoppingCart addToCart(String cartId, String itemId, int quantity) {
+                    return null;
+                }
+
+                @Override
+                public ShoppingCart deleteFromCart(@Param("cartId") String cartId, @Param("itemid") String itemId, @Param("cartId") int quantity) {
+                    return null;
+                }
+
+                @Override
+                public ShoppingCart checkout(@Param("cartId") String cartId) {
+                    return null;
+                }
+
+
             });
         }
     }
@@ -52,16 +73,12 @@ public class FeignClientFactory {
 
         InventoryFeignClient() {
 
-            super(InventoryService.class, "inventory-service",  new InventoryService() {
-
-                @Override
-                public Inventory getAvailability(String itemId) {
-                    Inventory p = new Inventory();
-                    p.itemId = itemId;
-                    p.location = null;
-                    p.quantity = -1;
-                    return p;
-                }
+            super(InventoryService.class, "inventory-service", itemId -> {
+                Inventory p = new Inventory();
+                p.itemId = itemId;
+                p.location = null;
+                p.quantity = -1;
+                return p;
             });
         }
     }
