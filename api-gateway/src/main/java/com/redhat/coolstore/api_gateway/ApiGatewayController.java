@@ -93,8 +93,9 @@ public class ApiGatewayController {
 
         final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
                 feignClientFactory.getPricingClient().getService().getCart(cartId), es);
-
-        return cart.get();
+        ShoppingCart result = cart.get();
+        System.out.println("API Gateway returning cart: " + result);
+        return result;
     }
 
     @CrossOrigin(maxAge = 3600)
