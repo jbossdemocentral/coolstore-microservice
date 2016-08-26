@@ -20,11 +20,13 @@ import com.redhat.coolstore.api_gateway.feign.FeignClientFactory;
 import com.redhat.coolstore.api_gateway.model.Inventory;
 import com.redhat.coolstore.api_gateway.model.Product;
 import com.redhat.coolstore.api_gateway.model.ShoppingCart;
+import com.redhat.coolstore.api_gateway.model.ShoppingCartItem;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -82,7 +84,11 @@ public class ApiGatewayController {
         final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
                 feignClientFactory.getPricingClient().getService().checkout(cartId), es);
 
-        return cart.get();
+        ShoppingCart result = cart.get();
+
+        System.out.println("API Gateway returning after checkout: " + result);
+
+        return result;
     }
 
     @CrossOrigin(maxAge = 3600)
@@ -94,7 +100,9 @@ public class ApiGatewayController {
         final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
                 feignClientFactory.getPricingClient().getService().getCart(cartId), es);
         ShoppingCart result = cart.get();
-        System.out.println("API Gateway returning cart: " + result);
+
+        System.out.println("API Gateway returning after getcart: " + result);
+
         return result;
     }
 
@@ -106,8 +114,11 @@ public class ApiGatewayController {
 
         final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
                 feignClientFactory.getPricingClient().getService().deleteFromCart(cartId, itemId, quantity), es);
+        ShoppingCart result = cart.get();
 
-        return cart.get();
+        System.out.println("API Gateway returning after deletefromcart: " + result);
+
+        return result;
     }
 
     @CrossOrigin(maxAge = 3600)
@@ -118,8 +129,11 @@ public class ApiGatewayController {
 
         final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
                 feignClientFactory.getPricingClient().getService().addToCart(cartId, itemId, quantity), es);
+        ShoppingCart result = cart.get();
 
-        return cart.get();
+        System.out.println("API Gateway returning after adddtocart: " + result);
+
+        return result;
     }
 
     /**

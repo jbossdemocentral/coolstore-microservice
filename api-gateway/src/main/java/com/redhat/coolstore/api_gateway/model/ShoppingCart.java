@@ -18,4 +18,7 @@ public class ShoppingCart  {
 
     public List<ShoppingCartItem> shoppingCartItemList = new ArrayList<ShoppingCartItem>();
 
+    public String toString() {
+        return ("cart: total: " + cartTotal + " sci list: " + shoppingCartItemList);
+    }
 }

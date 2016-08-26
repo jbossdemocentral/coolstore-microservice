@@ -7,5 +7,8 @@ public class ShoppingCartItem  {
     public double promoSavings;
     public Product product;
 
+    public String toString() {
+        return ("productid: " + product.itemId + " quan: " + quantity + " price: " + price);
+    }
 
 }
