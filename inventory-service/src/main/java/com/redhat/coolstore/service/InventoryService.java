@@ -18,8 +18,7 @@ public class InventoryService {
 		String link = "http://maps.google.com/?q=" + location.toLowerCase();
 		return new Inventory(itemId,
 				(int)Math.floor(Math.random() * 100),
-				CITIES[(int)(Math.floor(Math.random() * CITIES.length))],
-				link);
+				location, link);
 
 	}
 }

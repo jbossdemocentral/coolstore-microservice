@@ -15,12 +15,12 @@
 
 					  <div>
 						<span><h1>{{item.product.price | currency}}</h1></span>
-						  <div ng-if="item.product.availability.quantity > 0" style="float:right"><label title="{{item.product.availability.quantity}} in our store in {{item.product.availability.location}}" class="label label-{{item.product.availability.quantity < 15 ? 'warning' : 'primary'}}">{{item.product.availability.quantity}} left <a target="_blank" href="{{item.product.availability.link}}"><i class="icon-map-marker"></i></a>!</label></div>
+						  <div ng-if="item.product.availability.quantity > 0" style="float:right"><label title="{{item.product.availability.quantity}} in our store in {{item.product.availability.location}}" class="label label-{{item.product.availability.quantity < 15 ? 'warning' : 'primary'}}">{{item.product.availability.quantity}} left!</label><a target="_blank" href="{{item.product.availability.link}}">&nbsp;<span class="fa fa-map-marker fa-lg"></span></a></div>
 
-						  <div ng-if="item.product.availability.quantity <= 0" style="float:right"><label class="label label-warning">&nbsp;Out ot stock. <a href="{{item.product.availability.link}}">Contact {{item.product.availability.location}} store</a></label></div>
+						  <div ng-if="item.product.availability.quantity <= 0"><span class="fa fa-warning fa-lg"></span>&nbsp;Temporarily out ot stock. <a href="{{item.product.availability.link}}">Contact {{item.product.availability.location}} store.</a></div>
 					  </div>
 
-					  <form class="form-inline">
+					  <form ng-hide="item.product.availability.quantity <= 0" class="form-inline">
 					  <div class="form-group">
 					    <select name="quan" ng-model="item.quantity" class="form-control" id="quan">
 					    	<option value="1" selected>1</option>
