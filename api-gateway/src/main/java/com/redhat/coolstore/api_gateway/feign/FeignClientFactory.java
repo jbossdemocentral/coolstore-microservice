@@ -55,7 +55,7 @@ public class FeignClientFactory {
                 }
 
                 @Override
-                public ShoppingCart deleteFromCart(@Param("cartId") String cartId, @Param("itemid") String itemId, @Param("cartId") int quantity) {
+                public ShoppingCart deleteFromCart(@Param("cartId") String cartId, @Param("itemId") String itemId, @Param("cartId") int quantity) {
                     return null;
                 }
 

@@ -34,10 +34,10 @@ public interface PricingService {
     ShoppingCart getCart(@Param("cartId") String cartId);
 
     @RequestLine("POST /api/products/cart/{cartId}/{itemId}/{quantity}")
-    ShoppingCart addToCart(@Param("cartId") String cartId, @Param("itemid") String itemId, @Param("cartId") int quantity);
+    ShoppingCart addToCart(@Param("cartId") String cartId, @Param("itemId") String itemId, @Param("quantity") int quantity);
 
     @RequestLine("DELETE /api/products/cart/{cartId}/{itemId}/{quantity}")
-    ShoppingCart deleteFromCart(@Param("cartId") String cartId, @Param("itemid") String itemId, @Param("cartId") int quantity);
+    ShoppingCart deleteFromCart(@Param("cartId") String cartId, @Param("itemId") String itemId, @Param("quantity") int quantity);
 
     @RequestLine("POST /api/products/checkout/{cartId}")
     ShoppingCart checkout(@Param("cartId") String cartId);
