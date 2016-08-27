@@ -9,7 +9,7 @@ angular.module("app")
 		var deferred = $q.defer();
 		$http({
 			   method: 'POST',
-			   url: ($location.protocol() === 'https' ? COOLSTORE_CONFIG.SECURE_API_ENDPOINT : COOLSTORE_CONFIG.API_ENDPOINT) + '/products/checkout/' + cartId
+			   url: ($location.protocol() === 'https' ? COOLSTORE_CONFIG.SECURE_API_ENDPOINT : COOLSTORE_CONFIG.API_ENDPOINT) + '/products/cart/checkout/' + cartId
 		   }).then(function(resp) {
 			    cart = resp.data;
 			   	deferred.resolve(resp.data);

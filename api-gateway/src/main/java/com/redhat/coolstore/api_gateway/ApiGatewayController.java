@@ -74,7 +74,7 @@ public class ApiGatewayController {
     }
 
     @CrossOrigin(maxAge = 3600)
-    @RequestMapping(method = RequestMethod.POST, value = "/products/checkout/{cartId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.POST, value = "/products/cart/checkout/{cartId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Cart checkout")
     @ResponseBody
     public ShoppingCart checkout(@PathVariable String cartId) throws ExecutionException, InterruptedException {

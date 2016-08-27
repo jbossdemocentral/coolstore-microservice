@@ -7,7 +7,7 @@
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>coolstore-api-gateway</web-resource-name>
-            <url-pattern>/api/*</url-pattern>
+            <url-pattern>/api/products/cart/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>user</role-name>

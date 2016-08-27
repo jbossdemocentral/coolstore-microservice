@@ -103,7 +103,7 @@ public class ProductEndpoint implements Serializable {
     }
 
     @POST
-    @Path("/checkout/{cartId}")
+    @Path("/cart/checkout/{cartId}")
     @Produces(MediaType.APPLICATION_JSON)
     public ShoppingCart checkout(@PathParam("cartId") String cartId) {
         // TODO: register purchase of shoppingCart items by specific user in session

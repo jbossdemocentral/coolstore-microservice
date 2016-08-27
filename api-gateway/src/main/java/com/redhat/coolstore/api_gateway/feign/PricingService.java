@@ -39,7 +39,7 @@ public interface PricingService {
     @RequestLine("DELETE /api/products/cart/{cartId}/{itemId}/{quantity}")
     ShoppingCart deleteFromCart(@Param("cartId") String cartId, @Param("itemId") String itemId, @Param("quantity") int quantity);
 
-    @RequestLine("POST /api/products/checkout/{cartId}")
+    @RequestLine("POST /api/products/cart/checkout/{cartId}")
     ShoppingCart checkout(@Param("cartId") String cartId);
 
 }
