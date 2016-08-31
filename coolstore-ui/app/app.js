@@ -13,38 +13,56 @@ angular.element(document).ready(function () {
     $http.get("coolstore.json").then(function (response) {
         module.constant("COOLSTORE_CONFIG", response.data);
         var keycloakAuth = new Keycloak('keycloak.json');
+        keycloakAuth.responseMode = 'query';
         auth.loggedIn = false;
 
-        keycloakAuth.init({
-            onLoad: 'login-required'
-        }).success(function () {
-            auth.loggedIn = true;
-            auth.accountUrl = keycloakAuth.createAccountUrl();
-            auth.authz = keycloakAuth;
-            auth.logout = function () {
-                auth.loggedIn = false;
-                auth.authz = null;
-                auth.userInfo = {};
-                auth.accountUrl = null;
-                keycloakAuth.logout();
-            };
-            module.factory('Auth', function () {
-                return auth;
+        auth.login = function () {
+            keycloakAuth.login({
+                loginHint: 'appuser'
             });
-            keycloakAuth.loadUserInfo().success(function (userInfo) {
-                auth.userInfo = userInfo;
+        };
+        module.factory('Auth', function () {
+            return auth;
+        });
+
+        keycloakAuth.init().success(function () {
+            if (keycloakAuth.authenticated) {
+                keycloakAuth.loadUserInfo().success(function (userInfo) {
+                    auth.userInfo = userInfo;
+                    angular.bootstrap(document, ["app"], {
+                        strictDi: true
+                    });
+                });
+
+                auth.loggedIn = true;
+                auth.authz = keycloakAuth;
+                auth.logout = function () {
+                    auth.loggedIn = false;
+                    auth.authz = null;
+                    auth.userInfo = {};
+                    keycloakAuth.logout();
+                };
+
+            } else {
                 angular.bootstrap(document, ["app"], {
                     strictDi: true
                 });
+            }
+        }).error(function(msg) {
+            angular.bootstrap(document, ["app"], {
+                strictDi: true
             });
 
-        }).error(function () {
-            alert("Could not load page");
+
         });
+
     });
 
 });
 
+
+
+// setup interceptors
 module.config(['$httpProvider', function ($httpProvider) {
 
     $httpProvider.defaults.withCredentials = true;
@@ -62,6 +80,8 @@ module.config(['$httpProvider', function ($httpProvider) {
                     }).error(function () {
                         deferred.reject('Failed to refresh token');
                     });
+                } else {
+                    deferred.resolve(config);
                 }
                 return deferred.promise;
 

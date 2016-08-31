@@ -11,7 +11,7 @@
         </a>
       </div>
       <div class="collapse navbar-collapse navbar-collapse-1">
-        <ul class="nav navbar-nav navbar-utility">
+        <ul ng-if="isLoggedIn()" class="nav navbar-nav navbar-utility">
           <li>
             <a ng-href="#/cart"><span class="fa fa-shopping-cart"></span>&nbsp;Shopping Cart <strong>{{cartTotal | currency}}</strong> ({{itemCount}} item(s))</a>
           </li>
@@ -25,16 +25,21 @@
                 <a ng-href="" ng-click="profile()"><span class="pficon pficon-user"></span>&nbsp;Profile</a>
               </li>
               <li>
-                <a href="" ng-click="logout()"><span class="fa fa-sign-out"></span>&nbsp;Logout</a>
+                <a href="" ng-click="logout()"><span class="fa fa-sign-out"></span>&nbsp;Sign Out</a>
               </li>
             </ul>
+          </li>
+        </ul>
+        <ul ng-if="!isLoggedIn()" class="nav navbar-nav navbar-utility">
+          <li>
+            <a ng-click="login()">Sign In&nbsp;<span class="fa fa-sign-in"></span></a>
           </li>
         </ul>
         <ul class="nav navbar-nav navbar-primary">
           <li ng-class="{ active: isActive('/')}">
             <a ng-href="#/" class="active">Red Hat Cool Store</a>
           </li>
-          <li ng-class="{ active: isActive('/cart')}">
+          <li ng-if="isLoggedIn()" ng-class="{ active: isActive('/cart')}">
             <a ng-href="#/cart">Your Shopping Cart</a>
           </li>
         </ul>

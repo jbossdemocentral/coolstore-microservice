@@ -76,8 +76,8 @@ In the following steps, substitute your desired project name for PROJECT, and as
 
 1. Add roles to service account to allow for kubernetes clustering access
 ```
-    $ oc policy add-role-to-user view system:serviceaccount:PROJECT:default -n PROJECT
-    $ oc policy add-role-to-user view system:serviceaccount:PROJECT:sso-service-account -n PROJECT
+    $ oc policy add-role-to-user view system:serviceaccount:`oc project -q`:default -n `oc project -q`
+    $ oc policy add-role-to-user view system:serviceaccount:`oc project -q`:sso-service-account -n `oc project -q`
 ```
 
 Deploy SSO service on OpenShift using the OpenShift `oc` CLI

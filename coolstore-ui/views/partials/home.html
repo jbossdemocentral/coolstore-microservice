@@ -20,7 +20,7 @@
 						  <div ng-if="item.product.availability.quantity <= 0"><span class="fa fa-warning fa-lg"></span>&nbsp;Temporarily out ot stock. <a href="{{item.product.availability.link}}">Contact {{item.product.availability.location}} store.</a></div>
 					  </div>
 
-					  <form ng-hide="item.product.availability.quantity <= 0" class="form-inline">
+					  <form ng-if="item.product.availability.quantity > 0 && isLoggedIn()" class="form-inline">
 					  <div class="form-group">
 					    <select name="quan" ng-model="item.quantity" class="form-control" id="quan">
 					    	<option value="1" selected>1</option>
@@ -33,6 +33,8 @@
 					  </div>
 					  <button ng-click="addToCart(item)" type="submit" class="btn btn-default">Add To Cart</button>
 					</form>
+
+					  <a ng-click="login()" ng-if="!isLoggedIn()">Sign In to Purchase&nbsp;<span class="fa fa-sign-in"></a>
 				  </div>
 				</div>
 			</div>				

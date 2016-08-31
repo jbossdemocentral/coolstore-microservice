@@ -2,7 +2,7 @@
 
 angular.module("app")
 
-.factory('cart', ['$http', '$q', 'COOLSTORE_CONFIG', '$location', function($http, $q, COOLSTORE_CONFIG, $location) {
+.factory('cart', ['$http', '$q', 'COOLSTORE_CONFIG', 'Auth', '$location', function($http, $q, COOLSTORE_CONFIG, $auth, $location) {
 	var factory = {}, cart, products, cartId;
 
 	factory.checkout = function() {
@@ -21,7 +21,7 @@ angular.module("app")
 
 	factory.reset = function() {
 		cart = {};
-		cartId = auth.userInfo.sub;
+		cartId = $auth.userInfo ? $auth.userInfo.sub : 'DUMMY';
 		cart.shoppingCartItemList = [];
 		$http({
 			   method: 'GET',
@@ -29,7 +29,7 @@ angular.module("app")
 		   }).then(function(resp) {
 			    cart = resp.data;
 		   }, function(err) {
-		   });
+		});
 
 	};
 
