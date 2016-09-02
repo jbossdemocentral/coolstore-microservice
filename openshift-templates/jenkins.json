@@ -30,13 +30,27 @@
             "required": false
         },
         {
-            "description": "Name of project in which to deploy production bits (leave blank for current project)",
+            "description": "Name of project in which to deploy production bits",
             "name": "PROD_PROJECT",
             "value": "",
-            "required": false
+            "required": true
         }
     ],
     "objects": [
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "jenkins"
+            },
+            "spec": {
+                "tags": [
+                    {
+                        "name": "latest"
+                    }
+                ]
+            }
+        },
         {
             "kind": "BuildConfig",
             "apiVersion": "v1",
@@ -44,7 +58,15 @@
                 "name": "jenkins"
             },
             "spec": {
-                "triggers": [],
+                "triggers": [
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChange": {}
+                    }
+                ],
                 "source": {
                     "type": "Git",
                     "git": {
