@@ -226,6 +226,28 @@ To install:
 
 Once installed, Visit `http://hystrix-dashboard-PROJECT.DOMAIN` and click *Monitor Stream*. In a separate window, as you access the demo, you can see the load on the various services and whether their circuits are open.
 
+Optional: Install Jenkins (For CI/CD pipeline builds of each microservice)
+--------------------------------------------------------------------------
+This service installs a [Jenkins](https://jenkins.io/) server, configured to build the above microservices in a pipeline. It will create `-dev` and `-qa` OpenShift projects in
+which the services are built, and wait for approval before deploying to the production environment specified with `PROD_PROJECT`.
+
+You can install it into any project, including the "production" project you've been using up to this point, although typically it is installed in a separate
+project (often called `ci`, and that is what we'll use below):
+
+To install:
+```
+    oc new-project ci
+    oc process -f jenkins.json PROD_PROJECT=<your project> | oc create -f -
+```
+(You can also specify `MAVEN_MIRROR_URL=<url>` above if you have a local maven mirror to speed up the build(s).
+
+Once installed, visit the Jenkins dashboard by clicking on the route name in the OpenShift overview. You can click on each of the *Jobs* and then click *Build with Parameters* to fire off the build.
+
+Each microservice is independently built in a `-dev` project, then unit tests are simulated, then the build is promoted (via `oc tag`) to the `-qa` project. Finally, you are prompted to accept or reject. If you accept, the build
+is then promoted (again, using `oc tag`) to the production environment specified with `PROD_PROJECT`.
+
+You can read [more information about Jenkins Pipelines](https://jenkins.io/doc/pipeline/).
+
 Troubleshooting
 ---------------
 * If you attempt to deploy any of the services, and nothing happens, it may just be taking a while to download the Docker builder images. Visit the OpenShift web console and navigate to

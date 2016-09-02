@@ -43,7 +43,8 @@ def prereqs(String project) {
 // Creates a Build and triggers it
 def buildProject(String project){
     prereqs(project)
-    sh "oc new-app --file=openshift-templates/inventory-service.json -p MAVEN_MIRROR_URL='${env.MAVEN_MIRROR_URL || ""}' || oc start-build inventory-service"
+    sh "oc new-app --file=openshift-templates/inventory-service.json -p MAVEN_MIRROR_URL='${env.MAVEN_MIRROR_URL ? env.MAVEN_MIRROR_URL : ""}' || oc start-build inventory-service"
+    sh "oc expose service inventory-service || echo 'Service already exposed'"
     sh "oc logs -f bc/inventory-service"
 }
 
@@ -53,10 +54,10 @@ def deployProject(String origProject, String project, boolean expose){
     sh "oc policy add-role-to-user system:image-puller system:serviceaccount:${project}:default -n ${origProject}"
 
     sh "oc tag ${origProject}/inventory-service:latest ${project}/inventory-service:latest"
-    sh "oc new-app inventory-service -l application=inventory-service || echo 'Application exists'"
+    sh "oc new-app --image-stream=inventory-service -l application=inventory-service || echo 'Application exists'"
 
     if (expose) {
-        sh "oc expose service inventory-service"
+        sh "oc expose service inventory-service || echo 'Service already exposed'"
     }
 
     // disable triggers in project so a deployment isn't triggered next time the image is updated in origProject
