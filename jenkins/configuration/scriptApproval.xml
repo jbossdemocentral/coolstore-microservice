@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<scriptApproval plugin="script-security@1.13">
+  <approvedScriptHashes/>
+  <approvedSignatures>
+    <string>method groovy.lang.GroovyObject getProperty java.lang.String</string>
+    <string>method groovy.lang.GroovyObject invokeMethod java.lang.String java.lang.Object</string>
+  </approvedSignatures>
+  <aclApprovedSignatures/>
+  <approvedClasspathEntries/>
+  <pendingScripts/>
+  <pendingSignatures/>
+  <pendingClasspathEntries/>
+</scriptApproval>

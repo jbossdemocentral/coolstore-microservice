@@ -1,0 +1,230 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "jenkins",
+        "annotations": {
+            "description": "An Custom Jenkins ephemeral image for use with the coolstore msa demo",
+            "iconClass": "icon-java",
+            "tags": "microservice,jboss,angularjs,keycloak,sso"
+        }
+    },
+    "labels": {
+        "application": "jenkins",
+        "createdBy": "template-jenkins",
+        "template": "template-jenkins",
+        "hystrix.enabled": "true"
+    },
+    "parameters": [
+        {
+            "name": "JENKINS_PASSWORD",
+            "description": "Password for the Jenkins user.",
+            "generate": "expression",
+            "value": "password",
+            "required": true
+        },
+        {
+            "description": "Hostname of secured route to this app, e.g.: secure-ui-<project>.<domain>",
+            "name": "HOSTNAME_HTTPS",
+            "value": "",
+            "required": false
+        },
+        {
+            "description": "Name of project in which to deploy production bits (leave blank for current project)",
+            "name": "PROD_PROJECT",
+            "value": "",
+            "required": false
+        }
+    ],
+    "objects": [
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "jenkins"
+            },
+            "spec": {
+                "triggers": [],
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "https://github.com/jamesfalkner/coolstore-microservice"
+                    },
+                    "contextDir": "jenkins"
+                },
+                "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "DockerImage",
+                            "name": "registry.access.redhat.com/openshift3/jenkins-1-rhel7"
+                        }
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "jenkins:latest"
+                    }
+                }
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "jenkins",
+                "labels": {
+                    "template": "jenkins-ephemeral-template"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Recreate",
+                    "recreateParams": {
+                        "timeoutSeconds": 600
+                    },
+                    "resources": {}
+                },
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "jenkins"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "jenkins:latest"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "selector": {
+                    "name": "jenkins"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "name": "jenkins"
+                        }
+                    },
+                    "spec": {
+                        "volumes": [
+                            {
+                                "name": "jenkins-data",
+                                "emptyDir": {}
+                            }
+                        ],
+                        "containers": [
+                            {
+                                "name": "jenkins",
+                                "image": "jenkins",
+                                "env": [
+                                    {
+                                        "name": "JENKINS_PASSWORD",
+                                        "value": "${JENKINS_PASSWORD}"
+                                    },
+                                    {
+                                        "name": "PROD_PROJECT",
+                                        "value": "${PROD_PROJECT}"
+                                    }
+                                ],
+                                "resources": {
+                                    "limits": {
+                                        "memory": "1Gi"
+                                    }
+                                },
+                                "volumeMounts": [
+                                    {
+                                        "name": "jenkins-data",
+                                        "mountPath": "/var/lib/jenkins"
+                                    }
+                                ],
+                                "livenessProbe": {
+                                    "httpGet": {
+                                        "path": "/login",
+                                        "port": 8080,
+                                        "scheme": "HTTP"
+                                    },
+                                    "initialDelaySeconds": 60,
+                                    "timeoutSeconds": 3,
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "failureThreshold": 3
+                                },
+                                "readinessProbe": {
+                                    "httpGet": {
+                                        "path": "/login",
+                                        "port": 8080,
+                                        "scheme": "HTTP"
+                                    },
+                                    "initialDelaySeconds": 3,
+                                    "timeoutSeconds": 3,
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "failureThreshold": 3
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "imagePullPolicy": "Always"
+                            }
+                        ],
+                        "restartPolicy": "Always",
+                        "terminationGracePeriodSeconds": 30,
+                        "dnsPolicy": "ClusterFirst",
+                        "securityContext": {}
+                    }
+                }
+            },
+            "status": {}
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "jenkins",
+                "labels": {
+                    "template": "jenkins-ephemeral-template"
+                }
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "web",
+                        "protocol": "TCP",
+                        "port": 8080,
+                        "targetPort": 8080
+                    }
+                ],
+                "selector": {
+                    "name": "jenkins"
+                }
+            }
+        },
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "jenkins",
+                "labels": {
+                    "template": "jenkins-ephemeral-template"
+                }
+            },
+            "spec": {
+                "host": "${HOSTNAME_HTTPS}",
+                "to": {
+                    "kind": "Service",
+                    "name": "jenkins"
+                },
+                "tls": {
+                    "termination": "edge"
+                }
+            }
+        }
+    ]
+}
