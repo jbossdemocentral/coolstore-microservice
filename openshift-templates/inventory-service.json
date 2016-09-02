@@ -10,7 +10,7 @@
     }
   },
   "labels": {
-    "application": "inventory",
+    "application": "inventory-service",
     "createdBy": "template-inventory-service",
     "template": "template-inventory-service",
     "hystrix.enabled": "true"
@@ -41,7 +41,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "inventory"
+        "name": "inventory-service"
       },
       "spec": {
         "tags": [
@@ -55,7 +55,7 @@
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "inventory"
+        "name": "inventory-service"
       },
       "spec": {
         "triggers": [
@@ -94,7 +94,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "inventory:latest"
+            "name": "inventory-service:latest"
           }
         }
       }
@@ -103,7 +103,7 @@
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "inventory"
+        "name": "inventory-service"
       },
       "spec": {
         "strategy": {
@@ -116,11 +116,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "inventory"
+                "inventory-service"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "inventory:latest"
+                "name": "inventory-service:latest"
               }
             }
           },
@@ -130,20 +130,20 @@
         ],
         "replicas": 1,
         "selector": {
-          "deploymentConfig": "inventory"
+          "deploymentConfig": "inventory-service"
         },
         "template": {
           "metadata": {
-            "name": "inventory",
+            "name": "inventory-service",
             "labels": {
-              "deploymentConfig": "inventory"
+              "deploymentConfig": "inventory-service"
             }
           },
           "spec": {
             "containers": [
               {
-                "name": "inventory",
-                "image": "inventory",
+                "name": "inventory-service",
+                "image": "inventory-service",
                 "ports": [
                   {
                     "name": "jolokia",
@@ -169,7 +169,7 @@
                 "env": [
                   {
                     "name": "OPENSHIFT_KUBE_PING_LABELS",
-                    "value": "application=inventory"
+                    "value": "application=inventory-service"
                   },
                   {
                     "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
@@ -260,7 +260,7 @@
           }
         ],
         "selector": {
-          "deploymentConfig": "inventory"
+          "deploymentConfig": "inventory-service"
         }
       }
     }

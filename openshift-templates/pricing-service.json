@@ -10,7 +10,7 @@
     }
   },
   "labels": {
-    "application": "pricing",
+    "application": "pricing-service",
     "createdBy": "template-pricing-service",
     "template": "template-pricing-service",
     "hystrix.enabled": "true"
@@ -41,7 +41,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "pricing"
+        "name": "pricing-service"
       },
       "spec": {
         "tags": [
@@ -55,7 +55,7 @@
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "pricing"
+        "name": "pricing-service"
       },
       "spec": {
         "triggers": [
@@ -94,7 +94,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "pricing:latest"
+            "name": "pricing-service:latest"
           }
         }
       }
@@ -103,7 +103,7 @@
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "pricing"
+        "name": "pricing-service"
       },
       "spec": {
         "strategy": {
@@ -116,11 +116,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "pricing"
+                "pricing-service"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "pricing:latest"
+                "name": "pricing-service:latest"
               }
             }
           },
@@ -130,20 +130,20 @@
         ],
         "replicas": 1,
         "selector": {
-          "deploymentConfig": "pricing"
+          "deploymentConfig": "pricing-service"
         },
         "template": {
           "metadata": {
-            "name": "pricing",
+            "name": "pricing-service",
             "labels": {
-              "deploymentConfig": "pricing"
+              "deploymentConfig": "pricing-service"
             }
           },
           "spec": {
             "containers": [
               {
-                "name": "pricing",
-                "image": "pricing",
+                "name": "pricing-service",
+                "image": "pricing-service",
                 "ports": [
                   {
                     "name": "jolokia",
@@ -169,7 +169,7 @@
                 "env": [
                   {
                     "name": "OPENSHIFT_KUBE_PING_LABELS",
-                    "value": "application=pricing"
+                    "value": "application=pricing-service"
                   },
                   {
                     "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
@@ -260,7 +260,7 @@
           }
         ],
         "selector": {
-          "deploymentConfig": "pricing"
+          "deploymentConfig": "pricing-service"
         }
       }
     }

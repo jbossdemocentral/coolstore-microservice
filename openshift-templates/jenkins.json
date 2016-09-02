@@ -17,6 +17,11 @@
     },
     "parameters": [
         {
+            "description": "A local Maven Mirror, e.g.: http://nexus.ci.svc.cluster.local:8081/content/groups/public/",
+            "name": "MAVEN_MIRROR_URL",
+            "value": ""
+        },
+        {
             "name": "JENKINS_PASSWORD",
             "description": "Password for the Jenkins user.",
             "generate": "expression",
@@ -80,7 +85,13 @@
                         "from": {
                             "kind": "DockerImage",
                             "name": "registry.access.redhat.com/openshift3/jenkins-1-rhel7"
-                        }
+                        },
+                        "env": [
+                            {
+                                "name": "MAVEN_MIRROR_URL",
+                                "value": "${MAVEN_MIRROR_URL}"
+                            }
+                        ]
                     }
                 },
                 "output": {
@@ -148,6 +159,10 @@
                                 "name": "jenkins",
                                 "image": "jenkins",
                                 "env": [
+                                    {
+                                        "name": "MAVEN_MIRROR_URL",
+                                        "value": "${MAVEN_MIRROR_URL}"
+                                    },
                                     {
                                         "name": "JENKINS_PASSWORD",
                                         "value": "${JENKINS_PASSWORD}"
