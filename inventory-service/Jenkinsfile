@@ -52,6 +52,7 @@ def buildProject(String project){
 def deployProject(String origProject, String project, boolean expose){
     prereqs(project)
     sh "oc policy add-role-to-user system:image-puller system:serviceaccount:${project}:default -n ${origProject}"
+    sh "oc policy add-role-to-group system:image-puller system:serviceaccounts:${project} -n ${origProject}"
 
     sh "oc tag ${origProject}/inventory-service:latest ${project}/inventory-service:latest"
     sh "oc new-app --image-stream=inventory-service -l application=inventory-service || echo 'Application exists'"
