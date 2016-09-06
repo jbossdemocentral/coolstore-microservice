@@ -25,8 +25,17 @@ angular.element(document).ready(function () {
             return auth;
         });
 
-        keycloakAuth.init().success(function () {
+        var tokens = {
+            token: localStorage.getItem('token'),
+            refreshToken: localStorage.getItem('refreshToken'),
+            idToken: localStorage.getItem('idToken')
+        };
+
+        keycloakAuth.init(tokens).success(function () {
             if (keycloakAuth.authenticated) {
+                localStorage.setItem("token", keycloakAuth.token);
+                localStorage.setItem("idToken", keycloakAuth.token);
+                localStorage.setItem("refreshToken", keycloakAuth.token);
                 keycloakAuth.loadUserInfo().success(function (userInfo) {
                     auth.userInfo = userInfo;
                     angular.bootstrap(document, ["app"], {
@@ -37,6 +46,9 @@ angular.element(document).ready(function () {
                 auth.loggedIn = true;
                 auth.authz = keycloakAuth;
                 auth.logout = function () {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('idToken');
+                    localStorage.removeItem('refreshToken');
                     auth.loggedIn = false;
                     auth.authz = null;
                     auth.userInfo = {};
