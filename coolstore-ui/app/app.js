@@ -31,6 +31,28 @@ angular.element(document).ready(function () {
             idToken: localStorage.getItem('idToken')
         };
 
+        keycloakAuth.onAuthError = function(err) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('idToken');
+            localStorage.removeItem('refreshToken');
+            auth.logout();
+        };
+
+        keycloakAuth.onTokenExpired = function() {
+            keycloakAuth.updateToken().success(function() {
+                localStorage.setItem("token", keycloakAuth.token);
+                localStorage.setItem("idToken", keycloakAuth.token);
+                localStorage.setItem("refreshToken", keycloakAuth.token);
+                window.location.reload();
+            }).error(function() {
+                localStorage.removeItem('token');
+                localStorage.removeItem('idToken');
+                localStorage.removeItem('refreshToken');
+                auth.logout();
+                window.location.reload();
+            });
+        };
+
         keycloakAuth.init(tokens).success(function () {
             if (keycloakAuth.authenticated) {
                 localStorage.setItem("token", keycloakAuth.token);
@@ -42,6 +64,7 @@ angular.element(document).ready(function () {
                         strictDi: true
                     });
                 });
+
 
                 auth.loggedIn = true;
                 auth.authz = keycloakAuth;
