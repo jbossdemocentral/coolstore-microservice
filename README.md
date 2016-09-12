@@ -10,8 +10,9 @@ Services
 --------
 There are several individual microservices that make up this app:
 
-1. SSO Service - for protecting RESTful pricing service, using [Red Hat SSO](https://access.redhat.com/documentation/en/red-hat-single-sign-on/)
-1. Pricing Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves products and prices for retail products
+1. SSO Service - for protecting per-customer RESTful services (such as the cart microservice), using [Red Hat SSO](https://access.redhat.com/documentation/en/red-hat-single-sign-on/)
+1. Catalog Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves products and prices for retail products
+1. Cart Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), manages shopping cart for each customer
 1. Inventory Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves inventory and availability data for retail products
 1. API Gateway - Java EE + Spring Boot application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serving as a protected entry point/router/aggregator to the backend services
 1. UI Service - A frontend based on [AngularJS](https://angularjs.org) and [PatternFly](http://patternfly.org) running in a [Node.js](https://access.redhat.com/documentation/en/openshift-enterprise/3.2/paged/using-images/chapter-1-source-to-image-s2i) container.
@@ -19,9 +20,9 @@ There are several individual microservices that make up this app:
 
 A simple visualization of the runtime components of this demo:
 
-![Architecture Screenshot](/../screenshots/screenshots/arch.jpg?raw=true "Architecture Screenshot")
+![Architecture Screenshot](/../screenshots/screenshots/arch.png?raw=true "Architecture Screenshot")
 
-Notice the UI pods only expose an HTTP endpoint - when users access the UI service through HTTPS, OpenShift handles the TLS termination at the routing layer. The other pods expose both HTTP and HTTPS endpoints and are exposed directly to the browser (necessary for SSO login/logout and AJAX calls to the pricing service)
+Notice the UI pods only expose an HTTP endpoint - when users access the UI service through HTTPS, OpenShift handles the TLS termination at the routing layer.
 
 Demo Credentials and other identifiers
 --------------------------------------
@@ -120,29 +121,29 @@ If you have created a [local Maven mirror](https://blog.openshift.com/improving-
     oc logs -f bc/api-gateway
 ``` 
 
-To confirm successful deployment, visit `https://secure-api-gateway-PROJECT.DOMAIN` in your browser (or click on the link within the OpenShift web console). You should see the pricing service API documentation page and you can explore the API.
+To confirm successful deployment, visit `https://secure-api-gateway-PROJECT.DOMAIN` in your browser (or click on the link within the OpenShift web console). You should see the swagger API documentation page and you can explore the API.
 
 ![Swagger Screenshot](/../screenshots/screenshots/swagger.png?raw=true "Swagger Screenshot")
 
-Deploy Pricing Service using the OpenShift `oc` CLI
+Deploy Catalog Service using the OpenShift `oc` CLI
 ---------------------------------------------------
 This service relies on the standard xPaaS image for JBoss EAP 7. No route is created to this service, as it is only accessible from inside the kubernetes cluster.
 
 1. Create and deploy service: 
 ```
-    oc process -f pricing-service.json | oc create -f -
+    oc process -f catalog-service.json | oc create -f -
 ```
 If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. 
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
 ```
-    oc logs -f bc/pricing-service
+    oc logs -f bc/catalog-service
 ``` 
 
 To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
 ```
     $ oc get pods
-    $ oc rsh [API-GATEWAY-POD-NAME] curl http://pricing-service:8080/api/products
+    $ oc rsh [API-GATEWAY-POD-NAME] curl http://catalog-service:8080/api/products
 ```
 
 You should get a JSON object listing the products along with invalid inventory (since you haven't deployed the inventory service yet.) e.g.:
