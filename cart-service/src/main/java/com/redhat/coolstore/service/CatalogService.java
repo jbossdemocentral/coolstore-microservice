@@ -6,7 +6,7 @@ import feign.RequestLine;
 import java.util.List;
 
 interface CatalogService {
-    @RequestLine("GET /products")
+    @RequestLine("GET /api/products")
     List<Product> products();
 }
 
