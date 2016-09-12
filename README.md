@@ -30,6 +30,7 @@ Demo Credentials and other identifiers
 1. SSO Admin (used when logging into SSO Admin Console): username `admin` password: `admin`
 1. Website User (used when accessing retail store): username: `appuser` password: `password`
 1. SSO REST API Admin User (not generally used): username: `ssoservice` password: `ssoservicepass`
+1. Jenkins Web Console: username: `admin` password: `password`
 
 Running the Demo
 ================
@@ -76,8 +77,8 @@ In the following steps, substitute your desired project name for PROJECT, and as
 
 1. Add roles to service account to allow for kubernetes clustering access
 ```
-    $ oc policy add-role-to-user view system:serviceaccount:`oc project -q`:default -n `oc project -q`
-    $ oc policy add-role-to-user view system:serviceaccount:`oc project -q`:sso-service-account -n `oc project -q`
+    $ oc policy add-role-to-user view system:serviceaccount:$(oc project -q):default -n $(oc project -q)
+    $ oc policy add-role-to-user view system:serviceaccount:$(oc project -q):sso-service-account -n $(oc project -q)
 ```
 
 Deploy SSO service on OpenShift using the OpenShift `oc` CLI
@@ -135,13 +136,13 @@ If you have created a [local Maven mirror](https://blog.openshift.com/improving-
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
 ```
-    oc logs -f bc/pricing
+    oc logs -f bc/pricing-service
 ``` 
 
 To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
 ```
     $ oc get pods
-    $ oc rsh [API-GATEWAY-POD-NAME] curl http://pricing-service:8080/api/products/list
+    $ oc rsh [API-GATEWAY-POD-NAME] curl http://pricing-service:8080/api/products
 ```
 
 You should get a JSON object listing the products along with invalid inventory (since you haven't deployed the inventory service yet.) e.g.:
@@ -162,7 +163,7 @@ If you have created a [local Maven mirror](https://blog.openshift.com/improving-
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
 ```
-    oc logs -f bc/inventory
+    oc logs -f bc/inventory-service
 ``` 
 
 To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
@@ -175,6 +176,33 @@ You should get a JSON object listing the item ID (foo) and a real availability (
 
 ```
     {"itemId":"1234","availability":"36 available at Raleign store!"}
+```
+
+Deploy Cart Service using the OpenShift `oc` CLI
+------------------------------------------------
+This service relies on the standard xPaaS image for JBoss EAP 7. No route is created to this service, as it is only accessible from inside the kubernetes cluster.
+
+1. Create and deploy service: 
+```
+    oc process -f cart-service.json | oc create -f -
+```
+If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. 
+
+1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
+```
+    oc logs -f bc/cart-service
+``` 
+
+To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
+```
+    $ oc get pods
+    $ oc rsh [API-GATEWAY-POD-NAME] curl http://cart-service:8080/api/cart/FOO
+```
+
+You should get an empty cart JSON object e.g.:
+
+```
+{"cartItemTotal":0.0,"cartItemPromoSavings":0.0,"shippingTotal":0.0,"shippingPromoSavings":0.0,"cartTotal":0.0,"shoppingCartItemList":[]}
 ```
 
 Deploy the UI Service using the OpenShift `oc` CLI
