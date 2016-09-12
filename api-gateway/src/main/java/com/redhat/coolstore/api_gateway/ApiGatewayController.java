@@ -74,52 +74,52 @@ public class ApiGatewayController {
     }
 
     @CrossOrigin(maxAge = 3600)
-    @RequestMapping(method = RequestMethod.POST, value = "/products/cart/checkout/{cartId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.POST, value = "/cart/checkout/{cartId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Cart checkout")
     @ResponseBody
     public ShoppingCart checkout(@PathVariable String cartId) throws ExecutionException, InterruptedException {
 
         final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
-                feignClientFactory.getPricingClient().getService().checkout(cartId), es);
+                feignClientFactory.getCartClient().getService().checkout(cartId), es);
 
 
         return cart.get();
     }
 
     @CrossOrigin(maxAge = 3600)
-    @RequestMapping(method = RequestMethod.GET, value = "/products/cart/{cartId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.GET, value = "/cart/{cartId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Get the user's cart")
     @ResponseBody
     public ShoppingCart getCart(@PathVariable String cartId) throws ExecutionException, InterruptedException {
 
         final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
-                feignClientFactory.getPricingClient().getService().getCart(cartId), es);
+                feignClientFactory.getCartClient().getService().getCart(cartId), es);
 
 
         return cart.get();
     }
 
     @CrossOrigin(maxAge = 3600)
-    @RequestMapping(method = RequestMethod.DELETE, value = "/products/cart/{cartId}/{itemId}/{quantity}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.DELETE, value = "/cart/{cartId}/{itemId}/{quantity}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Delete from the user's cart")
     @ResponseBody
     public ShoppingCart deleteFromCart(@PathVariable String cartId, @PathVariable String itemId, @PathVariable int quantity) throws ExecutionException, InterruptedException {
 
         final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
-                feignClientFactory.getPricingClient().getService().deleteFromCart(cartId, itemId, quantity), es);
+                feignClientFactory.getCartClient().getService().deleteFromCart(cartId, itemId, quantity), es);
 
 
         return cart.get();
     }
 
     @CrossOrigin(maxAge = 3600)
-    @RequestMapping(method = RequestMethod.POST, value = "/products/cart/{cartId}/{itemId}/{quantity}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.POST, value = "/cart/{cartId}/{itemId}/{quantity}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Add to user's cart")
     @ResponseBody
     public ShoppingCart addToCart(@PathVariable String cartId, @PathVariable String itemId, @PathVariable int quantity) throws ExecutionException, InterruptedException {
 
         final CompletableFuture<ShoppingCart> cart = CompletableFuture.supplyAsync(() ->
-                feignClientFactory.getPricingClient().getService().addToCart(cartId, itemId, quantity), es);
+                feignClientFactory.getCartClient().getService().addToCart(cartId, itemId, quantity), es);
 
 
         return cart.get();

@@ -1,0 +1,268 @@
+{
+  "kind": "Template",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "cart-service",
+    "annotations": {
+      "description": "The cart service",
+      "iconClass": "icon-java",
+      "tags": "microservice,jboss,angularjs,keycloak,sso"
+    }
+  },
+  "labels": {
+    "application": "cart-service",
+    "createdBy": "template-cart-service",
+    "template": "template-cart-service",
+    "hystrix.enabled": "true"
+  },
+  "parameters": [
+    {
+      "description": "A local Maven Mirror, e.g.: http://nexus.ci.svc.cluster.local:8081/content/groups/public/",
+      "name": "MAVEN_MIRROR_URL",
+      "value": ""
+    },
+    {
+      "description": "A-MQ cluster admin password",
+      "name": "MQ_CLUSTER_PASSWORD",
+      "from": "[a-zA-Z0-9]{8}",
+      "generate": "expression",
+      "required": true
+    },
+    {
+      "description": "JGroups cluster password",
+      "name": "JGROUPS_CLUSTER_PASSWORD",
+      "from": "[a-zA-Z0-9]{8}",
+      "generate": "expression",
+      "required": true
+    }
+  ],
+  "objects": [
+    {
+      "kind": "ImageStream",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "cart-service"
+      },
+      "spec": {
+        "tags": [
+          {
+            "name": "latest"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "BuildConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "cart-service"
+      },
+      "spec": {
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          },
+          {
+            "type": "ImageChange",
+            "imageChange": {}
+          }
+        ],
+        "source": {
+          "type": "Git",
+          "git": {
+            "uri": "https://github.com/jamesfalkner/coolstore-microservice"
+          },
+          "contextDir": "cart-service"
+        },
+        "strategy": {
+          "type": "Source",
+          "sourceStrategy": {
+            "from": {
+              "kind": "ImageStreamTag",
+              "namespace": "openshift",
+              "name": "jboss-eap70-openshift:1.4"
+            },
+            "env": [
+              {
+                "name": "MAVEN_MIRROR_URL",
+                "value": "${MAVEN_MIRROR_URL}"
+              }
+            ],
+            "forcePull": true
+          }
+        },
+        "output": {
+          "to": {
+            "kind": "ImageStreamTag",
+            "name": "cart-service:latest"
+          }
+        }
+      }
+    },
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "cart-service"
+      },
+      "spec": {
+        "strategy": {
+          "type": "Recreate",
+          "resources": {}
+        },
+        "triggers": [
+          {
+            "type": "ImageChange",
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": [
+                "cart-service"
+              ],
+              "from": {
+                "kind": "ImageStreamTag",
+                "name": "cart-service:latest"
+              }
+            }
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 1,
+        "selector": {
+          "deploymentConfig": "cart-service"
+        },
+        "template": {
+          "metadata": {
+            "name": "cart-service",
+            "labels": {
+              "deploymentConfig": "cart-service"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "cart-service",
+                "image": "cart-service",
+                "ports": [
+                  {
+                    "name": "jolokia",
+                    "containerPort": 8778,
+                    "protocol": "TCP"
+                  },
+                  {
+                    "name": "http",
+                    "containerPort": 8080,
+                    "protocol": "TCP"
+                  },
+                  {
+                    "name": "https",
+                    "containerPort": 8443,
+                    "protocol": "TCP"
+                  },
+                  {
+                    "name": "ping",
+                    "containerPort": 8888,
+                    "protocol": "TCP"
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "OPENSHIFT_KUBE_PING_LABELS",
+                    "value": "application=cart-service"
+                  },
+                  {
+                    "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.namespace"
+                      }
+                    }
+                  },
+                  {
+                    "name": "MQ_CLUSTER_PASSWORD",
+                    "value": "${MQ_CLUSTER_PASSWORD}"
+                  },
+                  {
+                    "name": "JGROUPS_CLUSTER_PASSWORD",
+                    "value": "${JGROUPS_CLUSTER_PASSWORD}"
+                  },
+                  {
+                    "name": "AUTO_DEPLOY_EXPLODED",
+                    "value": "false"
+                  }
+                ],
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080,
+                    "scheme": "HTTP"
+                  },
+                  "timeoutSeconds": 1,
+                  "periodSeconds": 5,
+                  "successThreshold": 1,
+                  "failureThreshold": 10,
+                  "initialDelaySeconds": 15
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080,
+                    "scheme": "HTTP"
+                  },
+                  "timeoutSeconds": 1,
+                  "periodSeconds": 5,
+                  "successThreshold": 1,
+                  "failureThreshold": 10,
+                  "initialDelaySeconds": 15
+                },
+                "lifecycle": {
+                  "preStop": {
+                    "exec": {
+                      "command": [
+                        "/opt/eap/bin/jboss-cli.sh",
+                        "-c",
+                        ":shutdown(timeout=60)"
+                      ]
+                    }
+                  }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "imagePullPolicy": "Always"
+              }
+            ],
+            "restartPolicy": "Always",
+            "terminationGracePeriodSeconds": 75,
+            "dnsPolicy": "ClusterFirst",
+            "serviceAccountName": "sso-service-account",
+            "serviceAccount": "sso-service-account",
+            "securityContext": {}
+          }
+        }
+      },
+      "status": {}
+    },
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "cart-service",
+        "annotations": {
+          "description": "The cart service's http port."
+        }
+      },
+      "spec": {
+        "ports": [
+          {
+            "protocol": "TCP",
+            "port": 8080,
+            "targetPort": 8080
+          }
+        ],
+        "selector": {
+          "deploymentConfig": "cart-service"
+        }
+      }
+    }
+  ]
+}

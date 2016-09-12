@@ -3,8 +3,8 @@
 angular.module('app')
 
     .controller("HomeController",
-        ['$scope', '$http', '$filter', 'Notifications', 'cart', 'Auth',
-            function ($scope, $http, $filter, Notifications, cart, $auth) {
+        ['$scope', '$http', '$filter', 'Notifications', 'cart', 'catalog', 'Auth',
+            function ($scope, $http, $filter, Notifications, cart, catalog, $auth) {
 
                 $scope.products = [];
                 $scope.addToCart = function (item) {
@@ -25,7 +25,7 @@ angular.module('app')
 
 
                 // initialize products
-                cart.getProducts().then(function (data) {
+                catalog.getProducts().then(function (data) {
                     $scope.products = data.map(function (el) {
                         return {
                             quantity: "1",

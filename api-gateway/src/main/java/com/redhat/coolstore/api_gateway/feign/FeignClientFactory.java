@@ -16,19 +16,21 @@ import java.util.List;
 
 public class FeignClientFactory {
 
-    public PricingFeignClient getPricingClient() {
-        return new PricingFeignClient();
+    public CatalogFeignClient getPricingClient() {
+        return new CatalogFeignClient();
     }
-
     public InventoryFeignClient getInventoryClient() {
         return new InventoryFeignClient();
     }
+    public CartFeignClient getCartClient() {
+        return new CartFeignClient();
+    }
 
-    public class PricingFeignClient extends GenericFeignClient<PricingService> {
+    public class CatalogFeignClient extends GenericFeignClient<CatalogService> {
 
-        PricingFeignClient() {
+        CatalogFeignClient() {
 
-            super(PricingService.class, "pricing-service", new PricingService() {
+            super(CatalogService.class, "catalog-service", new CatalogService() {
 
                 @Override
                 public List<Product> getProducts() {
@@ -41,6 +43,16 @@ public class FeignClientFactory {
                     temp.add(p);
                     return temp;
                 }
+
+            });
+        }
+    }
+
+    public class CartFeignClient extends GenericFeignClient<CartService> {
+
+        CartFeignClient() {
+
+            super(CartService.class, "cart-service", new CartService() {
 
                 @Override
                 public ShoppingCart getCart(String cartId) {
@@ -56,7 +68,6 @@ public class FeignClientFactory {
                 public ShoppingCart deleteFromCart(@Param("cartId") String cartId, @Param("itemId") String itemId, @Param("cartId") int quantity) {
                     return null;
                 }
-
                 @Override
                 public ShoppingCart checkout(@Param("cartId") String cartId) {
                     return null;
@@ -66,6 +77,7 @@ public class FeignClientFactory {
             });
         }
     }
+
 
     public class InventoryFeignClient extends GenericFeignClient<InventoryService> {
 

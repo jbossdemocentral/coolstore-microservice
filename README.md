@@ -236,8 +236,9 @@ project (often called `ci`, and that is what we'll use below):
 
 To install:
 ```
-    oc new-project ci
-    oc process -f jenkins.json PROD_PROJECT=<your project> | oc create -f -
+    $ oc new-project ci
+    $ oc policy add-role-to-user edit system:serviceaccount:ci:default -n ci
+    $ oc process -f jenkins.json PROD_PROJECT=<your project> | oc create -f -
 ```
 (You can also specify `MAVEN_MIRROR_URL=<url>` above if you have a local maven mirror to speed up the build(s).
 
