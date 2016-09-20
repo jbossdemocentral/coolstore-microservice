@@ -13,7 +13,6 @@ angular.element(document).ready(function () {
     $http.get("coolstore.json").then(function (response) {
         module.constant("COOLSTORE_CONFIG", response.data);
         var keycloakAuth = new Keycloak('keycloak.json');
-        keycloakAuth.responseMode = 'query';
         auth.loggedIn = false;
 
         auth.login = function () {
@@ -25,65 +24,35 @@ angular.element(document).ready(function () {
             return auth;
         });
 
-        var tokens = {
-            token: localStorage.getItem('token'),
-            refreshToken: localStorage.getItem('refreshToken'),
-            idToken: localStorage.getItem('idToken')
-        };
-
-        keycloakAuth.onAuthError = function(err) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('idToken');
-            localStorage.removeItem('refreshToken');
-            auth.logout();
-        };
-
-        keycloakAuth.onTokenExpired = function() {
-            keycloakAuth.updateToken().success(function() {
-                localStorage.setItem("token", keycloakAuth.token);
-                localStorage.setItem("idToken", keycloakAuth.token);
-                localStorage.setItem("refreshToken", keycloakAuth.token);
-                window.location.reload();
-            }).error(function() {
-                localStorage.removeItem('token');
-                localStorage.removeItem('idToken');
-                localStorage.removeItem('refreshToken');
-                auth.logout();
-                window.location.reload();
-            });
-        };
-
-        keycloakAuth.init(tokens).success(function () {
+        keycloakAuth.init({
+            onLoad: 'check-sso'
+        }).success(function () {
             if (keycloakAuth.authenticated) {
-                localStorage.setItem("token", keycloakAuth.token);
-                localStorage.setItem("idToken", keycloakAuth.token);
-                localStorage.setItem("refreshToken", keycloakAuth.token);
                 keycloakAuth.loadUserInfo().success(function (userInfo) {
                     auth.userInfo = userInfo;
                     angular.bootstrap(document, ["app"], {
                         strictDi: true
                     });
+                    auth.loggedIn = true;
+                    auth.authz = keycloakAuth;
+                    auth.logout = function () {
+                        auth.loggedIn = false;
+                        auth.authz = null;
+                        auth.userInfo = {};
+                        keycloakAuth.logout();
+                    };
+                }).error(function () {
+                    angular.bootstrap(document, ["app"], {
+                        strictDi: true
+                    });
+
                 });
-
-
-                auth.loggedIn = true;
-                auth.authz = keycloakAuth;
-                auth.logout = function () {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('idToken');
-                    localStorage.removeItem('refreshToken');
-                    auth.loggedIn = false;
-                    auth.authz = null;
-                    auth.userInfo = {};
-                    keycloakAuth.logout();
-                };
-
             } else {
                 angular.bootstrap(document, ["app"], {
                     strictDi: true
                 });
             }
-        }).error(function(msg) {
+        }).error(function (msg) {
             angular.bootstrap(document, ["app"], {
                 strictDi: true
             });
@@ -94,7 +63,6 @@ angular.element(document).ready(function () {
     });
 
 });
-
 
 
 // setup interceptors
