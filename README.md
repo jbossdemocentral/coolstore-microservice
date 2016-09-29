@@ -40,12 +40,15 @@ Running the demo consists of 5 main steps, one for each of the services listed a
 It is assumed you have installed OpenShift, either using [Red Hat's CDK](http://developers.redhat.com/products/cdk/overview/) or a complete install, and can login to the
 web console or use the `oc` CLI tool.
 
+
+**NOTE:** This step is not required if you are using CDK 2.2 or later, or OCP 3.3 or later.
+
 It is also assumed that the necessary updated JBoss xPaaS ImageStreams are available in the `openshift` namespace. If you have not installed these, you can do so as follows:
 
-    $ oc delete -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
-    $ oc delete -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
-    $ oc create -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
-    $ oc create -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
+    oc delete -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
+    oc delete -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
+    oc create -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
+    oc create -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
 
 In particular you need the latest `redhat-sso70-openshift`, `jboss-eap70-openshift`, and `nodejs` ImageStream definitions.
 
@@ -59,13 +62,15 @@ Create project and associated service accounts and permissions
 
 In the following steps, substitute your desired project name for OCP_PROJECT, and assume your OpenShift domain is OCP_DOMAIN.
 1. Set environment variables for your environment
-    $ export OCP_PROJECT=coolstore
-    $ export OCP_MASTER=10.1.2.2 # hostname or IP of the OpenShift Container Platform Master
-    $ export OCP_DOMAIN=   # subdomain used for application for the OpenShift Container Platform
+
+        export OCP_PROJECT=coolstore
+        export OCP_MASTER=10.1.2.2 # hostname or IP of the OpenShift Container Platform Master
+        export OCP_DOMAIN=   # subdomain used for application for the OpenShift Container Platform
+        export MAVEN_MIRROR_URL=http://nexus.ci.svc.cluster.local:8081/repository/maven-public/
 
 1. Clone this repository
 ```
-    $ git clone https://github.com/jamesfalkner/coolstore-microservice
+    $ git clone https://github.com/jbossdemocentral/coolstore-microservice
     $ cd coolstore-microservice/openshift-templates
 ```
 
@@ -104,7 +109,9 @@ You can view the process of the deployment using:
 ```  
 1. Once it completes, you can test it by accessing `https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth` or clicking on the associated route from the project overview page within the OpenShift web console. Click on *Administration Console* and login using `admin`/`admin`
 
-1. Obtain the public key for the automatically-created realm `myrealm` by navigating to *Realm Settings* -> *Keys*. You'll need in the next steps.
+1. Obtain the public key for the automatically-created realm `myrealm` by navigating to *Realm Settings* -> *Keys* and set the value to environment variable called `PUBLIC_KEY`.
+
+        export PUBLIC_KEY=<REALM>
 
 Deploy API Gateway using the OpenShift `oc` CLI
 -----------------------------------------------
@@ -115,10 +122,18 @@ Access to the `/api` endpoint is protected by Red Hat SSO by declaring it to be 
 ```
     oc process -f api-gateway.json \
       SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
-      SSO_PUBLIC_KEY=<PUBLIC_KEY> | \
+      SSO_PUBLIC_KEY=${PUBLIC_KEY} | \
       oc create -f -
 ```
-If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command.
+If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. For example:
+```
+    oc process -f api-gateway.json \
+      SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
+      SSO_PUBLIC_KEY=${PUBLIC_KEY} \
+      MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} \
+      catalog-service.json | \
+      oc create -f -
+```
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
 ```
@@ -134,24 +149,23 @@ Deploy Catalog Service using the OpenShift `oc` CLI
 This service relies on the standard xPaaS image for JBoss EAP 7. No route is created to this service, as it is only accessible from inside the kubernetes cluster.
 
 1. Create and deploy service:
+
+        oc process -f catalog-service.json | oc create -f -
+
+If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. For example
 ```
-    oc process -f catalog-service.json | oc create -f -
+    oc process -f MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} catalog-service.json | oc create -f -
 ```
-If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command.
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
 ```
-    oc logs -f bc/catalog-service
+oc logs -f bc/catalog-service
 ```
-
 To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
 ```
-    $ oc get pods
-    $ oc rsh [API-GATEWAY-POD-NAME] curl http://catalog-service:8080/api/products
+oc rsh $(oc get pods -o name | grep "api-gateway" | grep -v "\-build" | sed "s/pod\///") curl http://catalog-service:8080/api/products
 ```
-
 You should get a JSON object listing the products along with invalid inventory (since you haven't deployed the inventory service yet.) e.g.:
-
 ```
 [{"itemId":"329299","name":"Red Fedora","desc":"Official Red Hat Fedora","price":34.99}, ... ]
 ```
@@ -164,7 +178,11 @@ This service relies on the standard xPaaS image for JBoss EAP 7. No route is cre
 ```
     oc process -f inventory-service.json | oc create -f -
 ```
-If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command.
+If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. For example:
+```
+    oc process -f inventory-service.json MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | oc create -f -
+```
+
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
 ```
@@ -191,7 +209,10 @@ This service relies on the standard xPaaS image for JBoss EAP 7. No route is cre
 ```
     oc process -f cart-service.json | oc create -f -
 ```
-If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command.
+If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. For example:
+```
+    oc process -f cart-service.json MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | oc create -f -
+```
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
 ```
@@ -222,7 +243,7 @@ This service is implemented as a Node.js runtime with embedded HTTP server. At r
 ```
     oc process -f ui-service.json \
       SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
-      SSO_PUBLIC_KEY='<PUBLIC KEY>' \
+      SSO_PUBLIC_KEY=${PUBLIC_KEY} \
       HOSTNAME_HTTP=ui-${OCP_PROJECT}.${OCP_DOMAIN} \
       HOSTNAME_HTTPS=secure-ui-${OCP_PROJECT}.${OCP_DOMAIN} \
       API_ENDPOINT=http://api-gateway-${OCP_PROJECT}.${OCP_DOMAIN}/api \
@@ -254,7 +275,7 @@ To install:
     $ oc create -f http://central.maven.org/maven2/io/fabric8/kubeflix/packages/kubeflix/1.0.17/kubeflix-1.0.17-kubernetes.yml
     $ oc new-app kubeflix
     $ oc expose service hystrix-dashboard
-    $ oc policy add-role-to-user admin system:serviceaccount:${OCP_PROJECT}_NAME:turbine
+    $ oc policy add-role-to-user admin system:serviceaccount:$(oc project -q):turbine
 ```
 
 Once installed, Visit `http://hystrix-dashboard-${OCP_PROJECT}.${OCP_DOMAIN}` and click *Monitor Stream*. In a separate window, as you access the demo, you can see the load on the various services and whether their circuits are open.
@@ -271,14 +292,14 @@ To install:
 ```
     $ oc new-project ci
     $ oc policy add-role-to-user edit system:serviceaccount:ci:default -n ci
-    $ oc process -f jenkins.json PROD_${OCP_PROJECT}=<your project> | oc create -f -
+    $ oc process -f jenkins.json PROD_PROJECT=${OCP_PROJECT} MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | oc create -f -
 ```
 (You can also specify `MAVEN_MIRROR_URL=<url>` above if you have a local maven mirror to speed up the build(s).
 
 Once installed, visit the Jenkins dashboard by clicking on the route name in the OpenShift overview. You can click on each of the *Jobs* and then click *Build with Parameters* to fire off the build.
 
 Each microservice is independently built in a `-dev` project, then unit tests are simulated, then the build is promoted (via `oc tag`) to the `-qa` project. Finally, you are prompted to accept or reject. If you accept, the build
-is then promoted (again, using `oc tag`) to the production environment specified with `PROD_${OCP_PROJECT}`.
+is then promoted (again, using `oc tag`) to the production environment specified with `PROD_PROJECT`.
 
 You can read [more information about Jenkins Pipelines](https://jenkins.io/doc/pipeline/).
 
