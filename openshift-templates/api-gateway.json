@@ -17,7 +17,7 @@
   },
   "parameters": [
     {
-      "description": "A local Maven Mirror, e.g.: http://nexus.ci.svc.cluster.local:8081/content/groups/public/",
+      "description": "A local Maven Mirror, e.g.: http://nexus.ci.svc.cluster.local:8081/repository/maven-public/ ",
       "name": "MAVEN_MIRROR_URL",
       "value": ""
     },
@@ -343,6 +343,14 @@
                     "name": "SSO_TRUSTSTORE_PASSWORD"
                   }
                 ],
+                "resources": {
+                    "limits": {
+                        "memory": "800Mi"
+                    },
+                    "requests": {
+                        "memory": "400Mi"
+                    }
+                },
                 "volumeMounts": [
                   {
                     "name": "sso-saml-keystore-volume",
@@ -371,11 +379,11 @@
                     "port": 8080,
                     "scheme": "HTTP"
                   },
-                  "timeoutSeconds": 1,
+                  "timeoutSeconds": 5,
                   "periodSeconds": 5,
                   "successThreshold": 1,
-                  "failureThreshold": 10,
-                  "initialDelaySeconds": 15
+                  "failureThreshold": 5,
+                  "initialDelaySeconds": 120
                 },
                 "readinessProbe": {
                   "httpGet": {
