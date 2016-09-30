@@ -343,6 +343,14 @@
                     "name": "SSO_TRUSTSTORE_PASSWORD"
                   }
                 ],
+                "resources": {
+                    "limits": {
+                        "memory": "800Mi"
+                    },
+                    "requests": {
+                        "memory": "400Mi"
+                    }
+                },
                 "volumeMounts": [
                   {
                     "name": "sso-saml-keystore-volume",
