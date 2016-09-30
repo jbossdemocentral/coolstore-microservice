@@ -19,7 +19,7 @@
     {
       "description": "A local Maven Mirror, e.g.: http://nexus.ci.svc.cluster.local:8081/repository/maven-public/ ",
       "name": "MAVEN_MIRROR_URL",
-      "value": "http://nexus.ci.svc.cluster.local:8081/repository/maven-public/"
+      "value": ""
     },
     {
       "description": "URL to Red Hat SSO authentication endpoint, e.g.: https://secure-sso-<project>.<default-domain-suffix>/auth",
