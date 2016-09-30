@@ -192,6 +192,14 @@
                     "value": "false"
                   }
                 ],
+                "resources": {
+                    "limits": {
+                        "memory": "400Mi"
+                    },
+                    "requests": {
+                        "memory": "200Mi"
+                    }
+                },
                 "livenessProbe": {
                   "httpGet": {
                     "path": "/",
