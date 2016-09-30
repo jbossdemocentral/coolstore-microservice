@@ -217,7 +217,14 @@
                     "name": "SSO_TRUSTSTORE_PASSWORD"
                   }
                 ],
-                "resources": {},
+                "resources": {
+                    "limits": {
+                        "memory": "400Mi"
+                    },
+                    "requests": {
+                        "memory": "200Mi"
+                    }
+                },
                 "volumeMounts": [
                   {
                     "name": "eap-keystore-volume",
@@ -245,7 +252,7 @@
                   "periodSeconds": 5,
                   "successThreshold": 1,
                   "failureThreshold": 10,
-                  "initialDelaySeconds": 15
+                  "initialDelaySeconds": 120
                 },
                 "readinessProbe": {
                   "httpGet": {
