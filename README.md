@@ -188,15 +188,12 @@ If you have created a [local Maven mirror](https://blog.openshift.com/improving-
 ```
     oc logs -f bc/inventory-service
 ```
-
 To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
 ```
     $ oc get pods
     $ oc rsh [API-GATEWAY-POD-NAME] curl http://inventory-service:8080/api/availability/329299
 ```
-
 You should get a JSON object listing the item ID (foo) and a real availability (quantity and city) e.g.:
-
 ```
     {"itemId":"1234","availability":"36 available at Raleign store!"}
 ```
@@ -218,15 +215,12 @@ If you have created a [local Maven mirror](https://blog.openshift.com/improving-
 ```
     oc logs -f bc/cart-service
 ```
-
 To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
 ```
     $ oc get pods
     $ oc rsh [API-GATEWAY-POD-NAME] curl http://cart-service:8080/api/cart/FOO
 ```
-
 You should get an empty cart JSON object e.g.:
-
 ```
 {"cartItemTotal":0.0,"cartItemPromoSavings":0.0,"shippingTotal":0.0,"shippingPromoSavings":0.0,"cartTotal":0.0,"shoppingCartItemList":[]}
 ```
