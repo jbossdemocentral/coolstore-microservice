@@ -206,11 +206,11 @@
                     "port": 8080,
                     "scheme": "HTTP"
                   },
-                  "timeoutSeconds": 1,
+                  "timeoutSeconds": 5,
                   "periodSeconds": 5,
                   "successThreshold": 1,
-                  "failureThreshold": 10,
-                  "initialDelaySeconds": 15
+                  "failureThreshold": 5,
+                  "initialDelaySeconds": 120
                 },
                 "readinessProbe": {
                   "httpGet": {
@@ -221,7 +221,7 @@
                   "timeoutSeconds": 1,
                   "periodSeconds": 5,
                   "successThreshold": 1,
-                  "failureThreshold": 10,
+                  "failureThreshold": 5,
                   "initialDelaySeconds": 15
                 },
                 "lifecycle": {
