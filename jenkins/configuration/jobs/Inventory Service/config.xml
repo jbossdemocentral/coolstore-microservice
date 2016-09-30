@@ -5,7 +5,7 @@
   <keepDependencies>false</keepDependencies>
   <properties>
     <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.19.2">                                                                             
-      <projectUrl>https://github.com/jamesfalkner/coolstore-microservice</projectUrl>
+      <projectUrl>https://github.com/jbossdemocentral/coolstore-microservice</projectUrl>
       <displayName></displayName>                                               
     </com.coravy.hudson.plugins.github.GithubProjectProperty>                   
     <hudson.model.ParametersDefinitionProperty>
@@ -25,7 +25,7 @@
       <configVersion>2</configVersion>
       <userRemoteConfigs>
         <hudson.plugins.git.UserRemoteConfig>
-          <url>https://github.com/jamesfalkner/coolstore-microservice</url>
+          <url>https://github.com/jbossdemocentral/coolstore-microservice</url>
         </hudson.plugins.git.UserRemoteConfig>
       </userRemoteConfigs>
       <branches>

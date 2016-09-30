@@ -3,7 +3,7 @@
 node {
     stage 'Git checkout'
     echo 'Checking out git repository'
-    git url: 'https://github.com/jamesfalkner/coolstore-microservice'
+    git url: 'https://github.com/jbossdemocentral/coolstore-microservice'
 
     stage 'Build catalog-service with maven'
     echo 'Building project'
