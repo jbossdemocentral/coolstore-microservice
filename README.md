@@ -112,6 +112,9 @@ You can view the process of the deployment using:
 1. Obtain the public key for the automatically-created realm `myrealm` by navigating to *Realm Settings* -> *Keys* and set the value to environment variable called `PUBLIC_KEY`.
 
         export PUBLIC_KEY=<REALM>
+or you can retrive it automatically like this:
+
+        export PUBLIC_KEY="$(oc rsh $(oc get pods -o name -l application=sso)  sh -c "curl -k curl -sk https://secure-sso.coolstore.svc.cluster.local:8443/auth/realms/myrealm | python -c \"import sys, json; print json.load(sys.stdin)['public_key']\"")"
 
 Deploy API Gateway using the OpenShift `oc` CLI
 -----------------------------------------------
@@ -130,8 +133,7 @@ If you have created a [local Maven mirror](https://blog.openshift.com/improving-
     oc process -f api-gateway.json \
       SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
       SSO_PUBLIC_KEY=${PUBLIC_KEY} \
-      MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} \
-      catalog-service.json | \
+      MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | \
       oc create -f -
 ```
 
@@ -149,12 +151,12 @@ Deploy Catalog Service using the OpenShift `oc` CLI
 This service relies on the standard xPaaS image for JBoss EAP 7. No route is created to this service, as it is only accessible from inside the kubernetes cluster.
 
 1. Create and deploy service:
-
+```
         oc process -f catalog-service.json | oc create -f -
-
+```
 If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. For example
 ```
-    oc process -f MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} catalog-service.json | oc create -f -
+    oc process -f catalog-service.json MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL}  | oc create -f -
 ```
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
