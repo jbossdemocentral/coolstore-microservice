@@ -62,33 +62,33 @@ Create project and associated service accounts and permissions
 
 In the following steps, substitute your desired project name for OCP_PROJECT, and assume your OpenShift domain is OCP_DOMAIN.
 1. Set environment variables for your environment
-
-        export OCP_PROJECT=coolstore
-        export OCP_MASTER=10.1.2.2 # hostname or IP of the OpenShift Container Platform Master
-        export OCP_DOMAIN=   # subdomain used for application for the OpenShift Container Platform
-        export MAVEN_MIRROR_URL=http://nexus.ci.svc.cluster.local:8081/repository/maven-public/
-
+```
+export OCP_PROJECT=coolstore
+export OCP_MASTER=10.1.2.2 # hostname or IP of the OpenShift Container Platform Master
+export OCP_DOMAIN=   # subdomain used for application for the OpenShift Container Platform
+export MAVEN_MIRROR_URL=http://nexus.ci.svc.cluster.local:8081/repository/maven-public/
+```
 1. Clone this repository
 ```
-    $ git clone https://github.com/jbossdemocentral/coolstore-microservice
-    $ cd coolstore-microservice/openshift-templates
+git clone https://github.com/jbossdemocentral/coolstore-microservice
+cd coolstore-microservice/openshift-templates
 ```
 
 1. Login and Create a new project
 ```
-    $ oc login https://${OCP_MASTER}:8443
-    $ oc new-project ${OCP_PROJECT}
+oc login https://${OCP_MASTER}:8443
+oc new-project ${OCP_PROJECT}
 ```   
 
 1. Create OpenShift objects for SSL/TLS crypto secrets and associated service account:
 ```
-    $ oc create -f secrets/coolstore-secrets.json
+oc create -f secrets/coolstore-secrets.json
 ```
 
 1. Add roles to service account to allow for kubernetes clustering access
 ```
-    $ oc policy add-role-to-user view system:serviceaccount:$(oc project -q):default -n $(oc project -q)
-    $ oc policy add-role-to-user view system:serviceaccount:$(oc project -q):sso-service-account -n $(oc project -q)
+oc policy add-role-to-user view system:serviceaccount:$(oc project -q):default -n $(oc project -q)
+oc policy add-role-to-user view system:serviceaccount:$(oc project -q):sso-service-account -n $(oc project -q)
 ```
 
 Deploy SSO service on OpenShift using the OpenShift `oc` CLI
@@ -101,20 +101,22 @@ During the deployment of the SSO service, a new SSO realm `myrealm` is created, 
 
 1. Create and deploy SSO service, wait for it to complete.
 ```
-    oc process -f sso-service.json | oc create -f -
+oc process -f sso-service.json | oc create -f -
 ```
 You can view the process of the deployment using:
 ```    
-    oc logs -f dc/sso
+oc logs -f dc/sso
 ```  
 1. Once it completes, you can test it by accessing `https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth` or clicking on the associated route from the project overview page within the OpenShift web console. Click on *Administration Console* and login using `admin`/`admin`
 
 1. Obtain the public key for the automatically-created realm `myrealm` by navigating to *Realm Settings* -> *Keys* and set the value to environment variable called `PUBLIC_KEY`.
-
-        export PUBLIC_KEY=<REALM>
+```
+export PUBLIC_KEY=<REALM>
+```
 or you can retrive it automatically like this:
-
-        export PUBLIC_KEY="$(oc rsh $(oc get pods -o name -l application=sso)  sh -c "curl -k curl -sk https://secure-sso.coolstore.svc.cluster.local:8443/auth/realms/myrealm | python -c \"import sys, json; print json.load(sys.stdin)['public_key']\"")"
+```
+export PUBLIC_KEY="$(oc rsh $(oc get pods -o name -l application=sso)  sh -c "curl -k curl -sk https://secure-sso.coolstore.svc.cluster.local:8443/auth/realms/myrealm | python -c \"import sys, json; print json.load(sys.stdin)['public_key']\"")"
+```
 
 Deploy API Gateway using the OpenShift `oc` CLI
 -----------------------------------------------
@@ -123,23 +125,23 @@ Access to the `/api` endpoint is protected by Red Hat SSO by declaring it to be 
 
 1. Create and deploy service, substituting values for SSO_URL (don't forget the `/auth` suffix) and SSO_PUBLIC_KEY, wait for it to complete.
 ```
-    oc process -f api-gateway.json \
-      SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
-      SSO_PUBLIC_KEY=${PUBLIC_KEY} | \
-      oc create -f -
+oc process -f api-gateway.json \
+    SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
+    SSO_PUBLIC_KEY=${PUBLIC_KEY} | \
+    oc create -f -
 ```
 If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. For example:
 ```
-    oc process -f api-gateway.json \
-      SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
-      SSO_PUBLIC_KEY=${PUBLIC_KEY} \
-      MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | \
-      oc create -f -
+oc process -f api-gateway.json \
+    SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
+    SSO_PUBLIC_KEY=${PUBLIC_KEY} \
+    MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | \
+    oc create -f -
 ```
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
 ```
-    oc logs -f bc/api-gateway
+oc logs -f bc/api-gateway
 ```
 
 To confirm successful deployment, visit `https://secure-api-gateway-${OCP_PROJECT}.${OCP_DOMAIN}` in your browser (or click on the link within the OpenShift web console). You should see the swagger API documentation page and you can explore the API.
@@ -152,11 +154,11 @@ This service relies on the standard xPaaS image for JBoss EAP 7. No route is cre
 
 1. Create and deploy service:
 ```
-        oc process -f catalog-service.json | oc create -f -
+oc process -f catalog-service.json | oc create -f -
 ```
 If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. For example
 ```
-    oc process -f catalog-service.json MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL}  | oc create -f -
+oc process -f catalog-service.json MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL}  | oc create -f -
 ```
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
@@ -178,22 +180,21 @@ This service relies on the standard xPaaS image for JBoss EAP 7. No route is cre
 
 1. Create and deploy service:
 ```
-    oc process -f inventory-service.json | oc create -f -
+oc process -f inventory-service.json | oc create -f -
 ```
 If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. For example:
 ```
-    oc process -f inventory-service.json MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | oc create -f -
+oc process -f inventory-service.json MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | oc create -f -
 ```
-
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
 ```
-    oc logs -f bc/inventory-service
+oc logs -f bc/inventory-service
 ```
 To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
 ```
-    $ oc get pods
-    $ oc rsh [API-GATEWAY-POD-NAME] curl http://inventory-service:8080/api/availability/329299
+oc get pods
+oc rsh [API-GATEWAY-POD-NAME] curl http://inventory-service:8080/api/availability/329299
 ```
 You should get a JSON object listing the item ID (foo) and a real availability (quantity and city) e.g.:
 ```
@@ -206,21 +207,21 @@ This service relies on the standard xPaaS image for JBoss EAP 7. No route is cre
 
 1. Create and deploy service:
 ```
-    oc process -f cart-service.json | oc create -f -
+oc process -f cart-service.json | oc create -f -
 ```
 If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. For example:
 ```
-    oc process -f cart-service.json MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | oc create -f -
+oc process -f cart-service.json MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | oc create -f -
 ```
 
 1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
 ```
-    oc logs -f bc/cart-service
+oc logs -f bc/cart-service
 ```
 To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
 ```
-    $ oc get pods
-    $ oc rsh [API-GATEWAY-POD-NAME] curl http://cart-service:8080/api/cart/FOO
+oc get pods
+oc rsh [API-GATEWAY-POD-NAME] curl http://cart-service:8080/api/cart/FOO
 ```
 You should get an empty cart JSON object e.g.:
 ```
@@ -237,19 +238,19 @@ This service is implemented as a Node.js runtime with embedded HTTP server. At r
 
 1. Create and deploy service, substituting the appropriate values for the various services:
 ```
-    oc process -f ui-service.json \
-      SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
-      SSO_PUBLIC_KEY=${PUBLIC_KEY} \
-      HOSTNAME_HTTP=ui-${OCP_PROJECT}.${OCP_DOMAIN} \
-      HOSTNAME_HTTPS=secure-ui-${OCP_PROJECT}.${OCP_DOMAIN} \
-      API_ENDPOINT=http://api-gateway-${OCP_PROJECT}.${OCP_DOMAIN}/api \
-      SECURE_API_ENDPOINT=https://secure-api-gateway-${OCP_PROJECT}.${OCP_DOMAIN}/api | \
-      oc create -f -
+oc process -f ui-service.json \
+    SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
+    SSO_PUBLIC_KEY=${PUBLIC_KEY} \
+    HOSTNAME_HTTP=ui-${OCP_PROJECT}.${OCP_DOMAIN} \
+    HOSTNAME_HTTPS=secure-ui-${OCP_PROJECT}.${OCP_DOMAIN} \
+    API_ENDPOINT=http://api-gateway-${OCP_PROJECT}.${OCP_DOMAIN}/api \
+    SECURE_API_ENDPOINT=https://secure-api-gateway-${OCP_PROJECT}.${OCP_DOMAIN}/api | \
+    oc create -f -
 ```
 
 1. Wait for it to complete. You can follow the build logs with
 ```
-    oc logs -f bc/ui
+oc logs -f bc/ui
 ```    
 
 Access the Demo
@@ -268,10 +269,10 @@ Turbine is meant to discover and aggregate Hystrix metrics streams, so that its 
 
 To install:
 ```
-    $ oc create -f http://central.maven.org/maven2/io/fabric8/kubeflix/packages/kubeflix/1.0.17/kubeflix-1.0.17-kubernetes.yml
-    $ oc new-app kubeflix
-    $ oc expose service hystrix-dashboard
-    $ oc policy add-role-to-user admin system:serviceaccount:$(oc project -q):turbine
+oc create -f http://central.maven.org/maven2/io/fabric8/kubeflix/packages/kubeflix/1.0.17/kubeflix-1.0.17-kubernetes.yml
+oc new-app kubeflix
+oc expose service hystrix-dashboard
+oc policy add-role-to-user admin system:serviceaccount:$(oc project -q):turbine
 ```
 
 Once installed, Visit `http://hystrix-dashboard-${OCP_PROJECT}.${OCP_DOMAIN}` and click *Monitor Stream*. In a separate window, as you access the demo, you can see the load on the various services and whether their circuits are open.
@@ -286,9 +287,9 @@ project (often called `ci`, and that is what we'll use below):
 
 To install:
 ```
-    $ oc new-project ci
-    $ oc policy add-role-to-user edit system:serviceaccount:ci:default -n ci
-    $ oc process -f jenkins.json PROD_PROJECT=${OCP_PROJECT} MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | oc create -f -
+oc new-project ci
+oc policy add-role-to-user edit system:serviceaccount:ci:default -n ci
+oc process -f jenkins.json PROD_PROJECT=${OCP_PROJECT} MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | oc create -f -
 ```
 (You can also specify `MAVEN_MIRROR_URL=<url>` above if you have a local maven mirror to speed up the build(s).
 
@@ -319,6 +320,7 @@ You can do one of two things:
 oc set env dc/api-gateway SSO_PUBLIC_KEY='<New Public key>'
 oc set env dc/ui SSO_PUBLIC_KEY='<New Public key>'
 ```
+
 Notes
 -----
 * You can optionally install the 3 templates into OpenShift for use via the GUI using `oc create -f openshift-templates -n openshift`. Once created, you can then deploy the services in your projects using *Add To Project*
