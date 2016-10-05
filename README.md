@@ -65,7 +65,7 @@ In the following steps, substitute your desired project name for OCP_PROJECT, an
 ```
 export OCP_PROJECT=coolstore
 export OCP_MASTER=10.1.2.2 # hostname or IP of the OpenShift Container Platform Master
-export OCP_DOMAIN=   # subdomain used for application for the OpenShift Container Platform
+export OCP_DOMAIN=mylocalocp.org   # subdomain used for application for the OpenShift Container Platform
 export MAVEN_MIRROR_URL=http://nexus.ci.svc.cluster.local:8081/repository/maven-public/
 ```
 1. Clone this repository
@@ -263,7 +263,7 @@ You can log into the store using username `appuser` and password `password`. You
 
 Optional: Install [Kubeflix](https://github.com/fabric8io/kubeflix) (Hystrix Dashboard and Turbine server for metrics reporting on the services)
 ------------------------------------------------------------------------------------------------------------------------------------------------
-This service provides [Kubernetes](http://kubernetes.io/) integration with [Netlix](https://netflix.github.io/) open source components such as [Hystrix](https://github.com/Netflix/Hystrix), [Turbine](https://github.com/Netflix/Turbine) and [Ribbon](https://github.com/Netflix/Ribbon).
+This service provides [Kubernetes](http://kubernetes.io/) integration with [Netflix](https://netflix.github.io/) open source components such as [Hystrix](https://github.com/Netflix/Hystrix), [Turbine](https://github.com/Netflix/Turbine) and [Ribbon](https://github.com/Netflix/Ribbon).
 
 Turbine is meant to discover and aggregate Hystrix metrics streams, so that its possible to extract and display meaningful information (e.g. display the aggregate stream on the dashboard).
 
