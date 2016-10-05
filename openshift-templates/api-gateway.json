@@ -285,6 +285,10 @@
                     "value": "myrealm"
                   },
                   {
+                    "name": "SSO_SECRET",
+                    "value": "demo-secret"
+                  },
+                  {
                     "name": "SSO_BEARER_ONLY",
                     "value": "true"
                   },
