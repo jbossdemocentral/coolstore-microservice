@@ -37,7 +37,21 @@
     }
   ],
   "objects": [
-        {
+    {
+      "kind": "ImageStream",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "sso"
+      },
+      "spec": {
+        "tags": [
+          {
+            "name": "latest"
+          }
+        ]
+      }
+    },
+    {
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
@@ -61,7 +75,7 @@
           "contextDir": "sso-service"
         },
         "strategy": {
-          "type": "Docker",
+          "type": "Docker"
         },
         "output": {
           "to": {
@@ -251,12 +265,12 @@
                   }
                 ],
                 "resources": {
-                    "limits": {
-                        "memory": "400Mi"
-                    },
-                    "requests": {
-                        "memory": "200Mi"
-                    }
+                  "limits": {
+                    "memory": "400Mi"
+                  },
+                  "requests": {
+                    "memory": "200Mi"
+                  }
                 },
                 "volumeMounts": [
                   {
