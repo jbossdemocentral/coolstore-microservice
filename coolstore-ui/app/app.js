@@ -68,8 +68,6 @@ angular.element(document).ready(function () {
 // setup interceptors
 module.config(['$httpProvider', function ($httpProvider) {
 
-    $httpProvider.defaults.withCredentials = true;
-
     $httpProvider.interceptors.push(['$q', 'Auth', function ($q, Auth) {
         return {
             'request': function (config) {
@@ -78,12 +76,13 @@ module.config(['$httpProvider', function ($httpProvider) {
                     Auth.authz.updateToken(5).success(function () {
                         config.headers = config.headers || {};
                         config.headers.Authorization = 'Bearer ' + Auth.authz.token;
-
+                        config.withCredentials = true;
                         deferred.resolve(config);
                     }).error(function () {
                         deferred.reject('Failed to refresh token');
                     });
                 } else {
+                    config.withCredentials = false;
                     deferred.resolve(config);
                 }
                 return deferred.promise;
