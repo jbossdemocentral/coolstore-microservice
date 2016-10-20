@@ -16,22 +16,28 @@
  */
 package com.redhat.coolstore.api_gateway;
 
+import org.apache.camel.component.servlet.CamelHttpTransportServlet;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication
-@EnableSwagger2
 @Configuration
 @ComponentScan
+@EnableSwagger2
 @EnableAutoConfiguration
+@PropertySource("classpath:swagger.properties")
 public class ApiGatewayApplication extends SpringBootServletInitializer {
+    private static final String CAMEL_URL_MAPPING = "/api/*";
+    private static final String CAMEL_SERVLET_NAME = "CamelServlet";
 
     public static void main(String[] args) {
         SpringApplication.run(ApiGatewayApplication.class, args);
@@ -41,6 +47,15 @@ public class ApiGatewayApplication extends SpringBootServletInitializer {
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         return application.sources(applicationClass);
     }
+
+    @Bean
+    public ServletRegistrationBean servletRegistrationBean() {
+        ServletRegistrationBean registration =
+                new ServletRegistrationBean(new CamelHttpTransportServlet(), CAMEL_URL_MAPPING);
+        registration.setName(CAMEL_SERVLET_NAME);
+        return registration;
+    }
+
 
     private static Class<ApiGatewayApplication> applicationClass = ApiGatewayApplication.class;
 
