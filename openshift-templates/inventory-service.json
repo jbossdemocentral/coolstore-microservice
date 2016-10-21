@@ -136,7 +136,8 @@
           "metadata": {
             "name": "inventory-service",
             "labels": {
-              "deploymentConfig": "inventory-service"
+              "deploymentConfig": "inventory-service",
+              "application": "inventory-service"
             }
           },
           "spec": {

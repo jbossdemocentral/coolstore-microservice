@@ -161,7 +161,8 @@
                 "template": {
                     "metadata": {
                         "labels": {
-                            "deploymentconfig": "ui"
+                            "deploymentconfig": "ui",
+                            "application": "ui"
                         }
                     },
                     "spec": {

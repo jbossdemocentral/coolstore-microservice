@@ -147,6 +147,7 @@
           "metadata": {
             "name": "api-gateway",
             "labels": {
+              "application": "api-gateway",
               "deploymentConfig": "api-gateway"
             }
           },

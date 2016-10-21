@@ -136,7 +136,8 @@
           "metadata": {
             "name": "cart-service",
             "labels": {
-              "deploymentConfig": "cart-service"
+              "deploymentConfig": "cart-service",
+              "application": "cart-service"
             }
           },
           "spec": {

@@ -144,7 +144,8 @@
                 "template": {
                     "metadata": {
                         "labels": {
-                            "name": "jenkins"
+                            "name": "jenkins",
+                            "application": "jenkins"
                         }
                     },
                     "spec": {

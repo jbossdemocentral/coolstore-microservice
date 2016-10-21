@@ -8,15 +8,16 @@ It demonstrates how to wire up small microservices into a larger application usi
 
 Services
 --------
-There are several individual microservices that make up this app:
+There are several individual microservices and infrastructure components that make up this app:
 
 1. SSO Service - for protecting per-customer RESTful services (such as the cart microservice), using [Red Hat SSO](https://access.redhat.com/documentation/en/red-hat-single-sign-on/)
 1. Catalog Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves products and prices for retail products
 1. Cart Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), manages shopping cart for each customer
 1. Inventory Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves inventory and availability data for retail products
-1. API Gateway - Java EE + Spring Boot application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serving as a protected entry point/router/aggregator to the backend services
+1. API Gateway - Java EE + Spring Boot + [Camel](http://camel.apache.org) application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serving as a protected entry point/router/aggregator to the backend services
 1. UI Service - A frontend based on [AngularJS](https://angularjs.org) and [PatternFly](http://patternfly.org) running in a [Node.js](https://access.redhat.com/documentation/en/openshift-enterprise/3.2/paged/using-images/chapter-1-source-to-image-s2i) container.
 1. (Optional) Hystrix Dashboard for visualizing microservice performance/metrics
+1. (Optional) A [Jenkins](http://jenkins.io) CI/CD server for building the microservices using pipelines
 
 A simple visualization of the runtime components of this demo:
 
@@ -37,7 +38,7 @@ Running the Demo
 ================
 Running the demo consists of 5 main steps, one for each of the services listed above.
 
-It is assumed you have installed OpenShift, either using [Red Hat's CDK](http://developers.redhat.com/products/cdk/overview/) or a complete install, and can login to the
+It is assumed you have installed OpenShift, either using [Red Hat's CDK](http://developers.redhat.com/products/cdk/overview/), `oc cluster up`, or a complete install, and can login to the
 web console or use the `oc` CLI tool.
 
 
@@ -65,7 +66,7 @@ In the following steps, substitute your desired project name for OCP_PROJECT, an
 ```
 export OCP_PROJECT=coolstore
 export OCP_MASTER=10.1.2.2 # hostname or IP of the OpenShift Container Platform Master
-export OCP_DOMAIN=mylocalocp.org   # subdomain used for application for the OpenShift Container Platform
+export OCP_DOMAIN=apps.mylocalocp.org   # subdomain used for application for the OpenShift Container Platform
 export MAVEN_MIRROR_URL=http://nexus.ci.svc.cluster.local:8081/repository/maven-public/
 ```
 1. Clone this repository
@@ -105,7 +106,8 @@ oc process -f sso-service.json | oc create -f -
 ```
 You can view the process of the deployment using:
 ```    
-oc logs -f dc/sso
+oc logs -f bc/sso # watch the build
+oc logs -f dc/sso # watch the deployment
 ```  
 1. Once it completes, you can test it by accessing `https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth` or clicking on the associated route from the project overview page within the OpenShift web console. Click on *Administration Console* and login using `admin`/`admin`
 
@@ -115,13 +117,13 @@ export PUBLIC_KEY=<REALM>
 ```
 or you can retrive it automatically like this:
 ```
-export PUBLIC_KEY="$(oc rsh $(oc get pods -o name -l application=sso)  sh -c "curl -k curl -sk https://secure-sso.coolstore.svc.cluster.local:8443/auth/realms/myrealm | python -c \"import sys, json; print json.load(sys.stdin)['public_key']\"")"
+export PUBLIC_KEY="$(oc rsh $(oc get pods -o name -l application=sso)  sh -c "curl -sk https://secure-sso.${OCP_PROJECT}.svc.cluster.local:8443/auth/realms/myrealm | python -c \"import sys, json; print json.load(sys.stdin)['public_key']\"")"
 ```
 
 Deploy API Gateway using the OpenShift `oc` CLI
 -----------------------------------------------
 The API Gateway relies on the Red Hat SSO xPaaS image for JBoss EAP 7. At runtime, this image will automatically register itself as a *bearer-only* SSO client.
-Access to the `/api` endpoint is protected by Red Hat SSO by declaring it to be so in [web.xml](api-gateway/src/main/webapp/WEB-INF/web.xml) by using the [Keycloak REST API](http://www.keycloak.org/docs/rest-api/).
+Access to the `/api/products` endpoint does not require authentication. Access to the `/api/cart` endpoint is protected by Red Hat SSO by declaring it to be so in [web.xml](api-gateway/src/main/webapp/WEB-INF/web.xml) by using the [Keycloak REST API](http://www.keycloak.org/docs/rest-api/).
 
 1. Create and deploy service, substituting values for SSO_URL (don't forget the `/auth` suffix) and SSO_PUBLIC_KEY, wait for it to complete.
 ```
@@ -165,9 +167,9 @@ oc process -f catalog-service.json MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL}  | oc cr
 ```
 oc logs -f bc/catalog-service
 ```
-To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
+To confirm this service is reachable from the API Gateway, try to access the service from the API Gateway pod:
 ```
-oc rsh $(oc get pods -o name | grep "api-gateway" | grep -v "\-build" | sed "s/pod\///") curl http://catalog-service:8080/api/products
+oc rsh $(oc get pods -o name -l application=api-gateway) curl http://catalog-service:8080/api/products
 ```
 You should get a JSON object listing the products along with invalid inventory (since you haven't deployed the inventory service yet.) e.g.:
 ```
@@ -193,12 +195,11 @@ oc logs -f bc/inventory-service
 ```
 To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
 ```
-oc get pods
-oc rsh [API-GATEWAY-POD-NAME] curl http://inventory-service:8080/api/availability/329299
+oc rsh $(oc get pods -o name -l application=api-gateway) curl http://inventory-service:8080/api/availability/329299
 ```
 You should get a JSON object listing the item ID (foo) and a real availability (quantity and city) e.g.:
 ```
-    {"itemId":"1234","availability":"36 available at Raleign store!"}
+    {"itemId":"329299","quantity":85,"location":"Frankfurt","link":"http://maps.google.com/?q=frankfurt"}
 ```
 
 Deploy Cart Service using the OpenShift `oc` CLI
@@ -220,8 +221,7 @@ oc logs -f bc/cart-service
 ```
 To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
 ```
-oc get pods
-oc rsh [API-GATEWAY-POD-NAME] curl http://cart-service:8080/api/cart/FOO
+oc rsh $(oc get pods -o name -l application=api-gateway) curl http://cart-service:8080/api/cart/FOO
 ```
 You should get an empty cart JSON object e.g.:
 ```
@@ -257,9 +257,17 @@ Access the Demo
 ---------------
 Once all of the above completes, your demo should be running and you can access the UI using `http://ui-${OCP_PROJECT}.${OCP_DOMAIN}` or the secure variant using `https://secure-ui-${OCP_PROJECT}.${OCP_DOMAIN}`
 
-You can also click the links to the various services within the OpenShift web console by navigating to your newly-created project.
+If you did not generate your own SSL certificates, you will most likely not see the UI initially. You will need to open a separate tab in the same browser and access the other services directly so that you can accept the security exceptions generated from the browser.
+
+1. Visit `https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/` and accept the exception, so that you land on the JBoss EAP landing page.
+1. Go back to the demo UI and reload the page. You should now see the login.
+1. Click *Login* at the upper-right, and sign into SSO using `appuser`/`password` credentials.
+1. If you are accessing the secure variant (e.g. `secure-ui-${OCP_PROJECT}.${OCP_DOMAIN}` then you will also need to visit the secure variant of the API Gateway `https://secure-api-gateway.${OCP_PROJECT}.${OCP_DOMAIN}` to accept the security exception.
+1. Once you do all of the above, you should be good to go with the demo. If not, see the Troubleshooting section below.
 
 You can log into the store using username `appuser` and password `password`. You will be prompted to change your password upon first login.
+
+You can then add products, and click on *Shopping Cart* to see the pricing and ability to checkout.
 
 Optional: Install [Kubeflix](https://github.com/fabric8io/kubeflix) (Hystrix Dashboard and Turbine server for metrics reporting on the services)
 ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -269,17 +277,23 @@ Turbine is meant to discover and aggregate Hystrix metrics streams, so that its 
 
 To install:
 ```
+oc adm policy add-scc-to-user anyuid -z ribbon
 oc create -f http://central.maven.org/maven2/io/fabric8/kubeflix/packages/kubeflix/1.0.17/kubeflix-1.0.17-kubernetes.yml
 oc new-app kubeflix
 oc expose service hystrix-dashboard
+oc patch route hystrix-dashboard -p '{"spec": { "port": { "targetPort": 8080 } } }'
 oc policy add-role-to-user admin system:serviceaccount:$(oc project -q):turbine
+```
+To monitor the progress of the build, run
+```
+    oc logs -f rc/hystrix-dashboard
 ```
 
 Once installed, Visit `http://hystrix-dashboard-${OCP_PROJECT}.${OCP_DOMAIN}` and click *Monitor Stream*. In a separate window, as you access the demo, you can see the load on the various services and whether their circuits are open.
 
 Optional: Install Jenkins (For CI/CD pipeline builds of each microservice)
 --------------------------------------------------------------------------
-This service installs a [Jenkins](https://jenkins.io/) server, configured to build the above microservices in a pipeline. It will create `-dev` and `-qa` OpenShift projects in
+This service installs a [Jenkins](https://jenkins.io/) server, configured to build three of the microservices in a pipeline. It will create `-dev` and `-qa` OpenShift projects in
 which the services are built, and wait for approval before deploying to the production environment specified with `PROD_${OCP_PROJECT}`.
 
 You can install it into any project, including the "production" project you've been using up to this point, although typically it is installed in a separate
@@ -317,9 +331,11 @@ You can do one of two things:
     * Visit https://secure-api-gateway-${OCP_PROJECT}.${OCP_DOMAIN} in a separate browser tab, accept the security exception (and ignore the *Unauthorized* error you may see), then return to the original tab and reload the page.
 * If you stop and restart the SSO service, this will change the value for `SSO_PUBLIC_KEY` so you'll need to reconfigure the API Gateway and UI services to reflect this:
 ```
-oc set env dc/api-gateway SSO_PUBLIC_KEY='<New Public key>'
-oc set env dc/ui SSO_PUBLIC_KEY='<New Public key>'
+export PUBLIC_KEY="$(oc rsh $(oc get pods -o name -l application=sso)  sh -c "curl -sk https://secure-sso.${OCP_PROJECT}.svc.cluster.local:8443/auth/realms/myrealm | python -c \"import sys, json; print json.load(sys.stdin)['public_key']\"")"
+oc set env dc/api-gateway SSO_PUBLIC_KEY="${PUBLIC_KEY}"
+oc set env dc/ui SSO_PUBLIC_KEY="${PUBLIC_KEY}"
 ```
+This should cause the Api Gateway and UI pods to be re-deployed with the updated configuration.
 
 Notes
 -----

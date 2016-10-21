@@ -136,7 +136,8 @@
           "metadata": {
             "name": "catalog-service",
             "labels": {
-              "deploymentConfig": "catalog-service"
+              "deploymentConfig": "catalog-service",
+              "application": "catalog-service"
             }
           },
           "spec": {
