@@ -45,7 +45,6 @@ public class ApiGatewayRoute extends RouteBuilder {
 
         restConfiguration().component("servlet")
             .bindingMode(RestBindingMode.auto).apiContextPath("/api-docs").contextPath("/api").apiProperty("host", "")
-            .enableCORS(true)
             .apiProperty("api.title", "CoolStore Microservice API Gateway")
             .apiProperty("api.version", "1.0.0")
             .apiProperty("api.description", "The API of the gateway which fronts the various backend microservices in the CoolStore")
@@ -55,7 +54,13 @@ public class ApiGatewayRoute extends RouteBuilder {
 
         rest("/products/").description("Product Catalog Service")
             .produces(MediaType.APPLICATION_JSON_VALUE)
-            .get("/").description("Get product catalog").outType(Product.class)
+
+        // Handle CORS Pre-flight requests
+        .options("/")
+            .route().id("productsOptions").end()
+        .endRest()
+
+        .get("/").description("Get product catalog").outType(Product.class)
             .route().id("productRoute")
                 .setBody(simple("null"))
                 .removeHeaders("CamelHttp*")
@@ -73,7 +78,6 @@ public class ApiGatewayRoute extends RouteBuilder {
                 .enrich("direct:inventory", new InventoryEnricher())
             .end()
         .endRest();
-
 
         from("direct:inventory")
             .id("inventoryRoute")
@@ -94,6 +98,14 @@ public class ApiGatewayRoute extends RouteBuilder {
 
         rest("/cart/").description("Personal Shopping Cart Service")
             .produces(MediaType.APPLICATION_JSON_VALUE)
+
+            // Handle CORS Preflight requests
+            .options("/{cartId}")
+            .route().id("getCartOptionsRoute").end().endRest()
+            .options("/checkout/{cartId}")
+            .route().id("checkoutCartOptionsRoute").end().endRest()
+            .options("/{cartId}/{itemId}/{quantity}")
+            .route().id("cartAddDeleteOptionsRoute").end().endRest()
 
             .post("/checkout/{cartId}").description("Finalize shopping cart and process payment")
                 .param().name("cartId").type(RestParamType.path).description("The ID of the cart to process").dataType("string").endParam()
