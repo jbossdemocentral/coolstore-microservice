@@ -69,15 +69,20 @@ public class ApiGatewayRoute extends RouteBuilder {
                 .hystrix().id("Product Service")
                     .to("http4://DUMMY")
                 .onFallback()
-                    .transform()
-                    .constant(Collections.singletonList(new Product("0", "Unavailable Product", "Unavailable Product", 0, null)))
-                    .marshal().json(JsonLibrary.Jackson, List.class)
+                    .to("direct:productFallback")
                 .end()
+                .choice().when(body().isNull()).to("direct:productFallback").end()
                 .unmarshal(productFormatter)
                 .split(body()).parallelProcessing()
                 .enrich("direct:inventory", new InventoryEnricher())
             .end()
         .endRest();
+
+        from("direct:productFallback")
+                .id("ProductFallbackRoute")
+                .transform()
+                .constant(Collections.singletonList(new Product("0", "Unavailable Product", "Unavailable Product", 0, null)))
+                .marshal().json(JsonLibrary.Jackson, List.class);
 
         from("direct:inventory")
             .id("inventoryRoute")
@@ -89,12 +94,17 @@ public class ApiGatewayRoute extends RouteBuilder {
                 .setHeader(Exchange.HTTP_URI, simple("http://inventory-service:8080/api/availability/${header.itemId}"))
                 .to("http4://DUMMY2")
             .onFallback()
-                .transform()
-                .constant(new Inventory("0", 0, "Local Store", "http://redhat.com"))
-                .marshal().json(JsonLibrary.Jackson, Inventory.class)
+                .to("direct:inventoryFallback")
             .end()
+            .choice().when(body().isNull()).to("direct:inventoryFallback").end()
             .setHeader("CamelJacksonUnmarshalType", simple(Inventory.class.getName()))
             .unmarshal().json(JsonLibrary.Jackson, Inventory.class);
+
+        from("direct:inventoryFallback")
+                .id("inventoryFallbackRoute")
+                .transform()
+                .constant(new Inventory("0", 0, "Local Store", "http://redhat.com"))
+                .marshal().json(JsonLibrary.Jackson, Inventory.class);
 
         rest("/cart/").description("Personal Shopping Cart Service")
             .produces(MediaType.APPLICATION_JSON_VALUE)
