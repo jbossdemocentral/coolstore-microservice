@@ -153,7 +153,7 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .removeHeaders("CamelHttp*")
                     .setBody(simple("null"))
                     .setHeader(Exchange.HTTP_METHOD, HttpMethods.DELETE)
-                    .setHeader(Exchange.HTTP_URI, simple("http://cart-service:8080/${header.cartId}/${header.itemId}/${header.quantity}"))
+                    .setHeader(Exchange.HTTP_URI, simple("http://cart-service:8080/api/cart/${header.cartId}/${header.itemId}/${header.quantity}"))
                     .to("http4://DUMMY")
                 .onFallback()
                     // TODO: improve fallback
