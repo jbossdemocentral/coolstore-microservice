@@ -41,7 +41,6 @@ Running the demo consists of 5 main steps, one for each of the services listed a
 It is assumed you have installed OpenShift, either using [Red Hat's CDK](http://developers.redhat.com/products/cdk/overview/), `oc cluster up`, or a complete install, and can login to the
 web console or use the `oc` CLI tool.
 
-
 **NOTE:** This step is not required if you are using CDK 2.2 or later, or OCP 3.3 or later.
 
 It is also assumed that the necessary updated JBoss xPaaS ImageStreams are available in the `openshift` namespace. If you have not installed these, you can do so as follows:
@@ -58,6 +57,16 @@ Note: SSL/TLS Self-Signed Certificates
 For demo purposes, you will most likely be using self-signed certificates, which will be apparent when
 accessing the services using a browser (you'll get a security warning which must be accepted.)
 
+Note: Using Red Hat OpenShift CDK
+---------------------------------
+If you intend to do the full demo and are using [Red Hat's Container Development Kit](http://developers.redhat.com/products/cdk/overview/), you will need to edit the `Vagrantfile` to increase the amount of available memory.
+
+You will need to dedicate at least 8GB of memory to the virtual machine. To do this, edit the `Vagrantfile` and modify the following line to read:
+```
+# Amount of available RAM
+VM_MEMORY = ENV['VM_MEMORY'] || 8096
+```
+
 Create project and associated service accounts and permissions
 --------------------------------------------------------------
 
@@ -66,9 +75,14 @@ In the following steps, substitute your desired project name for OCP_PROJECT, an
 ```
 export OCP_PROJECT=coolstore
 export OCP_MASTER=10.1.2.2 # hostname or IP of the OpenShift Container Platform Master
-export OCP_DOMAIN=apps.mylocalocp.org   # subdomain used for application for the OpenShift Container Platform
+export OCP_DOMAIN=rhel-cdk.${OCP_MASTER}.xip.io   # DNS domain that maps to your OpenShift Container Platform master
 export MAVEN_MIRROR_URL=http://nexus.ci.svc.cluster.local:8081/repository/maven-public/
 ```
+Note that you many need to change the above to fit your environment, especially if you are NOT using the OpenShift CDK default installation.
+
+If you do not have your own Maven mirror setup, then you don't need to set `MAVEN_MIRROR_URL` but
+it is highly recommended to set one up to significantly reduce the build times of the various services. See the bottom of this README for a quick way to do this.
+
 1. Clone this repository
 ```
 git clone https://github.com/jbossdemocentral/coolstore-microservice
@@ -109,13 +123,15 @@ You can view the process of the deployment using:
 oc logs -f bc/sso # watch the build
 oc logs -f dc/sso # watch the deployment
 ```  
+It may take some time to pull down the SSO image, if you are on a slow link to the world. Until the image is pulled, you won't be able to monitor the build or deployment. Be patient, please :)
+
 1. Once it completes, you can test it by accessing `https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth` or clicking on the associated route from the project overview page within the OpenShift web console. Click on *Administration Console* and login using `admin`/`admin`
 
 1. Obtain the public key for the automatically-created realm `myrealm` by navigating to *Realm Settings* -> *Keys* and set the value to environment variable called `PUBLIC_KEY`.
 ```
-export PUBLIC_KEY=<REALM>
+export PUBLIC_KEY=<KEY>
 ```
-or you can retrive it automatically like this:
+or you can retrive it automatically from the command line like this (assuming you have `curl` and `python` installed)
 ```
 export PUBLIC_KEY="$(oc rsh $(oc get pods -o name -l application=sso)  sh -c "curl -sk https://secure-sso.${OCP_PROJECT}.svc.cluster.local:8443/auth/realms/myrealm | python -c \"import sys, json; print json.load(sys.stdin)['public_key']\"")"
 ```
@@ -336,6 +352,31 @@ oc set env dc/api-gateway SSO_PUBLIC_KEY="${PUBLIC_KEY}"
 oc set env dc/ui SSO_PUBLIC_KEY="${PUBLIC_KEY}"
 ```
 This should cause the Api Gateway and UI pods to be re-deployed with the updated configuration.
+
+Setting up a local Maven mirror
+-------------------------------
+A local Maven mirror will cache copies of Maven dependencies so that your builds can use the local copy, speeding up the build significantly. To set one up:
+
+```
+oc new-project ci
+oc new-app --name nexus sonatype/nexus3
+oc expose svc nexus
+oc project ${OCP_PROJECT}    # don't forget to switch back to your work-in-progress projects for future oc commands!
+```
+Monitor the deployment with `oc logs -n ci -f dc/nexus`. Once the deployment completes, visit `http://nexus-ci.${OCP_DOMAIN}` and login with username:`admin` password:`admin123`.
+
+Next, Add the Red Hat GA repository as an additional mirrored repository using these steps:
+
+1. Click the "Gear" icon at the top to enter the administrative section. 
+1. Click *Create Repository* -> *maven2 (proxy)*
+1. Fill out these fields (leave the others blank): Name: `redhat-ga`, Remote Storage URL: `https://maven.repository.redhat.com/ga/`, Blob Store: Select `default`
+1. Click *Create Repository* at the bottom
+1. Back on the repository list screen, click on `maven-public`
+1. Scroll to bottom, click on `redhat-ga` in the left box to select it, then move it from the left to the right box, using the right arrow button (>).
+1. Click *Save*
+
+You can now configure `MAVEN_MIRROR_URL` using either the external URL that is shown at the top of the repository configuration page (e.g. `http://nexus-ci.${OCP_DOMAIN}/repository/maven-public/` OR the
+kubernetes internal URL `http://nexus.ci.svc.cluster.local:8081/repository/maven-public/` (this is what is used in the environment setup at the top of this document).
 
 Notes
 -----
