@@ -195,7 +195,7 @@
                 ],
                 "resources": {
                     "limits": {
-                        "memory": "400Mi"
+                        "memory": "600Mi"
                     },
                     "requests": {
                         "memory": "200Mi"
