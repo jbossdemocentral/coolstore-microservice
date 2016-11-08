@@ -1,67 +1,75 @@
 'use strict';
 
 var module = angular.module('app', ['ngRoute', 'patternfly']), auth = {
+    loggedIn: false,
+    ssoEnabled: false,
     logout: function () {
     }
 };
+
+module.factory('Auth', function () {
+    return auth;
+});
 
 angular.element(document).ready(function () {
 
     // get config
     var initInjector = angular.injector(["ng"]);
     var $http = initInjector.get("$http");
+
     $http.get("coolstore.json").then(function (response) {
         module.constant("COOLSTORE_CONFIG", response.data);
-        var keycloakAuth = new Keycloak('keycloak.json');
-        auth.loggedIn = false;
-
-        auth.login = function () {
-            keycloakAuth.login({
-                loginHint: 'appuser'
-            });
-        };
-        module.factory('Auth', function () {
-            return auth;
-        });
-
-        keycloakAuth.init({
-            onLoad: 'check-sso'
-        }).success(function () {
-            if (keycloakAuth.authenticated) {
-                keycloakAuth.loadUserInfo().success(function (userInfo) {
-                    auth.userInfo = userInfo;
-                    angular.bootstrap(document, ["app"], {
-                        strictDi: true
-                    });
-                    auth.loggedIn = true;
-                    auth.authz = keycloakAuth;
-                    auth.logout = function () {
-                        auth.loggedIn = false;
-                        auth.authz = null;
-                        auth.userInfo = {};
-                        keycloakAuth.logout();
-                    };
-                }).error(function () {
-                    angular.bootstrap(document, ["app"], {
-                        strictDi: true
-                    });
-
-                });
-            } else {
-                angular.bootstrap(document, ["app"], {
-                    strictDi: true
-                });
-            }
-        }).error(function (msg) {
+        
+        if (!response.data.SSO_ENABLED) {
             angular.bootstrap(document, ["app"], {
                 strictDi: true
             });
+        } else {
+            auth.ssoEnabled = true;
+            var keycloakAuth = new Keycloak('keycloak.json');
+            auth.loggedIn = false;
 
+            auth.login = function () {
+                keycloakAuth.login({
+                    loginHint: 'appuser'
+                });
+            };
 
-        });
+            keycloakAuth.init({
+                onLoad: 'check-sso'
+            }).success(function () {
+                if (keycloakAuth.authenticated) {
+                    keycloakAuth.loadUserInfo().success(function (userInfo) {
+                        auth.userInfo = userInfo;
+                        angular.bootstrap(document, ["app"], {
+                            strictDi: true
+                        });
+                        auth.loggedIn = true;
+                        auth.authz = keycloakAuth;
+                        auth.logout = function () {
+                            auth.loggedIn = false;
+                            auth.authz = null;
+                            auth.userInfo = {};
+                            keycloakAuth.logout();
+                        };
+                    }).error(function () {
+                        angular.bootstrap(document, ["app"], {
+                            strictDi: true
+                        });
 
+                    });
+                } else {
+                    angular.bootstrap(document, ["app"], {
+                        strictDi: true
+                    });
+                }
+            }).error(function (msg) {
+                angular.bootstrap(document, ["app"], {
+                    strictDi: true
+                });
+            });
+        }
     });
-
 });
 
 

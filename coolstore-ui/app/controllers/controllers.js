@@ -18,6 +18,9 @@ angular.module('app')
                 $scope.isLoggedIn = function () {
                     return $auth.loggedIn;
                 };
+                $scope.ssoEnabled = function () {
+                    return $auth.ssoEnabled;
+                };
 
                 $scope.login = function () {
                     $auth.login();
@@ -64,7 +67,7 @@ angular.module('app')
                     cart.removeFromCart(item.product, item.quantity).then(function (newCart) {
                         reset();
                     }, function (err) {
-                        Notifications.error("Error adding to cart: " + err.statusText);
+                        Notifications.error("Error removing from cart: " + err.statusText);
                     });
                 };
 
@@ -94,7 +97,14 @@ angular.module('app')
                     }, function (err) {
                         Notifications.error("Error checking out: " + err.statusText);
                     });
-                }
+                };
+
+                $scope.isLoggedIn = function () {
+                    return $auth.loggedIn;
+                };
+                $scope.ssoEnabled = function () {
+                    return $auth.ssoEnabled;
+                };
 
                 reset();
             }])
@@ -116,6 +126,12 @@ angular.module('app')
                 };
                 $scope.logout = function () {
                     $auth.logout();
+                };
+                $scope.isLoggedIn = function () {
+                    return $auth.loggedIn;
+                };
+                $scope.ssoEnabled = function () {
+                    return $auth.ssoEnabled;
                 };
                 $scope.profile = function () {
                     $auth.authz.accountManagement();

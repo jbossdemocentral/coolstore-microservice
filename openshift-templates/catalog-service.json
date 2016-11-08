@@ -157,11 +157,6 @@
                     "protocol": "TCP"
                   },
                   {
-                    "name": "https",
-                    "containerPort": 8443,
-                    "protocol": "TCP"
-                  },
-                  {
                     "name": "ping",
                     "containerPort": 8888,
                     "protocol": "TCP"
@@ -243,13 +238,10 @@
             "restartPolicy": "Always",
             "terminationGracePeriodSeconds": 75,
             "dnsPolicy": "ClusterFirst",
-            "serviceAccountName": "sso-service-account",
-            "serviceAccount": "sso-service-account",
             "securityContext": {}
           }
         }
-      },
-      "status": {}
+      }
     },
     {
       "kind": "Service",

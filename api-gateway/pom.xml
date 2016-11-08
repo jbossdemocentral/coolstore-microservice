@@ -43,6 +43,8 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
 
+        <failOnMissingWebXml>false</failOnMissingWebXml>
+
         <!-- other versions -->
         <netflix.feign.version>8.15.1</netflix.feign.version>
         <hystrix.version>1.5.1</hystrix.version>
@@ -139,12 +141,35 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.6</version>
+                <version>3.0.0</version>
                 <configuration>
                     <warName>ROOT</warName>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>ssodisabled</id>
+            <activation>
+                <property>
+                    <name>!env.SSO_ENABLED</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <configuration>
+                            <warSourceExcludes>WEB-INF/web.xml</warSourceExcludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

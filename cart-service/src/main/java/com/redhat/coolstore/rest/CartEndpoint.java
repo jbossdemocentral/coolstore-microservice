@@ -63,6 +63,30 @@ public class CartEndpoint implements Serializable {
         return cart;
     }
 
+    @POST
+    @Path("/{cartId}/{tmpId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ShoppingCart set(@PathParam("cartId") String cartId,
+                            @PathParam("tmpId") String tmpId) throws Exception {
+
+        ShoppingCart cart = shoppingCartService.getShoppingCart(cartId);
+        ShoppingCart tmpCart = shoppingCartService.getShoppingCart(tmpId);
+
+        if (tmpCart != null) {
+            cart.resetShoppingCartItemList();
+            cart.setShoppingCartItemList(tmpCart.getShoppingCartItemList());
+        }
+
+        try {
+            shoppingCartService.priceShoppingCart(cart);
+            cart.setShoppingCartItemList(dedupeCartItems(cart.getShoppingCartItemList()));
+        } catch (Exception ex) {
+            throw ex;
+        }
+
+        return cart;
+    }
+
     @DELETE
     @Path("/{cartId}/{itemId}/{quantity}")
     @Produces(MediaType.APPLICATION_JSON)

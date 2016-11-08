@@ -10,16 +10,16 @@ Services
 --------
 There are several individual microservices and infrastructure components that make up this app:
 
-1. SSO Service - for protecting per-customer RESTful services (such as the cart microservice), using [Red Hat SSO](https://access.redhat.com/documentation/en/red-hat-single-sign-on/)
 1. Catalog Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves products and prices for retail products
 1. Cart Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), manages shopping cart for each customer
 1. Inventory Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves inventory and availability data for retail products
 1. API Gateway - Java EE + Spring Boot + [Camel](http://camel.apache.org) application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serving as a protected entry point/router/aggregator to the backend services
 1. UI Service - A frontend based on [AngularJS](https://angularjs.org) and [PatternFly](http://patternfly.org) running in a [Node.js](https://access.redhat.com/documentation/en/openshift-enterprise/3.2/paged/using-images/chapter-1-source-to-image-s2i) container.
+1. (Optional) SSO Service - for selectively protecting per-customer RESTful services (such as the cart microservice), using [Red Hat SSO](https://access.redhat.com/documentation/en/red-hat-single-sign-on/)
 1. (Optional) Hystrix Dashboard for visualizing microservice performance/metrics
 1. (Optional) A [Jenkins](http://jenkins.io) CI/CD server for building the microservices using pipelines
 
-A simple visualization of the runtime components of this demo:
+A simple visualization of the complete setup of runtime components of this demo:
 
 ![Architecture Screenshot](/../screenshots/screenshots/arch.png?raw=true "Architecture Screenshot")
 
@@ -33,10 +33,11 @@ Demo Credentials and other identifiers
 1. Website User (used when accessing retail store): username: `appuser` password: `password`
 1. SSO REST API Admin User (not generally used): username: `ssoservice` password: `ssoservicepass`
 1. Jenkins Web Console: username: `admin` password: `password`
+1. Sonatype Nexus Repository Manager: username: `admin` password: `admin123`
 
 Running the Demo
 ================
-Running the demo consists of 5 main steps, one for each of the services listed above.
+Running the demo consists of several steps, each building on the previous steps, to build the complete demo.
 
 It is assumed you have installed OpenShift, either using [Red Hat's CDK](http://developers.redhat.com/products/cdk/overview/), `oc cluster up`, or a complete install, and can login to the
 web console or use the `oc` CLI tool.
@@ -54,7 +55,7 @@ In particular you need the latest `redhat-sso70-openshift`, `jboss-eap70-openshi
 
 Note: SSL/TLS Self-Signed Certificates
 --------------------------------------
-For demo purposes, you will most likely be using self-signed certificates, which will be apparent when
+For demo purposes, if you want to use HTTPS and the optional Red Hat SSO component you will most likely be using self-signed certificates, which will be apparent when
 accessing the services using a browser (you'll get a security warning which must be accepted.)
 
 Note: Using Red Hat OpenShift CDK
@@ -106,53 +107,17 @@ oc policy add-role-to-user view system:serviceaccount:$(oc project -q):default -
 oc policy add-role-to-user view system:serviceaccount:$(oc project -q):sso-service-account -n $(oc project -q)
 ```
 
-Deploy SSO service on OpenShift using the OpenShift `oc` CLI
-------------------------------------------------------------
-
-This will build and deploy an instance of Red Hat SSO server (based on [Keycloak](https://keycloak.org)) using
-Red Hat's [xPaaS SSO image](https://access.redhat.com/documentation/en/red-hat-xpaas/version-0/red-hat-xpaas-sso-image/).
-
-During the deployment of the SSO service, a new SSO realm `myrealm` is created, along with the administrative users necessary for accessing the SSO REST interface later on.
-
-1. Create and deploy SSO service, wait for it to complete.
-```
-oc process -f sso-service.json | oc create -f -
-```
-You can view the process of the deployment using:
-```    
-oc logs -f bc/sso # watch the build
-oc logs -f dc/sso # watch the deployment
-```  
-It may take some time to pull down the SSO image, if you are on a slow link to the world. Until the image is pulled, you won't be able to monitor the build or deployment. Be patient, please :)
-
-1. Once it completes, you can test it by accessing `https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth` or clicking on the associated route from the project overview page within the OpenShift web console. Click on *Administration Console* and login using `admin`/`admin`
-
-1. Obtain the public key for the automatically-created realm `myrealm` by navigating to *Realm Settings* -> *Keys* and set the value to environment variable called `PUBLIC_KEY`.
-```
-export PUBLIC_KEY=<KEY>
-```
-or you can retrive it automatically from the command line like this (assuming you have `curl` and `python` installed)
-```
-export PUBLIC_KEY="$(oc rsh $(oc get pods -o name -l application=sso)  sh -c "curl -sk https://secure-sso.${OCP_PROJECT}.svc.cluster.local:8443/auth/realms/myrealm | python -c \"import sys, json; print json.load(sys.stdin)['public_key']\"")"
-```
-
 Deploy API Gateway using the OpenShift `oc` CLI
 -----------------------------------------------
-The API Gateway relies on the Red Hat SSO xPaaS image for JBoss EAP 7. At runtime, this image will automatically register itself as a *bearer-only* SSO client.
-Access to the `/api/products` endpoint does not require authentication. Access to the `/api/cart` endpoint is protected by Red Hat SSO by declaring it to be so in [web.xml](api-gateway/src/main/webapp/WEB-INF/web.xml) by using the [Keycloak REST API](http://www.keycloak.org/docs/rest-api/).
+The API Gateway is based on Camel, Spring Boot, and JBoss EAP 7.
 
-1. Create and deploy service, substituting values for SSO_URL (don't forget the `/auth` suffix) and SSO_PUBLIC_KEY, wait for it to complete.
+1. Create and deploy service, wait for it to complete.
 ```
-oc process -f api-gateway.json \
-    SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
-    SSO_PUBLIC_KEY=${PUBLIC_KEY} | \
-    oc create -f -
+oc process -f api-gateway.json | oc create -f -
 ```
 If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. For example:
 ```
 oc process -f api-gateway.json \
-    SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
-    SSO_PUBLIC_KEY=${PUBLIC_KEY} \
     MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | \
     oc create -f -
 ```
@@ -162,7 +127,7 @@ oc process -f api-gateway.json \
 oc logs -f bc/api-gateway
 ```
 
-To confirm successful deployment, visit `https://secure-api-gateway-${OCP_PROJECT}.${OCP_DOMAIN}` in your browser (or click on the link within the OpenShift web console). You should see the swagger API documentation page and you can explore the API.
+To confirm successful deployment, visit `http://api-gateway-${OCP_PROJECT}.${OCP_DOMAIN}` in your browser (or click on the link within the OpenShift web console). You should see the swagger API documentation page and you can explore the API.
 
 ![Swagger Screenshot](/../screenshots/screenshots/swagger.png?raw=true "Swagger Screenshot")
 
@@ -246,21 +211,13 @@ You should get an empty cart JSON object e.g.:
 
 Deploy the UI Service using the OpenShift `oc` CLI
 --------------------------------------------------
-This service is implemented as a Node.js runtime with embedded HTTP server. At runtime, the image will automatically register several items into the SSO service:
-
-* A *public* SSO client within realm `myrealm` and valid redirects back to the UI (for redirecting to/from the SSO login page)
-* A realm-level role named `user`
-* A User named `appuser` that has been granted the `user` role.
+This service is implemented as a Node.js runtime with embedded HTTP server:
 
 1. Create and deploy service, substituting the appropriate values for the various services:
 ```
 oc process -f ui-service.json \
-    SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
-    SSO_PUBLIC_KEY=${PUBLIC_KEY} \
     HOSTNAME_HTTP=ui-${OCP_PROJECT}.${OCP_DOMAIN} \
-    HOSTNAME_HTTPS=secure-ui-${OCP_PROJECT}.${OCP_DOMAIN} \
-    API_ENDPOINT=http://api-gateway-${OCP_PROJECT}.${OCP_DOMAIN}/api \
-    SECURE_API_ENDPOINT=https://secure-api-gateway-${OCP_PROJECT}.${OCP_DOMAIN}/api | \
+    API_ENDPOINT=http://api-gateway-${OCP_PROJECT}.${OCP_DOMAIN}/api | \
     oc create -f -
 ```
 
@@ -271,19 +228,93 @@ oc logs -f bc/ui
 
 Access the Demo
 ---------------
-Once all of the above completes, your demo should be running and you can access the UI using `http://ui-${OCP_PROJECT}.${OCP_DOMAIN}` or the secure variant using `https://secure-ui-${OCP_PROJECT}.${OCP_DOMAIN}`
+Once all of the above completes, your demo should be running and you can access the UI using `http://ui-${OCP_PROJECT}.${OCP_DOMAIN}` 
 
-If you did not generate your own SSL certificates, you will most likely not see the UI initially. You will need to open a separate tab in the same browser and access the other services directly so that you can accept the security exceptions generated from the browser.
+You can then add and remove products, and click on *Shopping Cart* to see the pricing in action. Note that you will not be able to checkout of the store until you enable SSO (see below).
+
+(Optional) Deploy SSO service on OpenShift and configure microservices to use them using the OpenShift `oc` CLI
+---------------------------------------------------------------------------------------------------------------
+To demonstrate selective protecting of microservice APIs, you can add SSO to the demo. Once this is done, access to the `/api/products` endpoint and '/api/cart' does not require authentication (this allows for anonymous access to build your cart). Access to the `/api/cart/checkout` endpoint is protected by Red Hat SSO by declaring it to be so in [web.xml](api-gateway/src/main/webapp/WEB-INF/web.xml) by using the [Keycloak REST API](http://www.keycloak.org/docs/rest-api/).
+
+Follow these steps to add SSO and reconfigure the demo to use it:
+
+1. Create and deploy SSO service, wait for it to complete.
+```
+oc process -f sso-service.json | oc create -f -
+```
+
+This will build and deploy an instance of Red Hat SSO server (based on [Keycloak](https://keycloak.org)) using
+Red Hat's [xPaaS SSO image](https://access.redhat.com/documentation/en/red-hat-xpaas/version-0/red-hat-xpaas-sso-image/).
+
+During the deployment of the SSO service, a new SSO realm `myrealm` is created, along with the administrative users necessary for accessing the SSO REST interface later on.
+
+You can view the process of the deployment using:
+```    
+oc logs -f bc/sso # watch the build
+oc logs -f dc/sso # watch the deployment
+```  
+It may take some time to pull down the SSO image, if you are on a slow link to the world. Until the image is pulled, you won't be able to monitor the build or deployment. Be patient, please :)
+
+1. Once it completes, you can test it by accessing `https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth` or clicking on the associated route from the project overview page within the OpenShift web console. Click on *Administration Console* and login using `admin`/`admin`
+
+1. Obtain the public key for the automatically-created realm `myrealm` by navigating to *Realm Settings* -> *Keys* and set the value to environment variable called `PUBLIC_KEY`.
+```
+export PUBLIC_KEY=<KEY>
+```
+or you can retrieve it automatically from the command line like this (assuming you have `curl` and `python` installed)
+```
+export PUBLIC_KEY="$(oc rsh $(oc get pods -o name -l application=sso)  sh -c "curl -sk https://secure-sso.${OCP_PROJECT}.svc.cluster.local:8443/auth/realms/myrealm | python -c \"import sys, json; print json.load(sys.stdin)['public_key']\"")"
+```
+
+1. Replace the API Gateway with the secure variant:
+```
+oc process -f api-gateway-secure.json \
+    SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
+    SSO_PUBLIC_KEY=${PUBLIC_KEY} \
+    MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} |
+    oc replace --force=true -f -
+```
+If you do not have a local maven mirror, be sure to remove the above `MAVEN_MIRROR_URL` from the list of variables.
+
+1. Replace the UI with the secure variant:
+```
+oc process -f ui-service-secure.json \
+    SSO_URL=https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/auth \
+    SSO_PUBLIC_KEY=${PUBLIC_KEY} \
+    HOSTNAME_HTTP=ui-${OCP_PROJECT}.${OCP_DOMAIN} \
+    HOSTNAME_HTTPS=secure-ui-${OCP_PROJECT}.${OCP_DOMAIN} \
+    API_ENDPOINT=http://api-gateway-${OCP_PROJECT}.${OCP_DOMAIN}/api \
+    SECURE_API_ENDPOINT=https://secure-api-gateway-${OCP_PROJECT}.${OCP_DOMAIN}/api | \
+    oc replace --force=true -f -
+```
+
+1. Rebuild and re-deploy the API Gateway and UI components:
+```
+oc start-build ui
+oc start-build api-gateway
+```
+
+You can monitor the progress with:
+```
+oc logs -f bc/api-gateway
+oc logs -f bc/ui
+```
+
+When the secure API Gateway is deployed, it will automatically register itself with Red Hat SSO and create several items within it:
+
+* A *public* SSO client within realm `myrealm` and valid redirects back to the UI (for redirecting to/from the SSO login page)
+* A realm-level role named `user`
+* A User named `appuser` that has been granted the `user` role.
+
+Once the redeployment completes, you should be able to access the insecure site as before *or* the secure variant using `https://secure-ui-${OCP_PROJECT}.${OCP_DOMAIN}`
+
+If you did not generate your own SSL certificates, you will most likely not see the secure UI initially. You will need to open a separate tab in the same browser and access the other services directly so that you can accept the security exceptions generated from the browser.
 
 1. Visit `https://secure-sso-${OCP_PROJECT}.${OCP_DOMAIN}/` and accept the exception, so that you land on the JBoss EAP landing page.
-1. Go back to the demo UI and reload the page. You should now see the login.
+1. Go back to the secure UI and reload the page. You should now see the login.
 1. Click *Login* at the upper-right, and sign into SSO using `appuser`/`password` credentials.
-1. If you are accessing the secure variant (e.g. `secure-ui-${OCP_PROJECT}.${OCP_DOMAIN}` then you will also need to visit the secure variant of the API Gateway `https://secure-api-gateway.${OCP_PROJECT}.${OCP_DOMAIN}` to accept the security exception.
-1. Once you do all of the above, you should be good to go with the demo. If not, see the Troubleshooting section below.
-
-You can log into the store using username `appuser` and password `password`. You will be prompted to change your password upon first login.
-
-You can then add products, and click on *Shopping Cart* to see the pricing and ability to checkout.
+1. If you are accessing the secure UI then you will also need to visit the secure API Gateway `https://secure-api-gateway.${OCP_PROJECT}.${OCP_DOMAIN}` to accept the security exception.
+1. Once you do all of the above, you should be good to go with the full demo. If not, see the Troubleshooting section below.
 
 Optional: Install [Kubeflix](https://github.com/fabric8io/kubeflix) (Hystrix Dashboard and Turbine server for metrics reporting on the services)
 ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -378,6 +409,3 @@ Next, Add the Red Hat GA repository as an additional mirrored repository using t
 You can now configure `MAVEN_MIRROR_URL` using either the external URL that is shown at the top of the repository configuration page (e.g. `http://nexus-ci.${OCP_DOMAIN}/repository/maven-public/` OR the
 kubernetes internal URL `http://nexus.ci.svc.cluster.local:8081/repository/maven-public/` (this is what is used in the environment setup at the top of this document).
 
-Notes
------
-* You can optionally install the 3 templates into OpenShift for use via the GUI using `oc create -f openshift-templates -n openshift`. Once created, you can then deploy the services in your projects using *Add To Project*

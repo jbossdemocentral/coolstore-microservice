@@ -17,8 +17,24 @@
     },
     "parameters": [
         {
+            "description": "URL to Red Hat SSO authentication endpoint, e.g.: https://secure-sso-<project>.<default-domain-suffix>/auth",
+            "name": "SSO_URL",
+            "required": true
+        },
+        {
+            "description": "SSO Public Key. Public key is required to be passed into the template to avoid man-in-the-middle security vulnerability",
+            "name": "SSO_PUBLIC_KEY",
+            "required": true
+        },
+        {
             "description": "Hostname of unsecured route to this app, e.g.: ui-<project>.<domain>",
             "name": "HOSTNAME_HTTP",
+            "value": "",
+            "required": true
+        },
+        {
+            "description": "Hostname of secured route to this app, e.g.: secure-ui-<project>.<domain>",
+            "name": "HOSTNAME_HTTPS",
             "value": "",
             "required": true
         },
@@ -26,6 +42,26 @@
             "description": "API Gateway REST endpoint, e.g.: http://api-gateway-<project>.<default-domain-suffix>/api",
             "name": "API_ENDPOINT",
             "value": "",
+            "required": true
+        },
+        {
+            "description": "API Gateway service secure REST endpoint, e.g.: https://secure-api-gateway-<project>.<default-domain-suffix>/api",
+            "name": "SECURE_API_ENDPOINT",
+            "value": "",
+            "required": true
+        },
+        {
+            "description": "A-MQ cluster admin password",
+            "name": "MQ_CLUSTER_PASSWORD",
+            "from": "[a-zA-Z0-9]{8}",
+            "generate": "expression",
+            "required": true
+        },
+        {
+            "description": "JGroups cluster password",
+            "name": "JGROUPS_CLUSTER_PASSWORD",
+            "from": "[a-zA-Z0-9]{8}",
+            "generate": "expression",
             "required": true
         }
     ],
@@ -142,12 +178,48 @@
                                 ],
                                 "env": [
                                     {
+                                        "name": "SSO_SERVICE_URL",
+                                        "value": "${SSO_URL}"
+                                    },
+                                    {
+                                        "name": "SSO_URL",
+                                        "value": "${SSO_URL}"
+                                    },
+                                    {
+                                        "name": "SSO_REALM",
+                                        "value": "myrealm"
+                                    },
+                                    {
+                                        "name": "SSO_USERNAME",
+                                        "value": "ssoservice"
+                                    },
+                                    {
+                                        "name": "SSO_PASSWORD",
+                                        "value": "ssoservicepass"
+                                    },
+                                    {
+                                        "name": "SSO_PUBLIC_KEY",
+                                        "value": "${SSO_PUBLIC_KEY}"
+                                    },
+                                    {
                                         "name": "API_ENDPOINT",
                                         "value": "${API_ENDPOINT}"
                                     },
                                     {
+                                        "name": "SECURE_API_ENDPOINT",
+                                        "value": "${SECURE_API_ENDPOINT}"
+                                    },
+                                    {
+                                        "name": "SSO_CLIENT_ID",
+                                        "value": "coolstore-ui"
+                                    },
+                                    {
                                         "name": "HOSTNAME_HTTP",
                                         "value": "${HOSTNAME_HTTP}"
+                                    },
+                                    {
+                                        "name": "HOSTNAME_HTTPS",
+                                        "value": "${HOSTNAME_HTTPS}"
                                     }
                                 ],
                                 "resources": {},
@@ -161,7 +233,8 @@
                         "securityContext": {}
                     }
                 }
-            }
+            },
+            "status": {}
         },
         {
             "kind": "Service",
@@ -186,6 +259,27 @@
                 }
             }
         },
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "secure-ui",
+                "labels": {
+                    "application": "ui"
+                }
+            },
+            "spec": {
+                "host": "${HOSTNAME_HTTPS}",
+                "to": {
+                    "kind": "Service",
+                    "name": "ui"
+                },
+                "tls": {
+                    "termination": "edge"
+                }
+            }
+        },
+
         {
             "kind": "Route",
             "apiVersion": "v1",

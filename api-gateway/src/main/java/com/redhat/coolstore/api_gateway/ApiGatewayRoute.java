@@ -114,6 +114,8 @@ public class ApiGatewayRoute extends RouteBuilder {
             .route().id("getCartOptionsRoute").end().endRest()
             .options("/checkout/{cartId}")
             .route().id("checkoutCartOptionsRoute").end().endRest()
+            .options("/{cartId}/{tmpId}")
+            .route().id("cartSetOptionsRoute").end().endRest()
             .options("/{cartId}/{itemId}/{quantity}")
             .route().id("cartAddDeleteOptionsRoute").end().endRest()
 
@@ -191,7 +193,27 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .end()
                 .setHeader("CamelJacksonUnmarshalType", simple(ShoppingCart.class.getName()))
                 .unmarshal().json(JsonLibrary.Jackson, ShoppingCart.class)
+            .endRest()
+
+            .post("/{cartId}/{tmpId}").description("Transfer temp shopping items to user's cart")
+                .param().name("cartId").type(RestParamType.path).description("The ID of the cart to process").dataType("string").endParam()
+                .param().name("tmpId").type(RestParamType.path).description("The ID of the temp cart to transfer").dataType("string").endParam()
+                .outType(ShoppingCart.class)
+                .route().id("setCartRoute")
+                .hystrix().id("Cart Service (Set Cart)")
+                .removeHeaders("CamelHttp*")
+                .setBody(simple("null"))
+                .setHeader(Exchange.HTTP_METHOD, HttpMethods.POST)
+                .setHeader(Exchange.HTTP_URI, simple("http://cart-service:8080/api/cart/${header.cartId}/${header.tmpId}"))
+                .to("http4://DUMMY")
+                .onFallback()
+                // TODO: improve fallback
+                .transform().constant(null)
+                .end()
+                .setHeader("CamelJacksonUnmarshalType", simple(ShoppingCart.class.getName()))
+                .unmarshal().json(JsonLibrary.Jackson, ShoppingCart.class)
             .endRest();
+
     }
 
     private class InventoryEnricher implements AggregationStrategy {
