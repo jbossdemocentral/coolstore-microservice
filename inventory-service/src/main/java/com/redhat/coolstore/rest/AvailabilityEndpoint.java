@@ -1,9 +1,8 @@
 package com.redhat.coolstore.rest;
 
 import java.io.Serializable;
-import java.util.List;
 
-import javax.enterprise.context.SessionScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -14,7 +13,7 @@ import javax.ws.rs.core.MediaType;
 import com.redhat.coolstore.model.Inventory;
 import com.redhat.coolstore.service.InventoryService;
 
-@SessionScoped
+@RequestScoped
 @Path("/availability")
 public class AvailabilityEndpoint implements Serializable {
 
@@ -27,7 +26,7 @@ public class AvailabilityEndpoint implements Serializable {
 	@Path("{itemId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Inventory getAvailability(@PathParam("itemId") String itemId) {
-		
+		System.out.println("Calling the inventory service");
 		return inventoryService.getInventory(itemId);
 	}
 
