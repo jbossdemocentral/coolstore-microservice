@@ -577,6 +577,14 @@ objects:
             value: gVDBYkk47u
           - name: AUTO_DEPLOY_EXPLODED
             value: "false"
+          - name: DB_USERNAME
+            value: ${CATALOG_DB_USERNAME}
+          - name: DB_PASSWORD
+            value: ${CATALOG_DB_PASSWORD}
+          - name: DB_NAME
+            value: catalogdb
+          - name: DB_SERVER
+            value: catalog-mongodb
           image: catalog-service
           imagePullPolicy: Always
           lifecycle:
@@ -642,6 +650,7 @@ objects:
   metadata:
     annotations:
       description: The catalog service's http port.
+      service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'
     labels:
       app: catalog-service
     name: catalog-service
@@ -652,6 +661,113 @@ objects:
       targetPort: 8080
     selector:
       deploymentconfig: catalog-service
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: catalog-service
+    name: catalog-mongodb
+  spec:
+    ports:
+    - name: mongo
+      port: 27017
+      protocol: TCP
+      targetPort: 27017
+    selector:
+      deploymentconfig: catalog-mongodb
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: catalog-service
+    name: catalog-mongodb
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: catalog-mongodb
+    strategy:
+      recreateParams:
+        timeoutSeconds: 600
+      resources: {}
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          application: catalog-service
+          deploymentconfig: catalog-mongodb
+      spec:
+        containers:
+        - env:
+          - name: KUBERNETES_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: MONGODB_USER
+            value: ${CATALOG_DB_USERNAME}
+          - name: MONGODB_PASSWORD
+            value: ${CATALOG_DB_PASSWORD}
+          - name: MONGODB_DATABASE
+            value: catalogdb
+          - name: MONGODB_ADMIN_PASSWORD
+            value: ${CATALOG_DB_PASSWORD}
+          image: mongodb
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 27017
+            timeoutSeconds: 1
+          name: catalog-mongodb
+          ports:
+          - containerPort: 27017
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -i
+              - -c
+              - mongo 127.0.0.1:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD
+                --eval="quit()"
+            failureThreshold: 3
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 512Mi
+          securityContext:
+            capabilities: {}
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /var/lib/mongodb/data
+            name: mongodb-data
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir: {}
+          name: mongodb-data
+    test: false
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - catalog-mongodb
+        from:
+          kind: ImageStreamTag
+          name: mongodb:3.2
+          namespace: openshift
+      type: ImageChange
+    - type: ConfigChange
 # Cart Service
 - apiVersion: v1
   kind: ImageStream
@@ -819,6 +935,16 @@ parameters:
   from: '[a-zA-Z0-9]{8}'
   generate: expression
   name: INVENTORY_DB_PASSWORD
+  required: true
+- description: Catalog Service database user name
+  from: user[a-zA-Z0-9]{3}
+  generate: expression
+  name: CATALOG_DB_USERNAME
+  required: true
+- description: Catalog Service database user password
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: CATALOG_DB_PASSWORD
   required: true
 - description: 'API Gateway REST endpoint, e.g.: http://api-gateway-<project>.<default-domain-suffix>/api'
   name: API_GATEWAY_ENDPOINT
