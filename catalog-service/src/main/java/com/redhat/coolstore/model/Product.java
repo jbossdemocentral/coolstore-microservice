@@ -11,7 +11,7 @@ import javax.persistence.Id;
 public class Product implements Serializable {
 
 	private static final long serialVersionUID = -7304814269819778382L;
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id
 	private String itemId;
 	private String name;
 	private String desc;

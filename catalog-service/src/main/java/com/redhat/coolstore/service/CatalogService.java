@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.ejb.Stateless;
+import javax.enterprise.context.Dependent;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -18,7 +19,7 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.coolstore.model.Product;
 
-@ApplicationScoped
+@Dependent
 @Stateless
 public class CatalogService {
 
@@ -26,7 +27,7 @@ public class CatalogService {
 	private EntityManager em;
 	private List<Product> products;
 	private Map<String, Product> productMap;
-
+ 
 	public CatalogService() {
 
 		products = new ArrayList<>();
@@ -39,21 +40,20 @@ public class CatalogService {
 		products.add(new Product("444434", "Pebble Smart Watch", "Smart glasses and smart watches are perhaps two of the most exciting developments in recent years. ", 24.00));
 		products.add(new Product("444435", "Oculus Rift", "The world of gaming has also undergone some very unique and compelling tech advances in recent years. Virtual reality, the concept of complete immersion into a digital universe through a special headset, has been the white whale of gaming and digital technology ever since Geekstakes Oculus Rift GiveawayNintendo marketed its Virtual Boy gaming system in 1995.Lytro", 106.00));
 		products.add(new Product("444436", "Lytro Camera", "Consumers who want to up their photography game are looking at newfangled cameras like the Lytro Field camera, designed to take photos with infinite focus, so you can decide later exactly where you want the focus of each image to be. ", 44.30));
-
 		productMap = products.stream().collect(Collectors.toMap(Product::getItemId, Function.identity()));
-		for (Product p:products) {
-			em.persist(p);
-		}
 	}
 
 	public List<Product> getProducts() {
+		for (Product p:products) {
+			em.persist(p);
+		}
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Product> cq = cb.createQuery(Product.class);
 		Root<Product> rootEntry = cq.from(Product.class);
 		CriteriaQuery<Product> all = cq.select(rootEntry);
 		TypedQuery<Product> allQuery = em.createQuery(all);
-		return allQuery.getResultList();
-		
+		List<Product> products =  allQuery.getResultList();
+	  return products;	
 	}
 
 }
