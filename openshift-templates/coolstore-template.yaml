@@ -24,19 +24,19 @@ objects:
 - apiVersion: v1
   kind: ImageStream
   metadata:
-    name: ui
+    name: web-ui
   spec:
     tags:
     - name: latest
 - apiVersion: v1
   kind: BuildConfig
   metadata:
-    name: ui
+    name: web-ui
   spec:
     output:
       to:
         kind: ImageStreamTag
-        name: ui:latest
+        name: web-ui:latest
     source:
       contextDir: coolstore-ui
       git:
@@ -57,30 +57,30 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: ui
+    name: web-ui
   spec:
     replicas: 1
     selector:
-      application: ui
-      deploymentconfig: ui
+      application: web-ui
+      deploymentconfig: web-ui
     strategy:
       resources: {}
       type: Recreate
     template:
       metadata:
         labels:
-          application: ui
-          deploymentconfig: ui
+          application: web-ui
+          deploymentconfig: web-ui
       spec:
         containers:
         - env:
           - name: COOLSTORE_GW_SERVICE
-            value: api-gateway
+            value: coolstore-gw
           - name: HOSTNAME_HTTP
-            value: ui:8080
-          image: ui
+            value: web-ui:8080
+          image: web-ui
           imagePullPolicy: Always
-          name: ui
+          name: web-ui
           ports:
           - containerPort: 8080
             protocol: TCP
@@ -114,10 +114,10 @@ objects:
     - imageChangeParams:
         automatic: true
         containerNames:
-        - ui
+        - web-ui
         from:
           kind: ImageStreamTag
-          name: ui:latest
+          name: web-ui:latest
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -125,7 +125,7 @@ objects:
   metadata:
     labels:
       app: web-ui
-    name: ui
+    name: web-ui
   spec:
     ports:
     - name: 8080-tcp
@@ -133,32 +133,32 @@ objects:
       protocol: TCP
       targetPort: 8080
     selector:
-      deploymentconfig: ui
+      deploymentconfig: web-ui
 - apiVersion: v1
   kind: Route
   metadata:
-    name: ui
+    name: web-ui
   spec:
     to:
       kind: Service
-      name: ui
+      name: web-ui
 # API Gateway
 - apiVersion: v1
   kind: ImageStream
   metadata:
-    name: api-gateway
+    name: coolstore-gw
   spec:
     tags:
     - name: latest
 - apiVersion: v1
   kind: BuildConfig
   metadata:
-    name: api-gateway
+    name: coolstore-gw
   spec:
     output:
       to:
         kind: ImageStreamTag
-        name: api-gateway:latest
+        name: coolstore-gw:latest
     source:
       contextDir: api-gateway
       git:
@@ -182,25 +182,25 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: api-gateway
+    name: coolstore-gw
   spec:
     replicas: 1
     selector:
-      deploymentconfig: api-gateway
+      deploymentconfig: coolstore-gw
     strategy:
       resources: {}
       type: Recreate
     template:
       metadata:
         labels:
-          application: api-gateway
-          deploymentconfig: api-gateway
-        name: api-gateway
+          application: coolstore-gw
+          deploymentconfig: coolstore-gw
+        name: coolstore-gw
       spec:
         containers:
         - env:
           - name: OPENSHIFT_KUBE_PING_LABELS
-            value: application=api-gateway
+            value: application=coolstore-gw
           - name: OPENSHIFT_KUBE_PING_NAMESPACE
             valueFrom:
               fieldRef:
@@ -211,7 +211,7 @@ objects:
             value: 9PjIzcyMGx
           - name: AUTO_DEPLOY_EXPLODED
             value: "false"
-          image: api-gateway
+          image: coolstore-gw
           imagePullPolicy: Always
           lifecycle:
             preStop:
@@ -230,7 +230,7 @@ objects:
             periodSeconds: 5
             successThreshold: 1
             timeoutSeconds: 5
-          name: api-gateway
+          name: coolstore-gw
           ports:
           - containerPort: 8778
             name: jolokia
@@ -265,37 +265,37 @@ objects:
     - imageChangeParams:
         automatic: true
         containerNames:
-        - api-gateway
+        - coolstore-gw
         from:
           kind: ImageStreamTag
-          name: api-gateway:latest
+          name: coolstore-gw:latest
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
   kind: Service
   metadata:
     annotations:
-      description: The api-gateway service's http port.
+      description: The coolstore-gw service's http port.
     labels:
-      app: api-gateway
-    name: api-gateway
+      app: coolstore-gw
+    name: coolstore-gw
   spec:
     ports:
     - port: 8080
       protocol: TCP
       targetPort: 8080
     selector:
-      deploymentconfig: api-gateway
+      deploymentconfig: coolstore-gw
 - apiVersion: v1
   kind: Route
   metadata:
     annotations:
-      description: Route for application's api-gateway http service.
-    name: api-gateway
+      description: Route for application's coolstore-gw http service.
+    name: coolstore-gw
   spec:
     to:
       kind: Service
-      name: api-gateway
+      name: coolstore-gw
 # Inventory Service
 - apiVersion: v1
   kind: ImageStream
