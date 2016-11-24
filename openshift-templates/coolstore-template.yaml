@@ -74,8 +74,8 @@ objects:
       spec:
         containers:
         - env:
-          - name: API_ENDPOINT
-            value: ${API_GATEWAY_ENDPOINT}
+          - name: COOLSTORE_GW_SERVICE
+            value: api-gateway
           - name: HOSTNAME_HTTP
             value: ui:8080
           image: ui
@@ -945,7 +945,4 @@ parameters:
   from: '[a-zA-Z0-9]{8}'
   generate: expression
   name: CATALOG_DB_PASSWORD
-  required: true
-- description: 'API Gateway REST endpoint, e.g.: http://api-gateway-<project>.<default-domain-suffix>/api'
-  name: API_GATEWAY_ENDPOINT
   required: true

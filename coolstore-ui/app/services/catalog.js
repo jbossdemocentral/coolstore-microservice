@@ -12,7 +12,7 @@ angular.module("app")
         } else {
             $http({
                 method: 'GET',
-                url: ($location.protocol() === 'https' ? COOLSTORE_CONFIG.SECURE_API_ENDPOINT : COOLSTORE_CONFIG.API_ENDPOINT) + '/products'
+								url: ($location.protocol() === 'https' ? 'https://' + COOLSTORE_CONFIG.SECURE_API_ENDPOINT : 'http://' + COOLSTORE_CONFIG.API_ENDPOINT) + '.' + $location.host().replace(/^.*?\.(.*)/g,"$1") + '/api/products'
             }).then(function(resp) {
                 products = resp.data;
                 deferred.resolve(resp.data);
