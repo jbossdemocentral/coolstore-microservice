@@ -538,7 +538,7 @@ objects:
           value: ${MAVEN_MIRROR_URL}
         from:
           kind: ImageStreamTag
-          name: jboss-eap70-openshift:1.4
+          name: jboss-webserver30-tomcat8-openshift:1.2
           namespace: openshift
       type: Source
     triggers:
@@ -565,18 +565,10 @@ objects:
       spec:
         containers:
         - env:
-          - name: OPENSHIFT_KUBE_PING_LABELS
-            value: application=catalog-service
-          - name: OPENSHIFT_KUBE_PING_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
-          - name: MQ_CLUSTER_PASSWORD
-            value: ykcS4f6NUG
-          - name: JGROUPS_CLUSTER_PASSWORD
-            value: gVDBYkk47u
-          - name: AUTO_DEPLOY_EXPLODED
-            value: "false"
+          - name: JWS_ADMIN_USERNAME
+            value: Skq3VtCd
+          - name: JWS_ADMIN_PASSWORD
+            value: oktt6yhw
           - name: DB_USERNAME
             value: ${CATALOG_DB_USERNAME}
           - name: DB_PASSWORD
@@ -587,23 +579,6 @@ objects:
             value: catalog-mongodb
           image: catalog-service
           imagePullPolicy: Always
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                - /opt/eap/bin/jboss-cli.sh
-                - -c
-                - :shutdown(timeout=60)
-          livenessProbe:
-            failureThreshold: 5
-            httpGet:
-              path: /
-              port: 8080
-              scheme: HTTP
-            initialDelaySeconds: 120
-            periodSeconds: 5
-            successThreshold: 1
-            timeoutSeconds: 5
           name: catalog-service
           ports:
           - containerPort: 8778
@@ -612,15 +587,14 @@ objects:
           - containerPort: 8080
             name: http
             protocol: TCP
-          - containerPort: 8888
-            name: ping
-            protocol: TCP
           readinessProbe:
             failureThreshold: 10
-            httpGet:
-              path: /
-              port: 8080
-              scheme: HTTP
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - curl -s -u Skq3VtCd:oktt6yhw 'http://localhost:8080/manager/jmxproxy/?get=Catalina%3Atype%3DServer&att=stateName'
+                |grep -iq 'stateName *= *STARTED'
             initialDelaySeconds: 15
             periodSeconds: 5
             successThreshold: 1
