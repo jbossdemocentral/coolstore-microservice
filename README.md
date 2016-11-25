@@ -14,11 +14,11 @@ There are several individual microservices and infrastructure components that ma
 1. Cart Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), manages shopping cart for each customer
 1. Inventory Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves inventory and availability data for retail products
 1. API Gateway - Java EE + Spring Boot + [Camel](http://camel.apache.org) application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serving as a protected entry point/router/aggregator to the backend services
-1. UI Service - A frontend based on [AngularJS](https://angularjs.org) and [PatternFly](http://patternfly.org) running in a [Node.js](https://access.redhat.com/documentation/en/openshift-enterprise/3.2/paged/using-images/chapter-1-source-to-image-s2i) container.
+1. UI Service - A frontend based on [AngularJS](https://angularjs.org) and [PatternFly](http://patternfly.org) running in a [Node.js](https://access.redhat.com/documentation/en/openshift-container-platform/3.3/paged/using-images/chapter-2-source-to-image-s2i) container.
 
 A simple visualization of the complete setup of runtime components of this demo:
 
-![Architecture Screenshot](/../screenshots/screenshots/arch.png?raw=true "Architecture Screenshot")
+![Architecture Screenshot](/docs/images/arch-diagram.png?raw=true "Architecture Diagram")
 
 Notice the UI pods only expose an HTTP endpoint - when users access the UI service through HTTPS,
 OpenShift handles the TLS termination at the routing layer.
@@ -45,12 +45,10 @@ oc process -f coolstore-template.yaml | oc create -f -
 
 When all pods are deployed, verify all services are functioning:
 ```
-# Catalog Service
-oc rsh $(oc get pods -o name -l application=coolstore-gw) curl http://catalog-service:8080/api/products
-# Inventory Service
-oc rsh $(oc get pods -o name -l application=coolstore-gw) curl http://inventory-service:8080/api/availability/329299
-# Cart Service
-oc rsh $(oc get pods -o name -l application=coolstore-gw) curl http://cart-service:8080/api/cart/FOO
+oc rsh $(oc get pods -o name -l application=coolstore-gw)
+curl http://catalog-service:8080/api/products
+curl http://inventory-service:8080/api/availability/329299
+curl http://cart-service:8080/api/cart/FOO
 ```
 
 Troubleshooting
