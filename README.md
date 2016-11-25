@@ -4,8 +4,6 @@ This is an example demo showing a retail store consisting of several of microser
 
 It demonstrates how to wire up small microservices into a larger application using microservice architectural principals.
 
-![Store Screenshot](/../screenshots/screenshots/store.png?raw=true "Store Screenshot")
-
 Services
 --------
 There are several individual microservices and infrastructure components that make up this app:
@@ -51,7 +49,12 @@ curl http://inventory-service:8080/api/availability/329299
 curl http://cart-service:8080/api/cart/FOO
 ```
 
+Demo Instructions
+================
+Access the web interface by pointing your browser at the `web-ui` route url.
+![Store Screenshot](/../screenshots/screenshots/store.png?raw=true "Store Screenshot")
+
 Troubleshooting
----------------
+================
 * If you attempt to deploy any of the services, and nothing happens, it may just be taking a while to download the Docker builder images. Visit the OpenShift web console and navigate to
 Browse->Events and look for errors, and re-run the 'oc delete ; oc create' commands to re-install the images (as outlined at the beginning.)
