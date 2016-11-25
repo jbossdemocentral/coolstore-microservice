@@ -9,11 +9,11 @@ public class Product implements Serializable {
 	private String name;
 	private String desc;
 	private double price;
-	
+
 	public Product() {
-		
+
 	}
-	
+
 	public Product(String itemId, String name, String desc, double price) {
 		super();
 		this.itemId = itemId;
@@ -51,7 +51,7 @@ public class Product implements Serializable {
 		return "Product [itemId=" + itemId + ", name=" + name + ", desc="
 				+ desc + ", price=" + price + "]";
 	}
-	
-	
-	
+
+
+
 }
