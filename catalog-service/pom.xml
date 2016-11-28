@@ -58,6 +58,11 @@
       <version>2.1.4</version>
     </dependency>
     <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver</artifactId>
+      <version>3.2.2</version>
+    </dependency>
+    <dependency>
       <groupId>javax</groupId>
       <artifactId>javaee-web-api</artifactId>
       <version>6.0</version>
