@@ -41,8 +41,10 @@ public class Producers {
         String dbUsername = System.getenv("DB_USERNAME");
         String dbPassword = System.getenv("DB_PASSWORD");
         if(dbUsername!=null && !dbUsername.isEmpty() && dbPassword!=null && !dbPassword.isEmpty()) {
+            log.info(String.format("Connecting to MongoDB %s@%s using %s user credentials",dbName,dbServer,dbUsername));
             return new MongoClient(new ServerAddress(dbServer), Arrays.asList(MongoCredential.createCredential(dbUsername, dbName, dbPassword.toCharArray())));
         } else {
+            log.info(String.format("Connecting to MongoDB %s@%s without authentication",dbName,dbServer));
             return new MongoClient(dbServer);
         }
 
