@@ -13,9 +13,6 @@ import com.redhat.coolstore.model.Product;
 import com.redhat.coolstore.model.ShoppingCart;
 import com.redhat.coolstore.model.ShoppingCartItem;
 
-//import feign.Feign;
-//import feign.jackson.JacksonDecoder;
-
 @Component
 public class ShoppingCartServiceImpl implements ShoppingCartService {
 	
@@ -88,11 +85,6 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 	@Override
 	public Product getProduct(String itemId) {
 		if (!productMap.containsKey(itemId)) {
-
-//			CatalogService cat = Feign.builder()
-//					.decoder(new JacksonDecoder())
-//					.target(CatalogService.class, "http://catalog-service:8080");
-
 			// Fetch and cache products. TODO: Cache should expire at some point!
 			List<Product> products = catalogServie.products();
 			productMap = products.stream().collect(Collectors.toMap(Product::getItemId, Function.identity()));

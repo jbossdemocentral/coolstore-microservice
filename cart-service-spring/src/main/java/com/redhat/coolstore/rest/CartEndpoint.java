@@ -14,6 +14,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,10 +26,12 @@ import com.redhat.coolstore.model.ShoppingCart;
 import com.redhat.coolstore.model.ShoppingCartItem;
 import com.redhat.coolstore.service.ShoppingCartService;
 
+
 @RestController
 @Scope(scopeName = WebApplicationContext.SCOPE_SESSION)
 @Path("/cart")
 public class CartEndpoint implements Serializable {
+	private static final Logger LOG = LoggerFactory.getLogger(CartEndpoint.class);
 
     /**
      *
@@ -54,6 +58,11 @@ public class CartEndpoint implements Serializable {
         ShoppingCart cart = shoppingCartService.getShoppingCart(cartId);
 
         Product product = shoppingCartService.getProduct(itemId);
+        
+        if (product == null) {
+        	LOG.warn("Invalid product {} request to get added to the shopping cart. No product added", itemId);
+        	return cart;
+        }
 
         ShoppingCartItem sci = new ShoppingCartItem();
         sci.setProduct(product);
