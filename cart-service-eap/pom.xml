@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.redhat.coolstore</groupId>
-    <artifactId>cart-service</artifactId>
+    <artifactId>cart-service-eap</artifactId>
     <version>1.0.0</version>
     <packaging>war</packaging>
-    <name>cart-service</name>
+    <name>cart-service-eap</name>
 
     <repositories>
         <repository>
