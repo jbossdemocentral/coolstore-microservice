@@ -760,7 +760,7 @@ objects:
         kind: ImageStreamTag
         name: cart-service:latest
     source:
-      contextDir: cart-service
+      contextDir: cart-service-eap
       git:
         ref: ${GIT_REF}
         uri: ${GIT_URI}
