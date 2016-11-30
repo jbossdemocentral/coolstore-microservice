@@ -8,18 +8,13 @@ Services
 --------
 There are several individual microservices and infrastructure components that make up this app:
 
-1. Catalog Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves products and prices for retail products
+1. Catalog Service - Java application running on [JBoss Web Server (Tomcat)](https://access.redhat.com/products/red-hat-jboss-web-server/) and MongoDB, serves products and prices for retail products
 1. Cart Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), manages shopping cart for each customer
-1. Inventory Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serves inventory and availability data for retail products
-1. API Gateway - Java EE + Spring Boot + [Camel](http://camel.apache.org) application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serving as a protected entry point/router/aggregator to the backend services
-1. UI Service - A frontend based on [AngularJS](https://angularjs.org) and [PatternFly](http://patternfly.org) running in a [Node.js](https://access.redhat.com/documentation/en/openshift-container-platform/3.3/paged/using-images/chapter-2-source-to-image-s2i) container.
-
-A simple visualization of the complete setup of runtime components of this demo:
+1. Inventory Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/) and PostgreSQL, serves inventory and availability data for retail products
+1. Coolstore Gateway - Java EE + Spring Boot + [Camel](http://camel.apache.org) application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serving as an entry point/router/aggregator to the backend services
+1. Web UI - A frontend based on [AngularJS](https://angularjs.org) and [PatternFly](http://patternfly.org) running in a [Node.js](https://access.redhat.com/documentation/en/openshift-container-platform/3.3/paged/using-images/chapter-2-source-to-image-s2i) container.
 
 ![Architecture Screenshot](/docs/images/arch-diagram.png?raw=true "Architecture Diagram")
-
-Notice the UI pods only expose an HTTP endpoint - when users access the UI service through HTTPS,
-OpenShift handles the TLS termination at the routing layer.
 
 Demo Setup
 ================
@@ -53,6 +48,9 @@ Demo Instructions
 ================
 Access the web interface by pointing your browser at the `web-ui` route url.
 ![Store Screenshot](/../screenshots/screenshots/store.png?raw=true "Store Screenshot")
+
+Notice the UI pods only expose an HTTP endpoint - when users access the UI service through HTTPS,
+OpenShift handles the TLS termination at the routing layer.
 
 Troubleshooting
 ================
