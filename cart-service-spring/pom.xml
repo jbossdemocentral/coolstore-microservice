@@ -5,7 +5,7 @@
 
 	<groupId>com.redhat.coolstore</groupId>
 	<artifactId>cart-service-spring</artifactId>
-	<version>1.0.0</version>
+	<version>1.1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>cart-service-spring</name>
