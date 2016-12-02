@@ -12,6 +12,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 
 import org.kie.api.KieServices;
+import org.kie.api.command.BatchExecutionCommand;
 import org.kie.api.command.Command;
 import org.kie.api.command.KieCommands;
 import org.kie.api.runtime.ExecutionResults;
@@ -38,13 +39,14 @@ import feign.jackson.JacksonDecoder;
 public class ShoppingCartServiceImplDecisionServer implements ShoppingCartService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ShoppingCartServiceImplDecisionServer.class);
-	
-	//private static final String URL = "http://coolstore-rules-coolstore.127.0.0.1.xip.io/kie-server/services/rest/server";
+
+	// private static final String URL = "http://coolstore-rules-coolstore.127.0.0.1.xip.io/kie-server/services/rest/server";
 	private static final String URL = "http://coolstore-rules:8080/kie-server/services/rest/server";
 	private static final String USER = "brmsAdmin";
 	private static final String PASSWORD = "jbossbrms@01";
 	private static final String CONTAINER_ID = "CoolStoreRulesContainer";
 	private static final String KIE_SESSION_NAME = "coolstore-kie-session";
+	private static final String RULEFLOW_PROCESS_NAME = "com.redhat.coolstore.PriceProcess";
 
 	private static final MarshallingFormat FORMAT = MarshallingFormat.XSTREAM;
 
@@ -56,9 +58,9 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	private PromoService ps;
 
 	private Map<String, ShoppingCart> cartDB = new HashMap<>();
-	
+
 	private Map<String, Product> productMap = new HashMap<>();
-	
+
 	/**
 	 * Initializes the KIE-Server-Client.
 	 */
@@ -69,11 +71,11 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 		conf.setMarshallingFormat(FORMAT);
 		kieServicesClient = KieServicesFactory.newKieServicesClient(conf);
 		rulesClient = kieServicesClient.getServicesClient(RuleServicesClient.class);
-		
+
 	}
 
 	@Override
-	public ShoppingCart getShoppingCart(String cartId) {	
+	public ShoppingCart getShoppingCart(String cartId) {
 		if (!cartDB.containsKey(cartId)) {
 			ShoppingCart c = new ShoppingCart();
 			cartDB.put(cartId, c);
@@ -86,85 +88,23 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	@Override
 	public void priceShoppingCart(ShoppingCart sc) {
 		if (sc != null) {
-			
+
 			initShoppingCartForPricing(sc);
 
-			KieCommands commandsFactory = KieServices.Factory.get().getCommands();
-			// List of BRMS commands that will be send to the rules-engine (e.g. inserts, fireAllRules, etc).
-			List<Command<?>> commands = new ArrayList<>();
+			BatchExecutionCommand batchCommand = buildBatchExecutionCommand(sc);
 
-			// Insert the promo first
-			for (Promotion promo : ps.getPromotions()) {
-				PromoEvent promoEvent = new PromoEvent(promo.getItemId(), promo.getPercentOff());
-				// Note that we insert the fact into the "Promo Stream".
-				Command<?> insertPromoEventCommand = commandsFactory.newInsert(promoEvent, "outPromo", false, "Promo Stream");
-				commands.add(insertPromoEventCommand);
-			}
-
-			/*
-			 * Insert the shoppingcart. Note that the shoppingcart does not contain the actual items. Those are inserted seperately as
-			 * facts.
-			 */
-			/*
-			 * Create the ShoppingCart object that we'll send over the wire. This needs mapping from our internal ShoppingCart model to the
-			 * one used in our rules.
-			 */
-			com.redhat.coolstore.ShoppingCart factSc = new com.redhat.coolstore.ShoppingCart();
-			factSc.setCartItemPromoSavings(sc.getCartItemPromoSavings());
-			factSc.setCartItemTotal(sc.getCartItemTotal());
-			factSc.setCartTotal(sc.getCartTotal());
-			factSc.setShippingPromoSavings(sc.getShippingPromoSavings());
-			factSc.setShippingTotal(sc.getShippingTotal());
-
-			commands.add(commandsFactory.newInsert(factSc, "shoppingcart", true, "DEFAULT"));
-
-			// Insert the ShoppingCartItems.
-			List<ShoppingCartItem> scItems = sc.getShoppingCartItemList();
-			for (ShoppingCartItem nextSci : scItems) {
-				// Map to fact shoppingcartitem.
-				com.redhat.coolstore.ShoppingCartItem factSci = new com.redhat.coolstore.ShoppingCartItem();
-				factSci.setItemId(nextSci.getProduct().getItemId());
-				factSci.setName(nextSci.getProduct().getName());
-				factSci.setPrice(nextSci.getProduct().getPrice());
-				factSci.setQuantity(nextSci.getQuantity());
-				factSci.setShoppingCart(factSc);
-
-				commands.add(commandsFactory.newInsert(factSci));
-			}
-
-			// Start the process
-			commands.add(commandsFactory.newStartProcess("com.redhat.coolstore.PriceProcess"));
-
-			// Fire the rules
-			commands.add(commandsFactory.newFireAllRules());
-
-			Command<?> batchCommand = commandsFactory.newBatchExecution(commands, KIE_SESSION_NAME);
-			
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Sending request to DecisionServer: " + batchCommand.toString());
-			}
-			
 			ServiceResponse<ExecutionResults> executeResponse = rulesClient.executeCommandsWithResults(CONTAINER_ID, batchCommand);
-			
+
 			if (executeResponse.getType() == ResponseType.SUCCESS) {
-				//Map values back to the original shoppingcart object.
 				ExecutionResults results = executeResponse.getResult();
 				com.redhat.coolstore.ShoppingCart resultSc = (com.redhat.coolstore.ShoppingCart) results.getValue("shoppingcart");
-				sc.setCartItemPromoSavings(resultSc.getCartItemPromoSavings());
-				sc.setCartItemTotal(resultSc.getCartItemTotal());
-				sc.setShippingPromoSavings(resultSc.getShippingPromoSavings());
-				sc.setShippingTotal(resultSc.getShippingTotal());
-				sc.setCartTotal(resultSc.getCartTotal());
-				if (LOGGER.isDebugEnabled()) {
-					LOGGER.debug("Rules executed succesfully. Cart pricing: " + sc.toString());
-				}
+				mapShoppingCartPricingResults(resultSc, sc);
 			} else {
-				//TODO: Some proper, micro-service type error handling here.
+				// TODO: Some proper, micro-service type error handling here.
 				String message = "Error calculating prices.";
 				LOGGER.error(message);
-				throw new RuntimeException(message);		
+				throw new RuntimeException(message);
 			}
-			
 		}
 	}
 
@@ -172,9 +112,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	public Product getProduct(String itemId) {
 		if (!productMap.containsKey(itemId)) {
 
-			CatalogService cat = Feign.builder()
-					.decoder(new JacksonDecoder())
-					.target(CatalogService.class, "http://catalog-service:8080");
+			CatalogService cat = Feign.builder().decoder(new JacksonDecoder()).target(CatalogService.class, "http://catalog-service:8080");
 
 			// Fetch and cache products. TODO: Cache should expire at some point!
 			List<Product> products = cat.products();
@@ -183,7 +121,54 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 
 		return productMap.get(itemId);
 	}
-	
+
+	/**
+	 * Builds the KIE {@link BatchExecutionCommand}, which contains all the KIE logic like insertion of facts, starting of ruleflow
+	 * processes and firing of rules, from the given {@link ShoppingCart}.
+	 * 
+	 * @param sc
+	 *            the {@link ShoppingCart} from which the build the {@link BatchExecutionCommand}.
+	 * @return the {@link BatchExecutionCommand}
+	 */
+	private BatchExecutionCommand buildBatchExecutionCommand(ShoppingCart sc) {
+		KieCommands commandsFactory = KieServices.Factory.get().getCommands();
+		// List of BRMS commands that will be send to the rules-engine (e.g. inserts, fireAllRules, etc).
+		List<Command<?>> commands = new ArrayList<>();
+
+		// Insert the promo first. Promotions are retrieved from the PromoService.
+		for (Promotion promo : ps.getPromotions()) {
+			PromoEvent promoEvent = new PromoEvent(promo.getItemId(), promo.getPercentOff());
+			// Note that we insert the fact into the "Promo Stream".
+			Command<?> insertPromoEventCommand = commandsFactory.newInsert(promoEvent, "outPromo", false, "Promo Stream");
+			commands.add(insertPromoEventCommand);
+		}
+
+		/*
+		 * Build the ShoppingCart fact from the given ShoppingCart.
+		 */
+		com.redhat.coolstore.ShoppingCart factSc = buildShoppingCartFact(sc);
+
+		commands.add(commandsFactory.newInsert(factSc, "shoppingcart", true, "DEFAULT"));
+
+		// Insert the ShoppingCartItems.
+		List<ShoppingCartItem> scItems = sc.getShoppingCartItemList();
+		for (ShoppingCartItem nextSci : scItems) {
+			// Build the ShoppingCartItem fact from the given ShoppingCartItem.
+			com.redhat.coolstore.ShoppingCartItem factSci = buildShoppingCartItem(nextSci);
+			factSci.setShoppingCart(factSc);
+			commands.add(commandsFactory.newInsert(factSci));
+		}
+
+		// Start the process (ruleflow).
+		commands.add(commandsFactory.newStartProcess(RULEFLOW_PROCESS_NAME));
+
+		// Fire the rules
+		commands.add(commandsFactory.newFireAllRules());
+
+		BatchExecutionCommand batchCommand = commandsFactory.newBatchExecution(commands, KIE_SESSION_NAME);
+		return batchCommand;
+	}
+
 	private void initShoppingCartForPricing(ShoppingCart sc) {
 
 		sc.setCartItemTotal(0);
@@ -193,22 +178,66 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 		sc.setCartTotal(0);
 
 		for (ShoppingCartItem sci : sc.getShoppingCartItemList()) {
-			
-			Product p = getProduct(sci.getProduct().getItemId());	
-			
-			//if product exist, create new product to reset price
-			if ( p != null ) {
-			
+
+			Product p = getProduct(sci.getProduct().getItemId());
+
+			// if product exist, create new product to reset price
+			if (p != null) {
 				sci.setProduct(new Product(p.getItemId(), p.getName(), p.getDesc(), p.getPrice()));
 				sci.setPrice(p.getPrice());
 			}
-			
+
 			sci.setPromoSavings(0);
 		}
 	}
-	
-	public void setPs(PromoService ps) {
-		this.ps = ps;
+
+	/**
+	 * Builds a {@link com.redhat.coolstore.ShoppingCart} fact from the given {@link ShoppingCart}.
+	 * 
+	 * @param sc
+	 *            the {@link ShoppingCart} from which to build the fact.
+	 * @return the {@link com.redhat.coolstore.ShoppingCart} fact
+	 */
+	private com.redhat.coolstore.ShoppingCart buildShoppingCartFact(ShoppingCart sc) {
+		com.redhat.coolstore.ShoppingCart factSc = new com.redhat.coolstore.ShoppingCart();
+		factSc.setCartItemPromoSavings(sc.getCartItemPromoSavings());
+		factSc.setCartItemTotal(sc.getCartItemTotal());
+		factSc.setCartTotal(sc.getCartTotal());
+		factSc.setShippingPromoSavings(sc.getShippingPromoSavings());
+		factSc.setShippingTotal(sc.getShippingTotal());
+		return factSc;
+	}
+
+	/**
+	 * Builds a {@link com.redhat.coolstore.ShoppingCartItem} fact from the given {@link ShoppingCartItem}.
+	 * 
+	 * @param sci
+	 *            the {@link ShoppingCartItem} from which to build the fact.
+	 * @return the {@link com.redhat.coolstore.ShoppingCartItem} fact.
+	 */
+	private com.redhat.coolstore.ShoppingCartItem buildShoppingCartItem(ShoppingCartItem sci) {
+		com.redhat.coolstore.ShoppingCartItem factSci = new com.redhat.coolstore.ShoppingCartItem();
+		factSci.setItemId(sci.getProduct().getItemId());
+		factSci.setName(sci.getProduct().getName());
+		factSci.setPrice(sci.getProduct().getPrice());
+		factSci.setQuantity(sci.getQuantity());
+		return factSci;
+	}
+
+	/**
+	 * Maps the {@link com.redhat.coolstore.ShoppingCart} pricing results to the given {@link ShoppingCart}.
+	 * 
+	 * @param resultSc
+	 *            the {@link com.redhat.coolstore.ShoppingCart} containing the pricing defined by the rules engine.
+	 * @param sc
+	 *            the {@link ShoppingCart} onto which we need to map the results.
+	 */
+	private void mapShoppingCartPricingResults(com.redhat.coolstore.ShoppingCart resultSc, ShoppingCart sc) {
+		sc.setCartItemPromoSavings(resultSc.getCartItemPromoSavings());
+		sc.setCartItemTotal(resultSc.getCartItemTotal());
+		sc.setShippingPromoSavings(resultSc.getShippingPromoSavings());
+		sc.setShippingTotal(resultSc.getShippingTotal());
+		sc.setCartTotal(resultSc.getCartTotal());
 	}
 
 }
