@@ -183,6 +183,30 @@ You should get a JSON object listing the item ID (foo) and a real availability (
     {"itemId":"329299","quantity":85,"location":"Frankfurt","link":"http://maps.google.com/?q=frankfurt"}
 ```
 
+Deploy Coolstore Rules Decision Service using the OpenShift `oc` CLI
+-----------------------------------------------------
+This service relies on the xPaaS image for the BRMS Decision Server 6.3.
+
+1. Create and deploy service:
+```
+oc process -f coolstore-rules.json | oc create -f -
+```
+If you have created a [local Maven mirror](https://blog.openshift.com/improving-build-time-java-builds-openshift/) to speed up your builds, specify it with `MAVEN_MIRROR_URL` in the above command. For example:
+```
+oc process -f coolstore-rules.json MAVEN_MIRROR_URL=${MAVEN_MIRROR_URL} | oc create -f -
+```
+
+1. Wait for it to complete (this step may take a while as it downloads all Maven dependencies during the build). Follow the logs using
+```
+oc logs -f bc/coolstore-rules
+```
+To confirm this service is reachable from the API Gateway, determine the name of the pod running the API Gateway and access the service from the API Gateway pod:
+```
+oc rsh $(oc get pods -o name -l application=api-gateway) curl -u brmsAdmin:jbossbrms@01 http://coolstore-rules:8080/kie-server/services/rest/server/containers
+```
+You should get an XML response that lists the JBoss BRMS KIE-Containers deployed on the platform.
+
+
 Deploy Cart Service using the OpenShift `oc` CLI
 ------------------------------------------------
 This service relies on the standard xPaaS image for JBoss EAP 7. No route is created to this service, as it is only accessible from inside the kubernetes cluster.
@@ -228,7 +252,7 @@ oc logs -f bc/ui
 
 Access the Demo
 ---------------
-Once all of the above completes, your demo should be running and you can access the UI using `http://ui-${OCP_PROJECT}.${OCP_DOMAIN}` 
+Once all of the above completes, your demo should be running and you can access the UI using `http://ui-${OCP_PROJECT}.${OCP_DOMAIN}`
 
 You can then add and remove products, and click on *Shopping Cart* to see the pricing in action. Note that you will not be able to checkout of the store until you enable SSO (see below).
 
@@ -398,7 +422,7 @@ Monitor the deployment with `oc logs -n ci -f dc/nexus`. Once the deployment com
 
 Next, Add the Red Hat GA repository as an additional mirrored repository using these steps:
 
-1. Click the "Gear" icon at the top to enter the administrative section. 
+1. Click the "Gear" icon at the top to enter the administrative section.
 1. Click *Create Repository* -> *maven2 (proxy)*
 1. Fill out these fields (leave the others blank): Name: `redhat-ga`, Remote Storage URL: `https://maven.repository.redhat.com/ga/`, Blob Store: Select `default`
 1. Click *Create Repository* at the bottom
@@ -408,4 +432,3 @@ Next, Add the Red Hat GA repository as an additional mirrored repository using t
 
 You can now configure `MAVEN_MIRROR_URL` using either the external URL that is shown at the top of the repository configuration page (e.g. `http://nexus-ci.${OCP_DOMAIN}/repository/maven-public/` OR the
 kubernetes internal URL `http://nexus.ci.svc.cluster.local:8081/repository/maven-public/` (this is what is used in the environment setup at the top of this document).
-
