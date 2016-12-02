@@ -63,6 +63,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	 */
 	@PostConstruct
 	public void initialize() {
+		LOGGER.info("Initializing DecisionServer client.");
 		conf = KieServicesFactory.newRestConfiguration(URL, USER, PASSWORD);
 		conf.setMarshallingFormat(FORMAT);
 		kieServicesClient = KieServicesFactory.newKieServicesClient(conf);
@@ -70,7 +71,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	}
 
 	@Override
-	public ShoppingCart getShoppingCart(String cartId) {
+	public ShoppingCart getShoppingCart(String cartId) {	
 		if (!cartDB.containsKey(cartId)) {
 			ShoppingCart c = new ShoppingCart();
 			cartDB.put(cartId, c);
@@ -136,9 +137,11 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 			commands.add(commandsFactory.newFireAllRules());
 
 			Command<?> batchCommand = commandsFactory.newBatchExecution(commands);
-			// ServiceResponse<String> executeResponse =
-			// rulesClient.executeCommands("hello", batchCommand);
-
+			
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Sending request to DecisionServer: " + batchCommand.toString());
+			}
+			
 			ServiceResponse<ExecutionResults> executeResponse = rulesClient.executeCommandsWithResults(CONTAINER_ID, batchCommand);
 
 			if (executeResponse.getType() == ResponseType.SUCCESS) {
@@ -150,6 +153,9 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 				sc.setShippingPromoSavings(resultSc.getShippingPromoSavings());
 				sc.setShippingTotal(resultSc.getShippingTotal());
 				sc.setCartTotal(resultSc.getCartTotal());
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("Rules executed succesfully. Cart pricing: " + sc.toString());
+				}
 			} else {
 				//TODO: Some proper, micro-service type error handling here.
 				String message = "Error calculating prices.";
