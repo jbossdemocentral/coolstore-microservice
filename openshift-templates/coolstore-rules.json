@@ -5,6 +5,13 @@
         "name": "coolstore-rules",
         "creationTimestamp": null
     },
+    "parameters": [
+      {
+        "description": "A local Maven Mirror, e.g.: http://nexus.ci.svc.cluster.local:8081/content/groups/public/",
+        "name": "MAVEN_MIRROR_URL",
+        "value": ""
+      }
+    ],
     "objects": [
         {
             "kind": "BuildConfig",
@@ -65,6 +72,10 @@
                             {
                                 "name": "KIE_CONTAINER_DEPLOYMENT",
                                 "value": "CoolStoreRulesContainer=com.redhat:coolstore:2.0.0"
+                            },
+                            {
+                              "name": "MAVEN_MIRROR_URL",
+                              "value": "${MAVEN_MIRROR_URL}"
                             }
                         ],
                         "forcePull": true
