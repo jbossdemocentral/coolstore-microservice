@@ -44,6 +44,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	private static final String USER = "brmsAdmin";
 	private static final String PASSWORD = "jbossbrms@01";
 	private static final String CONTAINER_ID = "CoolStoreRulesContainer";
+	private static final String KIE_SESSION_NAME = "coolstore-kie-session";
 
 	private static final MarshallingFormat FORMAT = MarshallingFormat.XSTREAM;
 
@@ -68,6 +69,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 		conf.setMarshallingFormat(FORMAT);
 		kieServicesClient = KieServicesFactory.newKieServicesClient(conf);
 		rulesClient = kieServicesClient.getServicesClient(RuleServicesClient.class);
+		
 	}
 
 	@Override
@@ -136,14 +138,14 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 			// Fire the rules
 			commands.add(commandsFactory.newFireAllRules());
 
-			Command<?> batchCommand = commandsFactory.newBatchExecution(commands);
+			Command<?> batchCommand = commandsFactory.newBatchExecution(commands, KIE_SESSION_NAME);
 			
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug("Sending request to DecisionServer: " + batchCommand.toString());
 			}
 			
 			ServiceResponse<ExecutionResults> executeResponse = rulesClient.executeCommandsWithResults(CONTAINER_ID, batchCommand);
-
+			
 			if (executeResponse.getType() == ResponseType.SUCCESS) {
 				//Map values back to the original shoppingcart object.
 				ExecutionResults results = executeResponse.getResult();
