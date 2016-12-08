@@ -142,25 +142,52 @@ objects:
     to:
       kind: Service
       name: web-ui
-# API Gateway
+# Coolstore Gateway
 - apiVersion: v1
   kind: ImageStream
   metadata:
-    name: coolstore-gw
+    name: fis-java-openshift
   spec:
+    dockerImageRepository: registry.access.redhat.com/jboss-fuse-6-tech-preview/fis-java-openshift
     tags:
-    - name: latest
+    - name: "2.0"
+      annotations:
+        description: JBoss Fuse Integration Services 2.0 Java S2I images.
+        iconClass: icon-jboss
+        supports: jboss-fuse:6.3.0,java:8,xpaas:1.2
+        tags: builder,jboss-fuse,java,xpaas
+        version: "2.0"
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    creationTimestamp: null
+    labels:
+      component: coolstore-gw
+      group: quickstarts
+      project: coolstore
+      provider: s2i
+      version: 1.0
+    name: coolstore-gw
+  spec: {}
+  status:
+    dockerImageRepository: ""
 - apiVersion: v1
   kind: BuildConfig
   metadata:
     name: coolstore-gw
+    labels:
+      component: coolstore-gw
+      group: quickstarts
+      project: coolstore
+      provider: s2i
+      version: 1.0
   spec:
     output:
       to:
         kind: ImageStreamTag
         name: coolstore-gw:latest
     source:
-      contextDir: api-gateway
+      contextDir: coolstore-gw
       git:
         ref: ${GIT_REF}
         uri: ${GIT_URI}
@@ -168,12 +195,12 @@ objects:
     strategy:
       sourceStrategy:
         env:
-        - name: MAVEN_MIRROR_URL
-          value: ${MAVEN_MIRROR_URL}
+        - name: MAVEN_ARGS
+          value: package -DskipTests -Dfabric8.skip -e -B -Pearly-access-repo
+        forcePull: true
         from:
           kind: ImageStreamTag
-          name: jboss-eap70-openshift:1.4
-          namespace: openshift
+          name: fis-java-openshift:2.0
       type: Source
     triggers:
     - type: ConfigChange
@@ -183,6 +210,12 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: coolstore-gw
+    labels:
+      component: coolstore-gw
+      group: quickstarts
+      project: coolstore
+      provider: s2i
+      version: 1.0
   spec:
     replicas: 1
     selector:
@@ -199,68 +232,26 @@ objects:
       spec:
         containers:
         - env:
-          - name: OPENSHIFT_KUBE_PING_LABELS
-            value: application=coolstore-gw
-          - name: OPENSHIFT_KUBE_PING_NAMESPACE
+          - name: KUBERNETES_NAMESPACE
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          - name: MQ_CLUSTER_PASSWORD
-            value: CqUo3fYDTv
-          - name: JGROUPS_CLUSTER_PASSWORD
-            value: 9PjIzcyMGx
-          - name: AUTO_DEPLOY_EXPLODED
-            value: "false"
-          image: coolstore-gw
-          imagePullPolicy: Always
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                - /opt/eap/bin/jboss-cli.sh
-                - -c
-                - :shutdown(timeout=60)
+          image: library/coolstore-gw:latest
           livenessProbe:
-            failureThreshold: 5
             httpGet:
-              path: /
-              port: 8080
-              scheme: HTTP
-            initialDelaySeconds: 120
-            periodSeconds: 5
-            successThreshold: 1
-            timeoutSeconds: 5
+              path: /health
+              port: 8081
+            initialDelaySeconds: 180
           name: coolstore-gw
           ports:
           - containerPort: 8778
             name: jolokia
-            protocol: TCP
-          - containerPort: 8080
-            name: http
-            protocol: TCP
-          - containerPort: 8888
-            name: ping
-            protocol: TCP
           readinessProbe:
-            failureThreshold: 10
             httpGet:
-              path: /
-              port: 8080
-              scheme: HTTP
-            initialDelaySeconds: 15
-            periodSeconds: 5
-            successThreshold: 1
-            timeoutSeconds: 1
-          resources:
-            limits:
-              memory: 800Mi
-            requests:
-              memory: 400Mi
-          terminationMessagePath: /dev/termination-log
-        dnsPolicy: ClusterFirst
-        restartPolicy: Always
-        securityContext: {}
-        terminationGracePeriodSeconds: 75
+              path: /health
+              port: 8081
+            initialDelaySeconds: 10
+          resources: {}
     triggers:
     - imageChangeParams:
         automatic: true
@@ -295,7 +286,7 @@ objects:
   spec:
     to:
       kind: Service
-      name: coolstore-gw
+      name: coolstore-gw      
 # Inventory Service
 - apiVersion: v1
   kind: ImageStream
