@@ -14,7 +14,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
-
 import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.coolstore.model.Product;
