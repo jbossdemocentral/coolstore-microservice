@@ -6,7 +6,7 @@
       <properties>
       <property name="hibernate.ogm.datastore.provider" value="mongodb"/>
       <property name="hibernate.ogm.mongodb.host" value="database"/>
-			<property name="hibernate.ogm.mongodb.database" value="${MONGODB_DATABASE}"/>
+      <property name="hibernate.ogm.mongodb.database" value="${MONGODB_DATABASE}"/>
       <property name="hibernate.ogm.mongodb.username" value="${MONGODB_USER}"/>
       <property name="hibernate.ogm.mongodb.password" value="${MONGODB_PASSWORD}"/>
     </properties>
