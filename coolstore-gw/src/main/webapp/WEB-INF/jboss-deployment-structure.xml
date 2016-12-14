@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure>
+    <deployment>
+        <exclude-subsystems>
+            <subsystem name="jaxrs" />
+        </exclude-subsystems>
+    </deployment>
+</jboss-deployment-structure>

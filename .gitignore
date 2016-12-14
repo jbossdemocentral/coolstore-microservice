@@ -10,3 +10,5 @@ out/
 *.war
 *.iml
 .idea
+workspace
+data
