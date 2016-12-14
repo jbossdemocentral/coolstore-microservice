@@ -86,13 +86,24 @@
     </build>
 
     <dependencies>
-        <dependency>
+			<dependency>
+				<groupId>org.hibernate.ogm</groupId>
+				<artifactId>hibernate-ogm-mongodb</artifactId>
+				<version>5.0.3.Final</version>
+			</dependency>
+			<dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
             <version>6.0</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
+				<dependency>
+					<groupId>javax</groupId>
+					<artifactId>javaee-api</artifactId>
+					<version>6.0</version>
+					<scope>provided</scope>
+					</dependency>
+					<dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-jaxrs</artifactId>
             <version>1.5.8</version>
