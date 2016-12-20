@@ -22,6 +22,18 @@
       "value": ""
     },
     {
+      "description": "Git source URI for application",
+      "name": "GIT_URI",
+      "value": "https://github.com/jbossdemocentral/coolstore-microservice",
+      "required": true
+    },
+    {
+      "description": "Git branch/tag reference",
+      "name": "GIT_REF",
+      "value": "master",
+      "required": true
+    },
+    {
       "description": "A-MQ cluster admin password",
       "name": "MQ_CLUSTER_PASSWORD",
       "from": "[a-zA-Z0-9]{8}",
@@ -70,7 +82,8 @@
         "source": {
           "type": "Git",
           "git": {
-            "uri": "https://github.com/jbossdemocentral/coolstore-microservice"
+            "uri": "${GIT_URI}",
+            "ref": "${GIT_REF}"
           },
           "contextDir": "inventory-service"
         },
@@ -264,6 +277,23 @@
           "deploymentConfig": "inventory-service"
         }
       }
+    },
+    {
+        "kind": "Route",
+        "apiVersion": "v1",
+        "metadata": {
+            "name": "inventory-service"
+        },
+        "spec": {
+            "to": {
+                "kind": "Service",
+                "name": "inventory-service",
+                "weight": 100
+            },
+            "port": {
+                "targetPort": 8080
+            }
+        }
     }
   ]
 }
