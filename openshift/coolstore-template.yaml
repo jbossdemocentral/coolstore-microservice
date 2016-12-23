@@ -160,13 +160,6 @@ objects:
 - apiVersion: v1
   kind: ImageStream
   metadata:
-    creationTimestamp: null
-    labels:
-      component: coolstore-gw
-      group: quickstarts
-      project: coolstore
-      provider: s2i
-      version: 1.0
     name: coolstore-gw
   spec: {}
   status:
@@ -175,12 +168,6 @@ objects:
   kind: BuildConfig
   metadata:
     name: coolstore-gw
-    labels:
-      component: coolstore-gw
-      group: quickstarts
-      project: coolstore
-      provider: s2i
-      version: 1.0
   spec:
     output:
       to:
@@ -210,12 +197,6 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: coolstore-gw
-    labels:
-      component: coolstore-gw
-      group: quickstarts
-      project: coolstore
-      provider: s2i
-      version: 1.0
   spec:
     replicas: 1
     selector:
@@ -286,7 +267,7 @@ objects:
   spec:
     to:
       kind: Service
-      name: coolstore-gw      
+      name: coolstore-gw
 # Inventory Service
 - apiVersion: v1
   kind: ImageStream
