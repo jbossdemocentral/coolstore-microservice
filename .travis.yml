@@ -11,8 +11,8 @@ before_install:
   - nvm install 4.4
 
 script: 
-  - mvn -f catalog-service/pom.xml install
-  - mvn -f inventory-service/pom.xml install
-  - mvn -f cart-service-spring/pom.xml install
-  - mvn -f coolstore-gw/pom.xml install
+  - mvn -f catalog-service/pom.xml install -s openshift/maven/settings.xml
+  - mvn -f inventory-service/pom.xml install -s openshift/maven/settings.xml
+  - mvn -f cart-service-spring/pom.xml install -s openshift/maven/settings.xml
+  - mvn -f coolstore-gw/pom.xml install -s openshift/maven/settings.xml
   - cd coolstore-ui && npm install
