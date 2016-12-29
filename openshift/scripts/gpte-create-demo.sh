@@ -29,7 +29,7 @@ GITHUB_REF=demo-1
 
 # Create Projects
 function create_projects() {
-  echo "Creating projects..."
+  echo_header "Creating projects..."
   oc new-project coolstore-test-$PROJECT_SUFFIX --display-name='Coolstore TEST' --description='Coolstore Test Environment'
   oc new-project coolstore-stage-$PROJECT_SUFFIX --display-name='Coolstore STAGE' --description='Coolstore Staging Environment'
   oc new-project coolstore-prod-$PROJECT_SUFFIX --display-name='Coolstore PROD' --description='Coolstore Production Environment'
@@ -46,35 +46,35 @@ function extract_and_set_domain() {
 
 # Deploy Gogs
 function deploy_gogs() {
-  echo "Deploying Gogs git server..."
+  echo_header "Deploying Gogs git server..."
   sleep 5
   oc process -f https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/master/openshift/gogs-persistent-template.yaml -v HOSTNAME=gogs-cicd-$PROJECT_SUFFIX.$DOMAIN | oc create -f - -n cicd-$PROJECT_SUFFIX
 }
 
 # Deploy Nexus
 function deploy_nexus() {
-  echo "Deploying Sonatype Nexus repository manager..."
+  echo_header "Deploying Sonatype Nexus repository manager..."
   sleep 5
   oc process -f https://raw.githubusercontent.com/OpenShiftDemos/nexus/master/nexus2-persistent-template.yaml | oc create -f -
 }
 
 # Deploy Jenkins
 function deploy_jenkins() {
-  echo "Deploying Jenkins..."
+  echo_header "Deploying Jenkins..."
   sleep 5
   oc new-app jenkins-persistent -l app=jenkins -p JENKINS_PASSWORD=openshift -n cicd-$PROJECT_SUFFIX
 }
 
 # Deploy Coolstore into Coolstore TEST project
 function deploy_coolstore_test_env() {
-  echo "Deploying CoolStore app into coolstore-test-$PROJECT_SUFFIX project..."
+  echo_header "Deploying CoolStore app into coolstore-test-$PROJECT_SUFFIX project..."
   sleep 5
   oc process -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/coolstore-template.yaml -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=http://nexus.cicd-$PROJECT_SUFFIX.svc.cluster.local:8081/content/groups/public | oc create -f - -n coolstore-test-$PROJECT_SUFFIX
 }
 
 # Deploy Inventory Service into Inventory DEV project
 function deploy_inventory_service() {
-  echo "Deploying Inventory service into inventory-dev-$PROJECT_SUFFIX project..."
+  echo_header "Deploying Inventory service into inventory-dev-$PROJECT_SUFFIX project..."
   sleep 5
   oc process -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/services/inventory-service.json -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=http://nexus.cicd-$PROJECT_SUFFIX.svc.cluster.local:8081/content/groups/public | oc create -f - -n inventory-dev-$PROJECT_SUFFIX
 }
@@ -93,6 +93,12 @@ function set_default_project() {
   then
     oc project default
   fi
+}
+
+function echo_header() {
+  echo "###############################################"
+  echo $1
+  echo "###############################################"
 }
 
 ###############################################################
