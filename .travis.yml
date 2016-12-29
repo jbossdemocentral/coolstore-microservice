@@ -1,0 +1,18 @@
+language: java
+
+jdk:
+  - oraclejdk8
+
+branches:
+  only:
+  - demo-1
+
+before_install:
+  - nvm install 4.4
+
+script: 
+  - mvn -f catalog-service/pom.xml install
+  - mvn -f inventory-service/pom.xml install
+  - mvn -f cart-service-spring/pom.xml install
+  - mvn -f coolstore-gw/pom.xml install
+  - cd coolstore-ui && npm install
