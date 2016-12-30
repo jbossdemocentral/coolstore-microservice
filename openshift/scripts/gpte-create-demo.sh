@@ -46,7 +46,7 @@ function create_app_projects() {
 function extract_and_set_domain() {
   oc create route edge testroute --service=testsvc --port=80 -n cicd-$PROJECT_SUFFIX >/dev/null
   DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n cicd-$PROJECT_SUFFIX | sed "s/testroute-cicd-$PROJECT_SUFFIX.//g")
-  oc delete route testroute >/dev/null
+  oc delete route testroute -n cicd-$PROJECT_SUFFIX >/dev/null
 }
 
 # Deploy Gogs
@@ -58,14 +58,14 @@ function deploy_gogs() {
 # Deploy Nexus
 function deploy_nexus() {
   echo_header "Deploying Sonatype Nexus repository manager..."
-  oc process -f https://raw.githubusercontent.com/OpenShiftDemos/nexus/master/nexus2-persistent-template.yaml | oc create -f -
+  oc process -f https://raw.githubusercontent.com/OpenShiftDemos/nexus/master/nexus2-persistent-template.yaml | oc create -f - -n cicd-$PROJECT_SUFFIX
 }
 
 # Wait till Nexus is ready
 function wait_for_nexus_to_be_ready() {
   echo_header "Waiting for Nexus to be ready..."
   x=1
-  while [ -z "$(oc get ep nexus -o yaml | grep '\- addresses:')" ]
+  while [ -z "$(oc get ep nexus -o yaml -n cicd-$PROJECT_SUFFIX | grep '\- addresses:')" ]
   do
     echo "."
     sleep 5
