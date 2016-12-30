@@ -263,7 +263,9 @@ export PUBLIC_KEY=<KEY>
 ```
 or you can retrieve it automatically from the command line like this (assuming you have `curl` and `python` installed)
 ```
-export PUBLIC_KEY="$(oc rsh $(oc get pods -o name -l application=sso)  sh -c "curl -sk https://secure-sso.${OCP_PROJECT}.svc.cluster.local:8443/auth/realms/myrealm | python -c \"import sys, json; print json.load(sys.stdin)['public_key']\"")"
+export PUBLIC_KEY="$(oc rsh $(oc get pods -o jsonpath={.items..metadata.name}  -l application=sso)  \
+  sh -c "curl -sk https://$(oc get pods -o jsonpath={.items..metadata.name}  -l application=sso):8443/auth/realms/myrealm | \
+  python -c \"import sys, json; print json.load(sys.stdin)['public_key']\"")"
 ```
 
 1. Replace the API Gateway with the secure variant:
