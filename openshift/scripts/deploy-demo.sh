@@ -27,7 +27,7 @@ GITHUB_REF=demo-1
 
 # Create Infra Project
 function create_infra_project() {
-  echo_header "Creating infa project..."
+  echo_header "Creating infra project..."
   oc new-project cicd-$PROJECT_SUFFIX --display-name='CI/CD Infra' --description='CI/CD Infra Environment'
 }
 

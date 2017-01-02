@@ -16,21 +16,15 @@ There are several individual microservices and infrastructure components that ma
 
 ![Architecture Screenshot](/docs/images/arch-diagram.png?raw=true "Architecture Diagram")
 
-Demo Setup
+Prerequisites
 ================
-This demo makes use of OpenShift Source-to-Image process for JBoss EAP, JBoss Web Server and NodeJS.
-Therefore you need to have an Image Stream defined for each respective builder image. If they are not
-already available on your OpenShift environment, run the following to create them:
+In order to deploy the CoolStore microservices application, you need an OpenShift environment with
+* min 8 GB memory quota
+* RHEL and JBoss imagestreams installed (check _Troubleshooting_ section for details)
 
-```
-oc login -u system:admin
-oc delete -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
-oc delete -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
-oc create -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
-oc create -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
-```
-
-Deploy the `openshift-templates/coolstore-template.yaml` in order to deploy this demo:
+Deploy CoolStore Microservices Application
+================
+Deploy the CoolStore microservices application using this template `openshift/coolstore-template.yaml`:
 ```
 oc new-project coolstore
 oc process -f coolstore-template.yaml | oc create -f -
@@ -44,6 +38,18 @@ curl http://inventory-service:8080/api/availability/329299
 curl http://cart-service:8080/api/cart/FOO
 ```
 
+Deploy Complete Demo
+================
+In order to deploy the complete demo infrastructure for demonstrating Microservices, CI/CD, agile integrations and more, use this provisioning script `openshift/scripts/deploy-demo.sh`:
+```
+$ openshift/scripts/deploy-demo.sh
+```
+
+You can delete the demo projects and containers with:
+```
+$ openshift/scripts/delete-demo.sh
+```
+
 Demo Instructions
 ================
 Access the web interface by pointing your browser at the `web-ui` route url.
@@ -54,5 +60,14 @@ OpenShift handles the TLS termination at the routing layer.
 
 Troubleshooting
 ================
+* If you see an error like `An error occurred while starting the build.imageStream ...` it might be due to RHEL or JBoss imagestreams not being installed on your OpenShift environment. Contact the OpenShift admin to install these imagestreams with the following commands:
+
+  ```
+  oc login -u system:admin
+  oc delete -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
+  oc delete -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
+  oc create -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
+  oc create -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
+  ```
 * If you attempt to deploy any of the services, and nothing happens, it may just be taking a while to download the Docker builder images. Visit the OpenShift web console and navigate to
 Browse->Events and look for errors, and re-run the 'oc delete ; oc create' commands to re-install the images (as outlined at the beginning.)

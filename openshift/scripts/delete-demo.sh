@@ -3,7 +3,7 @@
 # Housekeeping script to remove demo from GPTE environment    #
 ###############################################################
 
-USER_ID=$1  # ssadeghi-redhat.com
+USER_ID=${1:-demo}  # e.g. ssadeghi-redhat.com
 GUID=$2 # unique identifier
 OPENSHIFT_MASTER=$3
 
