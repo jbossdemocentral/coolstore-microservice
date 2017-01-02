@@ -6,7 +6,7 @@
 # gpte-deploy.sh [user-id] [guid] [openshift-master-url]
 #
 # Example:
-# deploy-demo.sh ssadeghi-redhat.com b2fs5 http://console.openshift.yourdomain.com
+# create-demo.sh ssadeghi-redhat.com b2fs5 http://console.openshift.yourdomain.com
 #
 ###############################################################
 
@@ -34,9 +34,9 @@ function create_infra_project() {
 # Create Application Project
 function create_app_projects() {
   echo_header "Creating application projects..."
-  oc new-project coolstore-test-$PROJECT_SUFFIX --display-name='Coolstore TEST' --description='Coolstore Test Environment'
-  oc new-project coolstore-stage-$PROJECT_SUFFIX --display-name='Coolstore STAGE' --description='Coolstore Staging Environment'
-  oc new-project coolstore-prod-$PROJECT_SUFFIX --display-name='Coolstore PROD' --description='Coolstore Production Environment'
+  oc new-project coolstore-test-$PROJECT_SUFFIX --display-name='Coolstore TEST' --description='CoolStore Test Environment'
+  oc new-project coolstore-stage-$PROJECT_SUFFIX --display-name='Coolstore STAGE' --description='CoolStore Staging Environment'
+  oc new-project coolstore-prod-$PROJECT_SUFFIX --display-name='Coolstore PROD' --description='CoolStore Production Environment'
   oc new-project inventory-dev-$PROJECT_SUFFIX --display-name='Inventory DEV' --description='Inventory Dev Environment'
 }
 

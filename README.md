@@ -19,7 +19,8 @@ There are several individual microservices and infrastructure components that ma
 Prerequisites
 ================
 In order to deploy the CoolStore microservices application, you need an OpenShift environment with
-* min 8 GB memory quota
+* min 4 GB memory quota if deploying CoolStore
+* min 12 GB memory quota if deploying complete demo infrastructure
 * RHEL and JBoss imagestreams installed (check _Troubleshooting_ section for details)
 
 Deploy CoolStore Microservices Application
@@ -40,9 +41,10 @@ curl http://cart-service:8080/api/cart/FOO
 
 Deploy Complete Demo
 ================
-In order to deploy the complete demo infrastructure for demonstrating Microservices, CI/CD, agile integrations and more, use this provisioning script `openshift/scripts/deploy-demo.sh`:
+In order to deploy the complete demo infrastructure for demonstrating Microservices, CI/CD, agile integrations and more, use this provisioning script:
+
 ```
-$ openshift/scripts/deploy-demo.sh
+$ openshift/scripts/create-demo.sh
 ```
 
 You can delete the demo projects and containers with:
