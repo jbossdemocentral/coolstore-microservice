@@ -1,21 +1,19 @@
 #!/bin/bash
 ###############################################################
-# Prvisioning script to deploy the demo on GPTE environment   #
+# Prvisioning script to deploy the demo on an OpenShift environment
 #
 # Usage:
 # gpte-deploy.sh [user-id] [guid] [openshift-master-url]
 #
 # Example:
-# gpte-deploy.sh ssadeghi-redhat.com b2fs5 http://console.openshift.yourdomain.com
+# deploy-demo.sh ssadeghi-redhat.com b2fs5 http://console.openshift.yourdomain.com
 #
 ###############################################################
-
-[ "$#" -lt 1 ] && echo "ERROR: Too few arguments. Check the docs" && exit 0
 
 ###############################################################
 # CONFIGURATION                                               #
 ###############################################################
-USER_ID=$1  # ssadeghi-redhat.com
+USER_ID=${1:-demo}  # e.g. ssadeghi-redhat.com
 GUID=$2 # unique identifier
 OPENSHIFT_MASTER=$3
 PROJECT_SUFFIX=$(echo $USER_ID | sed 's/-redhat.com//g')
