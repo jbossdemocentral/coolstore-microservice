@@ -2,13 +2,13 @@ apiVersion: v1
 kind: Template
 labels:
   demo: coolstore-microservice
-  template: coolstore
+  template: coolstore-persistent
 metadata:
   annotations:
-    description: CoolStore demo microservices application template
+    description: CoolStore demo microservices application persistent template
     iconClass: icon-java
     tags: microservice,jboss,spring
-  name: coolstore
+  name: coolstore-persistent
 objects:
 - apiVersion: v1
   groupNames: null
@@ -449,12 +449,12 @@ objects:
           image: postgresql
           imagePullPolicy: Always
           name: inventory-postgresql
-          volumeMounts:
-          - mountPath: /var/lib/pgsql/data
-            name: inventory-postgresql-data
           ports:
           - containerPort: 5432
             protocol: TCP
+          volumeMounts:
+          - mountPath: /var/lib/pgsql/data
+            name: inventory-postgresql-data
           livenessProbe:
             initialDelaySeconds: 30
             tcpSocket:
@@ -472,7 +472,8 @@ objects:
         terminationGracePeriodSeconds: 60
         volumes:
         - name: inventory-postgresql-data
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: inventory-postgresql-pv
     triggers:
     - imageChangeParams:
         automatic: true
@@ -496,6 +497,18 @@ objects:
       targetPort: 5432
     selector:
       deploymentconfig: inventory-postgresql
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    labels:
+      application: inventory-service
+    name: inventory-postgresql-pv
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 512Mi
 # Catalog Service
 - apiVersion: v1
   kind: ImageStream
@@ -642,7 +655,7 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
-      app: catalog-service
+      application: catalog-service
     name: catalog-mongodb
   spec:
     replicas: 1
@@ -715,8 +728,9 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         volumes:
-        - emptyDir: {}
-          name: mongodb-data
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: mongodb-data-pv
     test: false
     triggers:
     - imageChangeParams:
@@ -729,6 +743,18 @@ objects:
           namespace: openshift
       type: ImageChange
     - type: ConfigChange
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    labels:
+      application: catalog-mongodb
+    name: mongodb-data-pv
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 512Mi
 # Cart Service
 - apiVersion: v1
   kind: ImageStream
