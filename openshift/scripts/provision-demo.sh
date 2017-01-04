@@ -118,15 +118,21 @@ function extract_and_set_domain() {
 
 # Deploy Gogs
 function deploy_gogs() {
+  local _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/master/openshift/gogs-persistent-template.yaml"
+
   echo_header "Deploying Gogs git server..."
-  oc process -f https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/master/openshift/gogs-persistent-template.yaml -v HOSTNAME=gogs-cicd-$PROJECT_SUFFIX.$DOMAIN | oc create -f - -n cicd-$PROJECT_SUFFIX
+  echo "Using template $_TEMPLATE"
+  oc process -f $_TEMPLATE -v HOSTNAME=gogs-cicd-$PROJECT_SUFFIX.$DOMAIN | oc create -f - -n cicd-$PROJECT_SUFFIX
 }
 
 # Deploy Nexus
 function deploy_nexus() {
   if [ -z "$ARG_MAVEN_MIRROR_URL" ] ; then # no maven mirror specified
+    local _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/nexus/master/nexus2-persistent-template.yaml"
+
     echo_header "Deploying Sonatype Nexus repository manager..."
-    oc process -f https://raw.githubusercontent.com/OpenShiftDemos/nexus/master/nexus2-persistent-template.yaml | oc create -f - -n cicd-$PROJECT_SUFFIX
+    echo "Using template $_TEMPLATE"
+    oc process -f $_TEMPLATE | oc create -f - -n cicd-$PROJECT_SUFFIX
   else
     echo_header "Using existng Maven mirror: $ARG_MAVEN_MIRROR_URL"
   fi
@@ -161,14 +167,20 @@ function deploy_jenkins() {
 
 # Deploy Coolstore into Coolstore TEST project
 function deploy_coolstore_test_env() {
+  local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/coolstore-persistent-template.yaml"
+
   echo_header "Deploying CoolStore app into coolstore-test-$PROJECT_SUFFIX project..."
-  oc process -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/coolstore-persistent-template.yaml -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n coolstore-test-$PROJECT_SUFFIX
+  echo "Using template $_TEMPLATE"
+  oc process -f $_TEMPLATE -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n coolstore-test-$PROJECT_SUFFIX
 }
 
 # Deploy Inventory Service into Inventory DEV project
 function deploy_inventory_service() {
+  local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/services/inventory-service.json"
+
   echo_header "Deploying Inventory service into inventory-dev-$PROJECT_SUFFIX project..."
-  oc process -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/services/inventory-service.json -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n inventory-dev-$PROJECT_SUFFIX
+  echo "Using template $_TEMPLATE"
+  oc process -f $_TEMPLATE -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n inventory-dev-$PROJECT_SUFFIX
 }
 
 function set_permissions() {
