@@ -8,6 +8,9 @@ function usage() {
     echo " $0 --user <username> [ --maven-mirror-url <value> ] [--project-suffix <value>]"
     echo " $0 --help "
     echo
+    echo "Example:"
+    echo " $0 --user demo --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d"
+    echo
     echo "If --maven-mirror-url is not specified, a Nexus container will be deployed and used"
     echo "If --project-suffix is not specified, <username> will be used as the suffix"
 }
@@ -92,10 +95,15 @@ function create_infra_project() {
 # Create Application Project
 function create_app_projects() {
   echo_header "Creating application projects..."
-  oc new-project coolstore-test-$PROJECT_SUFFIX --display-name='Coolstore TEST' --description='CoolStore Test Environment'
-  oc new-project coolstore-stage-$PROJECT_SUFFIX --display-name='Coolstore STAGE' --description='CoolStore Staging Environment'
-  oc new-project coolstore-prod-$PROJECT_SUFFIX --display-name='Coolstore PROD' --description='CoolStore Production Environment'
+  oc new-project coolstore-test-$PROJECT_SUFFIX --display-name='CoolStore TEST' --description='CoolStore Test Environment'
+  oc new-project coolstore-stage-$PROJECT_SUFFIX --display-name='CoolStore STAGE' --description='CoolStore Staging Environment'
+  oc new-project coolstore-prod-$PROJECT_SUFFIX --display-name='CoolStore PROD' --description='CoolStore Production Environment'
   oc new-project inventory-dev-$PROJECT_SUFFIX --display-name='Inventory DEV' --description='Inventory Dev Environment'
+
+  # join project networks
+  if [ "$(oc whoami)" == 'system:admin' ] ; then
+    oc adm pod-network join-projects --to=cicd-$PROJECT_SUFFIX coolstore-test-$PROJECT_SUFFIX coolstore-stage-$PROJECT_SUFFIX coolstore-prod-$PROJECT_SUFFIX inventory-dev-$PROJECT_SUFFIX
+  fi
 
   # add Inventory Service template
   oc create -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/services/inventory-service.json -n inventory-dev-$PROJECT_SUFFIX
@@ -163,18 +171,22 @@ function deploy_inventory_service() {
   oc process -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/services/inventory-service.json -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n inventory-dev-$PROJECT_SUFFIX
 }
 
-function set_user_as_admin() {
+function set_permissions() {
   oc adm policy add-role-to-user admin $ARG_USERNAME -n coolstore-test-$PROJECT_SUFFIX
   oc adm policy add-role-to-user admin $ARG_USERNAME -n coolstore-stage-$PROJECT_SUFFIX
   oc adm policy add-role-to-user admin $ARG_USERNAME -n coolstore-prod-$PROJECT_SUFFIX
   oc adm policy add-role-to-user admin $ARG_USERNAME -n inventory-dev-$PROJECT_SUFFIX
   oc adm policy add-role-to-user admin $ARG_USERNAME -n cicd-$PROJECT_SUFFIX
+
+  oc adm policy add-role-to-user admin system:serviceaccounts:cicd-$PROJECT_SUFFIX -n coolstore-test-$PROJECT_SUFFIX
+  oc adm policy add-role-to-user admin system:serviceaccounts:cicd-$PROJECT_SUFFIX -n coolstore-stage-$PROJECT_SUFFIX
+  oc adm policy add-role-to-user admin system:serviceaccounts:cicd-$PROJECT_SUFFIX -n coolstore-prod-$PROJECT_SUFFIX
+  oc adm policy add-role-to-user admin system:serviceaccounts:cicd-$PROJECT_SUFFIX -n inventory-dev-$PROJECT_SUFFIX
 }
 
 # GPTE convention
 function set_default_project() {
-  if [ "$(oc whoami)" == 'system:admin' ]
-  then
+  if [ "$(oc whoami)" == 'system:admin' ] ; then
     oc project default
   fi
 }
@@ -206,4 +218,4 @@ deploy_coolstore_test_env
 # deploy_inventory_service
 
 set_default_project
-set_user_as_admin # must be the last not to interfere with user quota during provisioning
+set_permissions
