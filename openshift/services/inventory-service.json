@@ -11,15 +11,13 @@
   },
   "labels": {
     "application": "inventory-service",
-    "createdBy": "template-inventory-service",
-    "template": "template-inventory-service",
     "hystrix.enabled": "true"
   },
   "parameters": [
     {
-      "description": "A local Maven Mirror, e.g.: http://nexus.ci.svc.cluster.local:8081/content/groups/public/",
-      "name": "MAVEN_MIRROR_URL",
-      "value": ""
+      "description": "Application name",
+      "name": "APPLICATION_NAME",
+      "value": "inventory"
     },
     {
       "description": "Git source URI for application",
@@ -34,6 +32,11 @@
       "required": true
     },
     {
+      "description": "A local Maven Mirror, e.g.: http://nexus.ci.svc.cluster.local:8081/content/groups/public/",
+      "name": "MAVEN_MIRROR_URL",
+      "value": ""
+    },
+    {
       "description": "A-MQ cluster admin password",
       "name": "MQ_CLUSTER_PASSWORD",
       "from": "[a-zA-Z0-9]{8}",
@@ -46,6 +49,20 @@
       "from": "[a-zA-Z0-9]{8}",
       "generate": "expression",
       "required": true
+    },
+    {
+        "description": "Database user name",
+        "name": "DB_USERNAME",
+        "from": "user[a-zA-Z0-9]{3}",
+        "generate": "expression",
+        "required": true
+    },
+    {
+        "description": "Database user password",
+        "name": "DB_PASSWORD",
+        "from": "[a-zA-Z0-9]{8}",
+        "generate": "expression",
+        "required": true
     }
   ],
   "objects": [
@@ -53,7 +70,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "inventory-service"
+        "name": "${APPLICATION_NAME}"
       },
       "spec": {
         "tags": [
@@ -67,7 +84,7 @@
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "inventory-service"
+        "name": "${APPLICATION_NAME}"
       },
       "spec": {
         "triggers": [
@@ -107,7 +124,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "inventory-service:latest"
+            "name": "${APPLICATION_NAME}:latest"
           }
         }
       }
@@ -116,7 +133,7 @@
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "inventory-service"
+        "name": "${APPLICATION_NAME}"
       },
       "spec": {
         "strategy": {
@@ -129,11 +146,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "inventory-service"
+                "${APPLICATION_NAME}"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "inventory-service:latest"
+                "name": "${APPLICATION_NAME}:latest"
               }
             }
           },
@@ -143,21 +160,21 @@
         ],
         "replicas": 1,
         "selector": {
-          "deploymentConfig": "inventory-service"
+          "deploymentConfig": "${APPLICATION_NAME}"
         },
         "template": {
           "metadata": {
-            "name": "inventory-service",
+            "name": "${APPLICATION_NAME}",
             "labels": {
-              "deploymentConfig": "inventory-service",
-              "application": "inventory-service"
+              "deploymentConfig": "${APPLICATION_NAME}",
+              "application": "${APPLICATION_NAME}"
             }
           },
           "spec": {
             "containers": [
               {
-                "name": "inventory-service",
-                "image": "inventory-service",
+                "name": "${APPLICATION_NAME}",
+                "image": "${APPLICATION_NAME}",
                 "ports": [
                   {
                     "name": "jolokia",
@@ -178,7 +195,7 @@
                 "env": [
                   {
                     "name": "OPENSHIFT_KUBE_PING_LABELS",
-                    "value": "application=inventory-service"
+                    "value": "application=${APPLICATION_NAME}"
                   },
                   {
                     "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
@@ -199,6 +216,30 @@
                   {
                     "name": "AUTO_DEPLOY_EXPLODED",
                     "value": "false"
+                  },
+                  {
+                      "name": "DB_SERVICE_PREFIX_MAPPING",
+                      "value": "${APPLICATION_NAME}-postgresql=DB"
+                  },
+                  {
+                      "name": "TX_DATABASE_PREFIX_MAPPING",
+                      "value": "${APPLICATION_NAME}-postgresql=DB"
+                  },
+                  {
+                      "name": "DB_JNDI",
+                      "value": "java:jboss/datasources/InventoryDS"
+                  },
+                  {
+                      "name": "DB_USERNAME",
+                      "value": "${DB_USERNAME}"
+                  },
+                  {
+                      "name": "DB_PASSWORD",
+                      "value": "${DB_PASSWORD}"
+                  },
+                  {
+                      "name": "DB_DATABASE",
+                      "value": "inventorydb"
                   }
                 ],
                 "resources": {
@@ -260,9 +301,10 @@
       "kind": "Service",
       "apiVersion": "v1",
       "metadata": {
-        "name": "inventory-service",
+        "name": "${APPLICATION_NAME}",
         "annotations": {
-          "description": "The inventory service's http port."
+          "description": "The inventory service's http port.",
+          "service.alpha.openshift.io/dependencies": "[{\"name\":\"${APPLICATION_NAME}-postgresql\",\"namespace\":\"\",\"kind\":\"Service\"}]"
         }
       },
       "spec": {
@@ -274,7 +316,7 @@
           }
         ],
         "selector": {
-          "deploymentConfig": "inventory-service"
+          "deploymentConfig": "${APPLICATION_NAME}"
         }
       }
     },
@@ -282,16 +324,136 @@
         "kind": "Route",
         "apiVersion": "v1",
         "metadata": {
-            "name": "inventory-service"
+            "name": "${APPLICATION_NAME}"
         },
         "spec": {
             "to": {
                 "kind": "Service",
-                "name": "inventory-service",
+                "name": "${APPLICATION_NAME}",
                 "weight": 100
             },
             "port": {
                 "targetPort": 8080
+            }
+        }
+    },
+    {
+        "kind": "Service",
+        "apiVersion": "v1",
+        "spec": {
+            "ports": [
+                {
+                    "port": 5432,
+                    "targetPort": 5432
+                }
+            ],
+            "selector": {
+                "deploymentConfig": "${APPLICATION_NAME}-postgresql"
+            }
+        },
+        "metadata": {
+            "name": "${APPLICATION_NAME}-postgresql",
+            "labels": {
+                "application": "${APPLICATION_NAME}"
+            },
+            "annotations": {
+                "description": "The database server's port."
+            }
+        }
+    },
+    {
+        "kind": "DeploymentConfig",
+        "apiVersion": "v1",
+        "metadata": {
+            "name": "${APPLICATION_NAME}-postgresql",
+            "labels": {
+                "application": "${APPLICATION_NAME}"
+            }
+        },
+        "spec": {
+            "strategy": {
+                "type": "Recreate"
+            },
+            "triggers": [
+                {
+                    "type": "ImageChange",
+                    "imageChangeParams": {
+                        "automatic": true,
+                        "containerNames": [
+                            "${APPLICATION_NAME}-postgresql"
+                        ],
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "namespace": "openshift",
+                            "name": "postgresql:latest"
+                        }
+                    }
+                },
+                {
+                    "type": "ConfigChange"
+                }
+            ],
+            "replicas": 1,
+            "selector": {
+                "deploymentConfig": "${APPLICATION_NAME}-postgresql"
+            },
+            "template": {
+                "metadata": {
+                    "name": "${APPLICATION_NAME}-postgresql",
+                    "labels": {
+                        "deploymentConfig": "${APPLICATION_NAME}-postgresql",
+                        "application": "${APPLICATION_NAME}"
+                    }
+                },
+                "spec": {
+                    "terminationGracePeriodSeconds": 60,
+                    "containers": [
+                        {
+                            "name": "${APPLICATION_NAME}-postgresql",
+                            "image": "postgresql",
+                            "imagePullPolicy": "Always",
+                            "ports": [
+                                {
+                                    "containerPort": 5432,
+                                    "protocol": "TCP"
+                                }
+                            ],
+                            "env": [
+                                {
+                                    "name": "POSTGRESQL_USER",
+                                    "value": "${DB_USERNAME}"
+                                },
+                                {
+                                    "name": "POSTGRESQL_PASSWORD",
+                                    "value": "${DB_PASSWORD}"
+                                },
+                                {
+                                    "name": "POSTGRESQL_DATABASE",
+                                    "value": "inventorydb"
+                                }
+                            ],
+                            "readinessProbe": {
+                                "exec": {
+                                    "command": [
+                                        "/bin/sh",
+                                        "-i",
+                                        "-c",
+                                        "psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c 'SELECT 1'"
+                                    ]
+                                },
+                                "initialDelaySeconds": 5,
+                                "timeoutSeconds": 1
+                            },
+                            "livenessProbe": {
+                                "initialDelaySeconds": 30,
+                                "tcpSocket": {
+                                    "port": 5432
+                                },
+                                "timeoutSeconds": 1
+                            }
+                        }
+                    ]
+                }
             }
         }
     }
