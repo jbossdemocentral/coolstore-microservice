@@ -112,6 +112,7 @@
               "namespace": "openshift",
               "name": "jboss-eap70-openshift:1.4"
             },
+            "incremental" : true,
             "env": [
               {
                 "name": "MAVEN_MIRROR_URL",
