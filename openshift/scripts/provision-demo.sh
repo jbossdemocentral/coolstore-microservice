@@ -80,6 +80,7 @@ GITHUB_REF=${GITHUB_REF:-demo-1-gpte}
 MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.cicd-$PROJECT_SUFFIX.svc.cluster.local:8081/content/groups/public}
 GOGS_USER=developer
 GOGS_PASSWORD=developer
+JENKINS_PASSWORD=openshift
 
 ################################################################################
 # FUNCTIONS                                                                    #
@@ -261,7 +262,7 @@ EOM
 # Deploy Jenkins
 function deploy_jenkins() {
   echo_header "Deploying Jenkins..."
-  oc new-app jenkins-persistent -l app=jenkins -p JENKINS_PASSWORD=openshift -n cicd-$PROJECT_SUFFIX
+  oc new-app jenkins-persistent -l app=jenkins -p JENKINS_PASSWORD=$JENKINS_PASSWORD -n cicd-$PROJECT_SUFFIX
 }
 
 # Deploy Coolstore into Coolstore TEST project
