@@ -285,7 +285,7 @@ objects:
         kind: ImageStreamTag
         name: inventory:latest
     source:
-      contextDir: inventory
+      contextDir: inventory-service
       git:
         ref: ${GIT_REF}
         uri: ${GIT_URI}
@@ -527,7 +527,7 @@ objects:
         kind: ImageStreamTag
         name: catalog:latest
     source:
-      contextDir: catalog
+      contextDir: catalog-service
       git:
         ref: ${GIT_REF}
         uri: ${GIT_URI}
@@ -773,7 +773,7 @@ objects:
         kind: ImageStreamTag
         name: cart:latest
     source:
-      contextDir: cart-eap
+      contextDir: cart-service-eap
       git:
         ref: ${GIT_REF}
         uri: ${GIT_URI}
