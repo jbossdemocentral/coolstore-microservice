@@ -318,7 +318,7 @@ function deploy_coolstore_test_env() {
   oc process -f $_TEMPLATE_BUILDS -v GIT_URI=$GITHUB_URI -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n $PRJ_COOLSTORE_TEST
 
   echo "Using deployment template $_TEMPLATE_DEPLOYMENT"
-  oc process -f $_TEMPLATE_BUILDS -v APP_VERSION=test | oc create -f - -n $PRJ_COOLSTORE_TEST
+  oc process -f $_TEMPLATE_DEPLOYMENT -v APP_VERSION=test | oc create -f - -n $PRJ_COOLSTORE_TEST
 }
 
 # Deploy Inventory Service into Inventory DEV project
