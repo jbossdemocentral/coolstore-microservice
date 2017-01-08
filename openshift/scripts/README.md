@@ -13,7 +13,7 @@ Usage
 ```
 $ provision-demo.sh --user <username>
 
---user                 OpenShift username to own the projects
+--user                 Required. OpenShift username to own the projects
 
 --project-suffix       Optional. Adds a suffix to the project names (e.g. demo-<suffix>).
                        If not present, username will be used.
