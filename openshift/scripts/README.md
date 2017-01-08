@@ -1,7 +1,16 @@
 Demo Provisioning script
 ======================
 The provisioning scripts creates, deploys and configures all components required for
-and end-to-end demo using CoolStore microservices application.
+and end-to-end demo using CoolStore microservices application. The script performs the following
+steps:
+* Creates the projects
+* Deploys Gogs git server
+* Imports this GitHub repo into Gogs
+* Deploys Nexus repository manager if non specified
+* Deploys Jenkins
+* Deploys CoolStore microservices app in TEST project
+* Deploys Inventory service in Inventory DEV project
+* Configures CI/CD for Inventory service across projects
 
 Prerequisites
 ============
