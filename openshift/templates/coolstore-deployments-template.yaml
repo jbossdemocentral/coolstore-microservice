@@ -22,39 +22,6 @@ objects:
     name: default
 # UI
 - apiVersion: v1
-  kind: ImageStream
-  metadata:
-    name: web-ui
-  spec:
-    tags:
-    - name: latest
-- apiVersion: v1
-  kind: BuildConfig
-  metadata:
-    name: web-ui
-  spec:
-    output:
-      to:
-        kind: ImageStreamTag
-        name: web-ui:latest
-    source:
-      contextDir: coolstore-ui
-      git:
-        ref: ${GIT_REF}
-        uri: ${GIT_URI}
-      type: Git
-    strategy:
-      sourceStrategy:
-        from:
-          kind: ImageStreamTag
-          name: nodejs:4
-          namespace: openshift
-      type: Source
-    triggers:
-    - imageChange: {}
-      type: ImageChange
-    - type: ConfigChange
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: web-ui
@@ -117,7 +84,7 @@ objects:
         - web-ui
         from:
           kind: ImageStreamTag
-          name: web-ui:latest
+          name: web-ui:${APP_VERSION}
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -144,58 +111,6 @@ objects:
       name: web-ui
 # Coolstore Gateway
 - apiVersion: v1
-  kind: ImageStream
-  metadata:
-    name: fis-java-openshift
-  spec:
-    dockerImageRepository: registry.access.redhat.com/jboss-fuse-6-tech-preview/fis-java-openshift
-    tags:
-    - name: "2.0"
-      annotations:
-        description: JBoss Fuse Integration Services 2.0 Java S2I images.
-        iconClass: icon-jboss
-        supports: jboss-fuse:6.3.0,java:8,xpaas:1.2
-        tags: builder,jboss-fuse,java,xpaas
-        version: "2.0"
-- apiVersion: v1
-  kind: ImageStream
-  metadata:
-    name: coolstore-gw
-  spec: {}
-  status:
-    dockerImageRepository: ""
-- apiVersion: v1
-  kind: BuildConfig
-  metadata:
-    name: coolstore-gw
-  spec:
-    output:
-      to:
-        kind: ImageStreamTag
-        name: coolstore-gw:latest
-    source:
-      contextDir: coolstore-gw
-      git:
-        ref: ${GIT_REF}
-        uri: ${GIT_URI}
-      type: Git
-    strategy:
-      sourceStrategy:
-        env:
-        - name: MAVEN_ARGS
-          value: package -DskipTests -Dfabric8.skip -e -B -Pearly-access-repo
-        - name: MAVEN_MIRROR_URL
-          value: ${MAVEN_MIRROR_URL}
-        forcePull: true
-        from:
-          kind: ImageStreamTag
-          name: fis-java-openshift:2.0
-      type: Source
-    triggers:
-    - type: ConfigChange
-    - imageChange: {}
-      type: ImageChange
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: coolstore-gw
@@ -219,7 +134,7 @@ objects:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          image: library/coolstore-gw:latest
+          image: library/coolstore-gw:${APP_VERSION}
           livenessProbe:
             httpGet:
               path: /health
@@ -242,7 +157,7 @@ objects:
         - coolstore-gw
         from:
           kind: ImageStreamTag
-          name: coolstore-gw:latest
+          name: coolstore-gw:${APP_VERSION}
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -268,42 +183,6 @@ objects:
       kind: Service
       name: coolstore-gw
 # Inventory Service
-- apiVersion: v1
-  kind: ImageStream
-  metadata:
-    name: inventory
-  spec:
-    tags:
-    - name: latest
-- apiVersion: v1
-  kind: BuildConfig
-  metadata:
-    name: inventory
-  spec:
-    output:
-      to:
-        kind: ImageStreamTag
-        name: inventory:latest
-    source:
-      contextDir: inventory-service
-      git:
-        ref: ${GIT_REF}
-        uri: ${GIT_URI}
-      type: Git
-    strategy:
-      sourceStrategy:
-        env:
-        - name: MAVEN_MIRROR_URL
-          value: ${MAVEN_MIRROR_URL}
-        from:
-          kind: ImageStreamTag
-          name: jboss-eap70-openshift:1.4
-          namespace: openshift
-      type: Source
-    triggers:
-    - type: ConfigChange
-    - imageChange: {}
-      type: ImageChange
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -403,7 +282,7 @@ objects:
         - inventory
         from:
           kind: ImageStreamTag
-          name: inventory:latest
+          name: inventory:${APP_VERSION}
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -511,42 +390,6 @@ objects:
         storage: 512Mi
 # Catalog Service
 - apiVersion: v1
-  kind: ImageStream
-  metadata:
-    name: catalog
-  spec:
-    tags:
-    - name: latest
-- apiVersion: v1
-  kind: BuildConfig
-  metadata:
-    name: catalog
-  spec:
-    output:
-      to:
-        kind: ImageStreamTag
-        name: catalog:latest
-    source:
-      contextDir: catalog-service
-      git:
-        ref: ${GIT_REF}
-        uri: ${GIT_URI}
-      type: Git
-    strategy:
-      sourceStrategy:
-        env:
-        - name: MAVEN_MIRROR_URL
-          value: ${MAVEN_MIRROR_URL}
-        from:
-          kind: ImageStreamTag
-          name: jboss-webserver30-tomcat8-openshift:1.2
-          namespace: openshift
-      type: Source
-    triggers:
-    - type: ConfigChange
-    - imageChange: {}
-      type: ImageChange
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: catalog
@@ -617,7 +460,7 @@ objects:
         - catalog
         from:
           kind: ImageStreamTag
-          name: catalog:latest
+          name: catalog:${APP_VERSION}
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -757,42 +600,6 @@ objects:
         storage: 512Mi
 # Cart Service
 - apiVersion: v1
-  kind: ImageStream
-  metadata:
-    name: cart
-  spec:
-    tags:
-    - name: latest
-- apiVersion: v1
-  kind: BuildConfig
-  metadata:
-    name: cart
-  spec:
-    output:
-      to:
-        kind: ImageStreamTag
-        name: cart:latest
-    source:
-      contextDir: cart-service-eap
-      git:
-        ref: ${GIT_REF}
-        uri: ${GIT_URI}
-      type: Git
-    strategy:
-      sourceStrategy:
-        env:
-        - name: MAVEN_MIRROR_URL
-          value: ${MAVEN_MIRROR_URL}
-        from:
-          kind: ImageStreamTag
-          name: jboss-eap70-openshift:1.4
-          namespace: openshift
-      type: Source
-    triggers:
-    - type: ConfigChange
-    - imageChange: {}
-      type: ImageChange
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: cart
@@ -881,7 +688,7 @@ objects:
         - cart
         from:
           kind: ImageStreamTag
-          name: cart:latest
+          name: cart:${APP_VERSION}
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -1111,19 +918,11 @@ objects:
       name: hystrix-dashboard
       weight: 100
 parameters:
-- description: Git source URI for application
-  displayName: Git source repository
-  name: GIT_URI
+- description: CoolStore application image version to be deployed (imagestreams should exist)
+  displayName: CoolStore image version
+  name: APP_VERSION
   required: true
-  value: https://github.com/jbossdemocentral/coolstore-microservice
-- description: Git branch/tag reference
-  displayName: Git branch/tag reference
-  name: GIT_REF
-  required: true
-  value: master
-- description: Maven mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/content/groups/public/)
-  displayName: Maven mirror url
-  name: MAVEN_MIRROR_URL
+  value: latest
 - description: Inventory Service database user name
   from: user[a-zA-Z0-9]{3}
   generate: expression
