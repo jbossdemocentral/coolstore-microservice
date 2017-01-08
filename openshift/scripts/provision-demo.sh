@@ -73,11 +73,19 @@ done
 ################################################################################
 # CONFIGURATION                                                                #
 ################################################################################
+# project
 PROJECT_SUFFIX=${ARG_PROJECT_SUFFIX:-`echo $ARG_USERNAME | sed -e 's/-.*//g'`}
 PROJECT_LABEL=demo1-$PROJECT_SUFFIX
+PRJ_CI=ci-$PROJECT_SUFFIX
+PRJ_COOLSTORE_TEST=coolstore-test-$PROJECT_SUFFIX
+PRJ_COOLSTORE_PROD=coolstore-prod-$PROJECT_SUFFIX
+PRJ_INVENTORY=inventory-test-$PROJECT_SUFFIX
+PRJ_PERSONAL=developer-$PROJECT_SUFFIX
+
+# config
 GITHUB_ACCOUNT=${GITHUB_ACCOUNT:-jbossdemocentral}
 GITHUB_REF=${GITHUB_REF:-demo-1-gpte}
-MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.cicd-$PROJECT_SUFFIX.svc.cluster.local:8081/content/groups/public}
+MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.$PRJ_CI.svc.cluster.local:8081/content/groups/public}
 GOGS_USER=developer
 GOGS_PASSWORD=developer
 GOGS_ADMIN_USER=committer
@@ -104,41 +112,41 @@ function print_info() {
 }
 
 function delete_projects() {
-  oc delete project coolstore-test-$PROJECT_SUFFIX coolstore-stage-$PROJECT_SUFFIX coolstore-prod-$PROJECT_SUFFIX inventory-dev-$PROJECT_SUFFIX cicd-$PROJECT_SUFFIX
+  oc delete project $PRJ_COOLSTORE_TEST $PRJ_PERSONAL $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI
 }
 
 # Create Infra Project
 function create_infra_project() {
   echo_header "Creating infra project..."
-  oc new-project cicd-$PROJECT_SUFFIX --display-name='CI/CD Infra' --description='CI/CD Infra Environment'
+  oc new-project $PRJ_CI --display-name='CI/CD Infra' --description='CI/CD Infra Environment'
 
   if [ "$(oc whoami)" == 'system:admin' ] ; then
-    oc annotate --overwrite namespace cicd-${PROJECT_SUFFIX} demo=$PROJECT_LABEL
+    oc annotate --overwrite namespace $PRJ_CI demo=$PROJECT_LABEL
   fi
 }
 
 # Create Application Project
 function create_app_projects() {
   echo_header "Creating application projects..."
-  oc new-project coolstore-test-$PROJECT_SUFFIX --display-name='CoolStore TEST' --description='CoolStore Test Environment'
-  oc new-project coolstore-stage-$PROJECT_SUFFIX --display-name='CoolStore STAGE' --description='CoolStore Staging Environment'
-  oc new-project coolstore-prod-$PROJECT_SUFFIX --display-name='CoolStore PROD' --description='CoolStore Production Environment'
-  oc new-project inventory-dev-$PROJECT_SUFFIX --display-name='Inventory DEV' --description='Inventory Dev Environment'
+  oc new-project $PRJ_COOLSTORE_TEST --display-name='CoolStore TEST' --description='CoolStore Test Environment'
+  oc new-project $PRJ_COOLSTORE_PROD --display-name='CoolStore PROD' --description='CoolStore Production Environment'
+  oc new-project $PRJ_INVENTORY --display-name='Inventory TEST' --description='Inventory Test Environment'
+  oc new-project $PRJ_PERSONAL --display-name='Developer Project' --description='Personal Developer Project'
 
   if [ "$(oc whoami)" == 'system:admin' ] ; then
-    oc annotate --overwrite namespace inventory-dev-${PROJECT_SUFFIX} demo=$PROJECT_LABEL
-    oc annotate --overwrite namespace coolstore-test-${PROJECT_SUFFIX} demo=$PROJECT_LABEL
-    oc annotate --overwrite namespace coolstore-stage-${PROJECT_SUFFIX} demo=$PROJECT_LABEL
-    oc annotate --overwrite namespace coolstore-prod-${PROJECT_SUFFIX} demo=$PROJECT_LABEL
+    for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_PERSONAL
+    do
+      oc annotate --overwrite namespace $project demo=$PROJECT_LABEL
+    done
   fi
 
   # join project networks
   if [ "$(oc whoami)" == 'system:admin' ] ; then
-    oc adm pod-network join-projects --to=cicd-$PROJECT_SUFFIX coolstore-test-$PROJECT_SUFFIX coolstore-stage-$PROJECT_SUFFIX coolstore-prod-$PROJECT_SUFFIX inventory-dev-$PROJECT_SUFFIX
+    oc adm pod-network join-projects --to=$PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_PERSONAL $PRJ_COOLSTORE_PROD $PRJ_INVENTORY
   fi
 
   # add Inventory Service template
-  oc create -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/services/inventory-service.json -n inventory-dev-$PROJECT_SUFFIX
+  oc create -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/services/inventory-service.json -n $PRJ_INVENTORY
 }
 
 # Deploy Nexus
@@ -148,7 +156,7 @@ function deploy_nexus() {
 
     echo_header "Deploying Sonatype Nexus repository manager..."
     echo "Using template $_TEMPLATE"
-    oc process -f $_TEMPLATE | oc create -f - -n cicd-$PROJECT_SUFFIX
+    oc process -f $_TEMPLATE | oc create -f - -n $PRJ_CI
   else
     echo_header "Using existng Maven mirror: $ARG_MAVEN_MIRROR_URL"
   fi
@@ -159,7 +167,7 @@ function wait_for_nexus_to_be_ready() {
   if [ -z "$ARG_MAVEN_MIRROR_URL" ] ; then # no maven mirror specified
     echo_header "Waiting for Nexus to be ready..."
     x=1
-    while [ -z "$(oc get ep nexus -o yaml -n cicd-$PROJECT_SUFFIX | grep '\- addresses:')" ]
+    while [ -z "$(oc get ep nexus -o yaml -n $PRJ_CI | grep '\- addresses:')" ]
     do
       echo "."
       sleep 5
@@ -179,23 +187,23 @@ function wait_for_nexus_to_be_ready() {
 function deploy_gogs() {
   echo_header "Deploying Gogs git server..."
   # extract domain
-  oc create route edge testroute --service=testsvc --port=80 -n cicd-$PROJECT_SUFFIX >/dev/null
-  DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n cicd-$PROJECT_SUFFIX | sed "s/testroute-cicd-$PROJECT_SUFFIX.//g")
-  oc delete route testroute -n cicd-$PROJECT_SUFFIX >/dev/null
+  oc create route edge testroute --service=testsvc --port=80 -n $PRJ_CI >/dev/null
+  DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n $PRJ_CI | sed "s/testroute-$PRJ_CI.//g")
+  oc delete route testroute -n $PRJ_CI >/dev/null
 
   local _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/master/openshift/gogs-persistent-template.yaml"
   local _DB_USER=gogs
   local _DB_PASSWORD=gogs
   local _DB_NAME=gogs
-  local _GOGS_ROUTE="gogs-cicd-$PROJECT_SUFFIX.$DOMAIN"
+  local _GOGS_ROUTE="gogs-$PRJ_CI.$DOMAIN"
   local _GITHUB_REPO="https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git"
 
   echo "Using template $_TEMPLATE"
-  oc process -f $_TEMPLATE -v HOSTNAME=gogs-cicd-$PROJECT_SUFFIX.$DOMAIN,GOGS_VERSION=0.9.113,DATABASE_USER=$_DB_USER,DATABASE_PASSWORD=$_DB_PASSWORD,DATABASE_NAME=$_DB_NAME,INSTALL_LOCK=false | oc create -f - -n cicd-$PROJECT_SUFFIX
+  oc process -f $_TEMPLATE -v HOSTNAME=gogs-$PRJ_CI.$DOMAIN,GOGS_VERSION=0.9.113,DATABASE_USER=$_DB_USER,DATABASE_PASSWORD=$_DB_PASSWORD,DATABASE_NAME=$_DB_NAME,INSTALL_LOCK=false | oc create -f - -n $PRJ_CI
 
   echo "Waiting for Gogs to be ready..."
   x=1
-  while [ -z "$(oc get ep gogs-postgresql -o yaml -n cicd-$PROJECT_SUFFIX | grep '\- addresses:')" ]
+  while [ -z "$(oc get ep gogs-postgresql -o yaml -n $PRJ_CI | grep '\- addresses:')" ]
   do
     echo "."
     sleep 5
@@ -208,7 +216,7 @@ function deploy_gogs() {
   done
 
   x=1
-  while [ -z "$(oc get ep gogs -o yaml -n cicd-$PROJECT_SUFFIX | grep '\- addresses:')" ]
+  while [ -z "$(oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:')" ]
   do
     echo "."
     sleep 5
@@ -295,38 +303,38 @@ EOM
 # Deploy Jenkins
 function deploy_jenkins() {
   echo_header "Deploying Jenkins..."
-  oc new-app jenkins-persistent -l app=jenkins -p JENKINS_PASSWORD=$JENKINS_PASSWORD -n cicd-$PROJECT_SUFFIX
+  oc new-app jenkins-persistent -l app=jenkins -p JENKINS_PASSWORD=$JENKINS_PASSWORD -n $PRJ_CI
 }
 
 # Deploy Coolstore into Coolstore TEST project
 function deploy_coolstore_test_env() {
   local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/coolstore-persistent-template.yaml"
 
-  echo_header "Deploying CoolStore app into coolstore-test-$PROJECT_SUFFIX project..."
+  echo_header "Deploying CoolStore app into $PRJ_COOLSTORE_TEST project..."
   echo "Using template $_TEMPLATE"
-  oc process -f $_TEMPLATE -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n coolstore-test-$PROJECT_SUFFIX
+  oc process -f $_TEMPLATE -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n $PRJ_COOLSTORE_TEST
 }
 
 # Deploy Inventory Service into Inventory DEV project
 function deploy_inventory_service() {
   local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/services/inventory-service.json"
 
-  echo_header "Deploying Inventory service into inventory-dev-$PROJECT_SUFFIX project..."
+  echo_header "Deploying Inventory service into $PRJ_INVENTORY project..."
   echo "Using template $_TEMPLATE"
-  oc process -f $_TEMPLATE -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n inventory-dev-$PROJECT_SUFFIX
+  oc process -f $_TEMPLATE -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n $PRJ_INVENTORY
 }
 
 function set_permissions() {
-  oc adm policy add-role-to-user admin $ARG_USERNAME -n coolstore-test-$PROJECT_SUFFIX
-  oc adm policy add-role-to-user admin $ARG_USERNAME -n coolstore-stage-$PROJECT_SUFFIX
-  oc adm policy add-role-to-user admin $ARG_USERNAME -n coolstore-prod-$PROJECT_SUFFIX
-  oc adm policy add-role-to-user admin $ARG_USERNAME -n inventory-dev-$PROJECT_SUFFIX
-  oc adm policy add-role-to-user admin $ARG_USERNAME -n cicd-$PROJECT_SUFFIX
+  oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_COOLSTORE_TEST
+  oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_PERSONAL
+  oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_COOLSTORE_PROD
+  oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_INVENTORY
+  oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_CI
 
-  oc adm policy add-role-to-user admin system:serviceaccounts:cicd-$PROJECT_SUFFIX -n coolstore-test-$PROJECT_SUFFIX
-  oc adm policy add-role-to-user admin system:serviceaccounts:cicd-$PROJECT_SUFFIX -n coolstore-stage-$PROJECT_SUFFIX
-  oc adm policy add-role-to-user admin system:serviceaccounts:cicd-$PROJECT_SUFFIX -n coolstore-prod-$PROJECT_SUFFIX
-  oc adm policy add-role-to-user admin system:serviceaccounts:cicd-$PROJECT_SUFFIX -n inventory-dev-$PROJECT_SUFFIX
+  oc adm policy add-role-to-user admin system:serviceaccounts:$PRJ_CI -n $PRJ_COOLSTORE_TEST
+  oc adm policy add-role-to-user admin system:serviceaccounts:$PRJ_CI -n $PRJ_PERSONAL
+  oc adm policy add-role-to-user admin system:serviceaccounts:$PRJ_CI -n $PRJ_COOLSTORE_PROD
+  oc adm policy add-role-to-user admin system:serviceaccounts:$PRJ_CI -n $PRJ_INVENTORY
 }
 
 # GPTE convention
@@ -354,13 +362,13 @@ fi
 print_info
 create_infra_project
 deploy_gogs
-# deploy_nexus
-# deploy_jenkins
-#
-# create_app_projects
-# wait_for_nexus_to_be_ready
-# deploy_coolstore_test_env
-# # deploy_inventory_service
-#
-# set_default_project
-# set_permissions
+deploy_nexus
+deploy_jenkins
+
+create_app_projects
+wait_for_nexus_to_be_ready
+deploy_coolstore_test_env
+# deploy_inventory_service
+
+set_default_project
+set_permissions
