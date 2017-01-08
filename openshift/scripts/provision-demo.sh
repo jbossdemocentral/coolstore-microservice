@@ -397,6 +397,13 @@ function prepare_objects_for_ci() {
   set +x
 }
 
+function configure_ci_cd() {
+  echo_header "Configuring CI/CD..."
+
+  oc create -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/pipeline-template.yaml -n $PRJ_CI
+  oc new-app pipeline -p APPLICATION_NAME=coolstore -p GIT_URI=http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git
+}
+
 function set_permissions() {
   oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_COOLSTORE_TEST
   oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_DEVELOPER
@@ -448,6 +455,7 @@ deploy_inventory_dev_env
 set_default_project
 set_permissions
 prepare_objects_for_ci
+configure_ci_cd
 
 END=`date +%s`
 echo
