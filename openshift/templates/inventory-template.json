@@ -2,7 +2,7 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "inventory-service",
+    "name": "inventory",
     "annotations": {
       "description": "The inventory service",
       "iconClass": "icon-java",
@@ -10,7 +10,7 @@
     }
   },
   "labels": {
-    "application": "inventory-service",
+    "application": "inventory",
     "hystrix.enabled": "true"
   },
   "parameters": [
@@ -102,7 +102,7 @@
             "uri": "${GIT_URI}",
             "ref": "${GIT_REF}"
           },
-          "contextDir": "inventory-service"
+          "contextDir": "inventory"
         },
         "strategy": {
           "type": "Source",
