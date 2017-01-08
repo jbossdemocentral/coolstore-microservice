@@ -338,8 +338,8 @@ function deploy_coolstore_test_env() {
   oc process -f $_TEMPLATE_DEPLOYMENT -v APP_VERSION=test -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
 }
 
-# Deploy Inventory Service into Inventory DEV project
-function deploy_inventory_service() {
+# Deploy Inventory service into Inventory DEV project
+function deploy_inventory_dev_env() {
   local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-template.json"
 
   echo_header "Deploying Inventory service into $PRJ_INVENTORY project..."
@@ -432,17 +432,17 @@ START=`date +%s`
 
 set_domain_for_gogs_hack
 print_info
-# create_infra_project
-# deploy_gogs
-# deploy_nexus
-# deploy_jenkins
-# create_app_projects
-# add_inventory_template_to_projects
-# wait_for_nexus_to_be_ready
+create_infra_project
+deploy_gogs
+deploy_nexus
+deploy_jenkins
+create_app_projects
+add_inventory_template_to_projects
+wait_for_nexus_to_be_ready
 deploy_coolstore_test_env
-# deploy_inventory_service
-# set_default_project
-# set_permissions
+deploy_inventory_dev_env
+set_default_project
+set_permissions
 prepare_objects_for_ci
 
 END=`date +%s`
