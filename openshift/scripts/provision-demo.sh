@@ -74,13 +74,13 @@ done
 # CONFIGURATION                                                                #
 ################################################################################
 # project
-PROJECT_SUFFIX=${ARG_PROJECT_SUFFIX:-`echo $ARG_USERNAME | sed -e 's/-.*//g'`}
-PROJECT_LABEL=demo1-$PROJECT_SUFFIX
-PRJ_CI=ci-$PROJECT_SUFFIX
-PRJ_COOLSTORE_TEST=coolstore-test-$PROJECT_SUFFIX
-PRJ_COOLSTORE_PROD=coolstore-prod-$PROJECT_SUFFIX
-PRJ_INVENTORY=inventory-test-$PROJECT_SUFFIX
-PRJ_DEVELOPER=developer-$PROJECT_SUFFIX
+PRJ_SUFFIX=${ARG_PROJECT_SUFFIX:-`echo $ARG_USERNAME | sed -e 's/-.*//g'`}
+PRJ_LABEL=demo1-$PRJ_SUFFIX
+PRJ_CI=ci-$PRJ_SUFFIX
+PRJ_COOLSTORE_TEST=coolstore-test-$PRJ_SUFFIX
+PRJ_COOLSTORE_PROD=coolstore-prod-$PRJ_SUFFIX
+PRJ_INVENTORY=inventory-test-$PRJ_SUFFIX
+PRJ_DEVELOPER=developer-$PRJ_SUFFIX
 
 # config
 GITHUB_ACCOUNT=${GITHUB_ACCOUNT:-jbossdemocentral}
@@ -89,30 +89,18 @@ GITHUB_URI=https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git
 MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.$PRJ_CI.svc.cluster.local:8081/content/groups/public}
 GOGS_USER=developer
 GOGS_PASSWORD=developer
-GOGS_ADMIN_USER=committer
-GOGS_ADMIN_PASSWORD=committer
+GOGS_ADMIN_USER=team
+GOGS_ADMIN_PASSWORD=team
 JENKINS_PASSWORD=openshift
 
 ################################################################################
 # FUNCTIONS                                                                    #
 ################################################################################
 
-# Hack to extract domain name when it's not determine in
-# advanced e.g. <user>-<project>.4s23.cluster
-function set_domain_for_gogs_hack() {
-  local _PROJECT=prj$(date +%s)-$PROJECT_SUFFIX
-  oc new-project $_PROJECT > /dev/null
-  oc create route edge testroute --service=testsvc --port=80 -n $_PROJECT >/dev/null
-  DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n $_PROJECT | sed "s/testroute-$_PROJECT.//g")
-  GOGS_ROUTE="gogs-$PRJ_CI.$DOMAIN"
-  oc delete route testroute -n $_PROJECT >/dev/null
-  oc delete project $_PROJECT > /dev/null
-}
-
 function print_info() {
   echo_header "Configuration"
-  echo "Project suffix:      $PROJECT_SUFFIX"
-  echo "Project label:       $PROJECT_LABEL"
+  echo "Project suffix:      $PRJ_SUFFIX"
+  echo "Project label:       $PRJ_LABEL"
   echo "GitHub repo:         https://github.com/$GITHUB_ACCOUNT/coolstore-microservice"
   echo "GitHub branch/tag:   $GITHUB_REF"
   echo "Gogs url:            http://$GOGS_ROUTE"
@@ -125,6 +113,21 @@ function print_info() {
   echo "Maven mirror url:    $MAVEN_MIRROR_URL"
 }
 
+# Hack to extract domain name when it's not determine in
+# advanced e.g. <user>-<project>.4s23.cluster
+function set_domain_for_gogs_hack() {
+  local _TEMP_PROJECT=prj$(date +%s)-$PRJ_SUFFIX
+  oc new-project $_TEMP_PROJECT > /dev/null
+  if [ "$(oc whoami)" == 'system:admin' ] ; then
+    oc annotate --overwrite namespace $_TEMP_PROJECT demo=$PRJ_LABEL > /dev/null
+  fi
+  oc create route edge testroute --service=testsvc --port=80 -n $_TEMP_PROJECT >/dev/null
+  DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n $_TEMP_PROJECT | sed "s/testroute-$_TEMP_PROJECT.//g")
+  GOGS_ROUTE="gogs-$PRJ_CI.$DOMAIN"
+  oc delete route testroute -n $_TEMP_PROJECT >/dev/null
+  oc delete project $_TEMP_PROJECT > /dev/null
+}
+
 function delete_projects() {
   oc delete project $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI
 }
@@ -135,7 +138,7 @@ function create_infra_project() {
   oc new-project $PRJ_CI --display-name='CI/CD' --description='CI/CD Components (Jenkins, Gogs, etc)'
 
   if [ "$(oc whoami)" == 'system:admin' ] ; then
-    oc annotate --overwrite namespace $PRJ_CI demo=$PROJECT_LABEL
+    oc annotate --overwrite namespace $PRJ_CI demo=$PRJ_LABEL
   fi
 }
 
@@ -150,7 +153,7 @@ function create_app_projects() {
   if [ "$(oc whoami)" == 'system:admin' ] ; then
     for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_DEVELOPER
     do
-      oc annotate --overwrite namespace $project demo=$PROJECT_LABEL
+      oc annotate --overwrite namespace $project demo=$PRJ_LABEL
     done
   fi
 
@@ -177,7 +180,7 @@ function deploy_nexus() {
 
     echo_header "Deploying Sonatype Nexus repository manager..."
     echo "Using template $_TEMPLATE"
-    oc process -f $_TEMPLATE | oc create -f - -n $PRJ_CI
+    oc process -f $_TEMPLATE -n $PRJ_CI | oc create -f - -n $PRJ_CI
   else
     echo_header "Using existng Maven mirror: $ARG_MAVEN_MIRROR_URL"
   fi
@@ -215,7 +218,7 @@ function deploy_gogs() {
   local _GITHUB_REPO="https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git"
 
   echo "Using template $_TEMPLATE"
-  oc process -f $_TEMPLATE -v HOSTNAME=gogs-$PRJ_CI.$DOMAIN,GOGS_VERSION=0.9.113,DATABASE_USER=$_DB_USER,DATABASE_PASSWORD=$_DB_PASSWORD,DATABASE_NAME=$_DB_NAME,INSTALL_LOCK=false | oc create -f - -n $PRJ_CI
+  oc process -f $_TEMPLATE -v HOSTNAME=gogs-$PRJ_CI.$DOMAIN,GOGS_VERSION=0.9.113,DATABASE_USER=$_DB_USER,DATABASE_PASSWORD=$_DB_PASSWORD,DATABASE_NAME=$_DB_NAME,INSTALL_LOCK=false -n $PRJ_CI | oc create -f - -n $PRJ_CI
 
   echo "Waiting for Gogs to be ready..."
   x=1
@@ -331,17 +334,17 @@ function deploy_coolstore_test_env() {
   echo "Using build template $_TEMPLATE_BUILDS"
   echo "Using deployment template $_TEMPLATE_DEPLOYMENT"
 
-  oc process -f $_TEMPLATE_BUILDS -v GIT_URI=$GITHUB_URI -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n $PRJ_COOLSTORE_TEST
-  oc process -f $_TEMPLATE_DEPLOYMENT -v APP_VERSION=test | oc create -f - -n $PRJ_COOLSTORE_TEST
+  oc process -f $_TEMPLATE_BUILDS -v GIT_URI=$GITHUB_URI -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
+  oc process -f $_TEMPLATE_DEPLOYMENT -v APP_VERSION=test -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
 }
 
 # Deploy Inventory Service into Inventory DEV project
 function deploy_inventory_service() {
-  local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-service.json"
+  local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-template.json"
 
   echo_header "Deploying Inventory service into $PRJ_INVENTORY project..."
   echo "Using template $_TEMPLATE"
-  oc process -f $_TEMPLATE -v GIT_URI=http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n $PRJ_INVENTORY
+  oc process -f $_TEMPLATE -v GIT_URI=http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_INVENTORY | oc create -f - -n $PRJ_INVENTORY
 }
 
 # Prepare the BuildConfigs and Deployment for CI/CD
@@ -354,9 +357,10 @@ function prepare_objects_for_ci() {
     while [ -z "$(oc get builds -l buildconfig=$buildconfig -n $PRJ_COOLSTORE_TEST | grep 'Complete')" ]
     do
       # if build has failed, let's give it another shot
-      if [ ! -z "$(oc get builds -l buildconfig=$buildconfig -n $PRJ_COOLSTORE_TEST | grep 'Failed')" ]
+      if [ ! -z "$(oc get builds -l buildconfig=$buildconfig -n $PRJ_COOLSTORE_TEST | grep 'Failed')" ] && [ -z "_BUILD_RETRIED_$buildconfig" ]
       then
         oc start-build $buildconfig -n $PRJ_COOLSTORE_TEST
+        eval local _BUILD_RETRIED_$buildconfig=true
       fi
 
       echo "."
@@ -428,17 +432,17 @@ START=`date +%s`
 
 set_domain_for_gogs_hack
 print_info
-create_infra_project
-deploy_gogs
-deploy_nexus
-deploy_jenkins
-create_app_projects
-add_inventory_template_to_projects
-wait_for_nexus_to_be_ready
+# create_infra_project
+# deploy_gogs
+# deploy_nexus
+# deploy_jenkins
+# create_app_projects
+# add_inventory_template_to_projects
+# wait_for_nexus_to_be_ready
 deploy_coolstore_test_env
-deploy_inventory_service
-set_default_project
-set_permissions
+# deploy_inventory_service
+# set_default_project
+# set_permissions
 prepare_objects_for_ci
 
 END=`date +%s`
