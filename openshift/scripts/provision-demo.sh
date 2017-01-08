@@ -85,6 +85,7 @@ PRJ_PERSONAL=developer-$PROJECT_SUFFIX
 # config
 GITHUB_ACCOUNT=${GITHUB_ACCOUNT:-jbossdemocentral}
 GITHUB_REF=${GITHUB_REF:-demo-1-gpte}
+GITHUB_URI=https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git
 MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.$PRJ_CI.svc.cluster.local:8081/content/groups/public}
 GOGS_USER=developer
 GOGS_PASSWORD=developer
@@ -146,7 +147,7 @@ function create_app_projects() {
   fi
 
   # add Inventory Service template
-  oc create -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/services/inventory-service.json -n $PRJ_INVENTORY
+  #oc create -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-service.json -n $PRJ_PERSONAL
 }
 
 # Deploy Nexus
@@ -308,20 +309,62 @@ function deploy_jenkins() {
 
 # Deploy Coolstore into Coolstore TEST project
 function deploy_coolstore_test_env() {
-  local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/coolstore-persistent-template.yaml"
+  local _TEMPLATE_BUILDS="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-builds-template.yaml"
+  local _TEMPLATE_DEPLOYMENT="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-deployments-template.yaml"
 
   echo_header "Deploying CoolStore app into $PRJ_COOLSTORE_TEST project..."
-  echo "Using template $_TEMPLATE"
-  oc process -f $_TEMPLATE -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n $PRJ_COOLSTORE_TEST
+
+  echo "Using build template $_TEMPLATE_BUILDS"
+  oc process -f $_TEMPLATE_BUILDS -v GIT_URI=$GITHUB_URI -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n $PRJ_COOLSTORE_TEST
+
+  echo "Using deployment template $_TEMPLATE_DEPLOYMENT"
+  oc process -f $_TEMPLATE_BUILDS -v APP_VERSION=test | oc create -f - -n $PRJ_COOLSTORE_TEST
 }
 
 # Deploy Inventory Service into Inventory DEV project
 function deploy_inventory_service() {
-  local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/services/inventory-service.json"
+  local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-service.json"
 
   echo_header "Deploying Inventory service into $PRJ_INVENTORY project..."
   echo "Using template $_TEMPLATE"
-  oc process -f $_TEMPLATE -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n $PRJ_INVENTORY
+  oc process -f $_TEMPLATE -v GIT_URI=$GITHUB_URI -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n $PRJ_INVENTORY
+}
+
+# Prepare the BuildConfigs and Deployment for CI/CD
+function prepare_objects_for_ci() {
+  # wait for builds to finish
+  echo "Waiting for builds to finish..."
+  for buildconfig in coolstore-gw web-ui inventory cart catalog
+  do
+    x=1
+    while [ -z "$(oc get builds -l buildconfig=$buildconfig | grep 'Complete')" ]
+    do
+      echo "."
+      sleep 10
+      x=$(( $x + 1 ))
+      if [ $x -gt 120 ]
+      then
+        echo "Tired of waiting for builds to finish, I give up!"
+        exit 255
+      fi
+    done
+  done
+
+  # remove buildconfigs. Jenkins does that!
+  oc delete bc --all -n $PRJ_COOLSTORE_TEST
+
+  for is in coolstore-gw web-ui inventory cart catalog
+  do
+    # tag images in test
+    oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_TEST/$is:test
+    # tag images in prod
+    oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_PROD/$is:prod
+    # remove latest tag
+    oc tag $PRJ_COOLSTORE_TEST/$is:latest -d
+  done
+
+  # remove fis image
+  oc delete is fis-java-openshift -n $PRJ_COOLSTORE_TEST
 }
 
 function set_permissions() {
@@ -359,6 +402,8 @@ if [ "$ARG_DELETE" = true ] ; then
   exit 0
 fi
 
+START=`date +%s`
+
 print_info
 create_infra_project
 deploy_gogs
@@ -372,3 +417,8 @@ deploy_coolstore_test_env
 
 set_default_project
 set_permissions
+
+prepare_objects_for_ci
+
+END=`date +%s`
+echo "Provisioning done! (completed in $(( $END - $START )))"
