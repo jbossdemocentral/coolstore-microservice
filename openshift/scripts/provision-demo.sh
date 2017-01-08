@@ -349,7 +349,9 @@ function deploy_inventory_dev_env() {
 
 # Prepare the BuildConfigs and Deployment for CI/CD
 function prepare_objects_for_ci() {
+  set -x
   # wait for builds to finish
+  echo_header "Preparing builds and deployments for CI/CD..."
   echo "Waiting for builds to finish..."
   for buildconfig in coolstore-gw web-ui inventory cart catalog
   do
@@ -391,6 +393,8 @@ function prepare_objects_for_ci() {
 
   # remove fis image
   oc delete is fis-java-openshift -n $PRJ_COOLSTORE_TEST
+
+  set +x
 }
 
 function set_permissions() {
