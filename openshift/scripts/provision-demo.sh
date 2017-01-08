@@ -80,11 +80,28 @@ GITHUB_REF=${GITHUB_REF:-demo-1-gpte}
 MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.cicd-$PROJECT_SUFFIX.svc.cluster.local:8081/content/groups/public}
 GOGS_USER=developer
 GOGS_PASSWORD=developer
+GOGS_ADMIN_USER=committer
+GOGS_ADMIN_PASSWORD=committer
 JENKINS_PASSWORD=openshift
 
 ################################################################################
 # FUNCTIONS                                                                    #
 ################################################################################
+
+function print_info() {
+  echo_header "Configuration"
+  echo "Project suffix:      $PROJECT_SUFFIX"
+  echo "Project label:       $PROJECT_LABEL"
+  echo "GitHub repo:         https://github.com/$GITHUB_ACCOUNT/coolstore-microservice"
+  echo "GitHub branch/tag:   $GITHUB_REF"
+  echo "Gogs admin user:     $GOGS_ADMIN_USER"
+  echo "Gogs admin pwd:      $GOGS_ADMIN_PASSWORD"
+  echo "Gogs user:           $GOGS_USER"
+  echo "Gogs pwd:            $GOGS_PASSWORD"
+  echo "Jenkins admin user:  admin"
+  echo "Jenkins admin pwd:   $JENKINS_PASSWORD"
+  echo "Maven mirror url:    $MAVEN_MIRROR_URL"
+}
 
 function delete_projects() {
   oc delete project coolstore-test-$PROJECT_SUFFIX coolstore-stage-$PROJECT_SUFFIX coolstore-prod-$PROJECT_SUFFIX inventory-dev-$PROJECT_SUFFIX cicd-$PROJECT_SUFFIX
@@ -221,10 +238,10 @@ function deploy_gogs() {
     --form ssh_port=22 \
     --form http_port=3000 \
     --form app_url=http://$_GOGS_ROUTE/ \
-    --form admin_name=$GOGS_USER \
-    --form admin_passwd=$GOGS_PASSWORD \
-    --form admin_confirm_passwd=$GOGS_PASSWORD \
-    --form admin_email=$GOGS_USER@gogs.com)
+    --form admin_name=$GOGS_ADMIN_USER \
+    --form admin_passwd=$GOGS_ADMIN_PASSWORD \
+    --form admin_confirm_passwd=$GOGS_ADMIN_PASSWORD \
+    --form admin_email=$GOGS_ADMIN_USER@gogs.com)
 
   if [ $_RETURN != "200" ] ; then
     echo "WARNING: Failed (http code $_RETURN) to initialise Gogs"
@@ -242,21 +259,37 @@ function deploy_gogs() {
 }
 EOM
 
-  _RETURN=$(curl -o /dev/null -sL -w "%{http_code}" -H "Content-Type: application/json" -d "$_DATA_JSON" -u $GOGS_USER:$GOGS_PASSWORD -X POST http://$_GOGS_ROUTE/api/v1/repos/migrate)
+  _RETURN=$(curl -o /dev/null -sL -w "%{http_code}" -H "Content-Type: application/json" -d "$_DATA_JSON" -u $GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD -X POST http://$_GOGS_ROUTE/api/v1/repos/migrate)
   if [ $_RETURN != "201" ] && [ $_RETURN != "200" ] ; then
    echo "WARNING: Failed (http code $_RETURN) to import GitHub repo $_REPO to Gogs"
   fi
 
-  sleep 5
+  sleep 2
+
+  # create user
+  read -r -d '' _DATA_JSON << EOM
+{
+    "login_name": "$GOGS_USER",
+    "username": "$GOGS_USER",
+    "email": "$GOGS_USER@gogs.com",
+    "password": "$GOGS_PASSWORD"
+}
+EOM
+  _RETURN=$(curl -o /dev/null -sL -w "%{http_code}" -H "Content-Type: application/json" -d "$_DATA_JSON" -u $GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD -X POST http://$_GOGS_ROUTE/api/v1/admin/users)
+  if [ $_RETURN != "201" ] && [ $_RETURN != "200" ] ; then
+   echo "WARNING: Failed (http code $_RETURN) to create user $GOGS_USER"
+  fi
+
+  sleep 2
 
   # import tag to master
   local _CLONE_DIR=/tmp/$(date +%s)-coolstore-microservice
   rm -rf $_CLONE_DIR && \
-      git clone -v http://$_GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git $_CLONE_DIR && \
+      git clone -v http://$_GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git $_CLONE_DIR && \
       cd $_CLONE_DIR && \
       git branch -m master master-old && \
       git checkout -b master $GITHUB_REF && \
-      git push -v -f http://$GOGS_USER:$GOGS_PASSWORD@$_GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git master
+      git push -v -f http://$GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD@$_GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git master
 }
 
 # Deploy Jenkins
@@ -318,15 +351,16 @@ if [ "$ARG_DELETE" = true ] ; then
   exit 0
 fi
 
+print_info
 create_infra_project
 deploy_gogs
-deploy_nexus
-deploy_jenkins
-
-create_app_projects
-wait_for_nexus_to_be_ready
-deploy_coolstore_test_env
-# deploy_inventory_service
-
-set_default_project
-set_permissions
+# deploy_nexus
+# deploy_jenkins
+#
+# create_app_projects
+# wait_for_nexus_to_be_ready
+# deploy_coolstore_test_env
+# # deploy_inventory_service
+#
+# set_default_project
+# set_permissions
