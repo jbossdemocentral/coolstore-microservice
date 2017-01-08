@@ -2,9 +2,9 @@ apiVersion: v1
 kind: Template
 labels:
   demo: coolstore-microservice
-  template: pipeline
+  template: coolstore-pipeline
 metadata:
-  name: pipeline
+  name: coolstore-pipeline
 objects:
 - apiVersion: v1
   kind: BuildConfig
