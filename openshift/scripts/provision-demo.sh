@@ -118,7 +118,7 @@ function delete_projects() {
 # Create Infra Project
 function create_infra_project() {
   echo_header "Creating infra project..."
-  oc new-project $PRJ_CI --display-name='CI/CD Infra' --description='CI/CD Infra Environment'
+  oc new-project $PRJ_CI --display-name='CI/CD' --description='CI/CD Components (Jenkins, Gogs, etc)'
 
   if [ "$(oc whoami)" == 'system:admin' ] ; then
     oc annotate --overwrite namespace $PRJ_CI demo=$PROJECT_LABEL
