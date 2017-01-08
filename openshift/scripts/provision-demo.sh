@@ -80,7 +80,7 @@ PRJ_CI=ci-$PROJECT_SUFFIX
 PRJ_COOLSTORE_TEST=coolstore-test-$PROJECT_SUFFIX
 PRJ_COOLSTORE_PROD=coolstore-prod-$PROJECT_SUFFIX
 PRJ_INVENTORY=inventory-test-$PROJECT_SUFFIX
-PRJ_PERSONAL=developer-$PROJECT_SUFFIX
+PRJ_DEVELOPER=developer-$PROJECT_SUFFIX
 
 # config
 GITHUB_ACCOUNT=${GITHUB_ACCOUNT:-jbossdemocentral}
@@ -97,12 +97,25 @@ JENKINS_PASSWORD=openshift
 # FUNCTIONS                                                                    #
 ################################################################################
 
+# Hack to extract domain name when it's not determine in
+# advanced e.g. <user>-<project>.4s23.cluster
+function set_domain_for_gogs_hack() {
+  local _PROJECT=prj$(date +%s)-$PROJECT_SUFFIX
+  oc new-project $_PROJECT > /dev/null
+  oc create route edge testroute --service=testsvc --port=80 -n $_PROJECT >/dev/null
+  DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n $_PROJECT | sed "s/testroute-$_PROJECT.//g")
+  GOGS_ROUTE="gogs-$PRJ_CI.$DOMAIN"
+  oc delete route testroute -n $_PROJECT >/dev/null
+  oc delete project $_PROJECT > /dev/null
+}
+
 function print_info() {
   echo_header "Configuration"
   echo "Project suffix:      $PROJECT_SUFFIX"
   echo "Project label:       $PROJECT_LABEL"
   echo "GitHub repo:         https://github.com/$GITHUB_ACCOUNT/coolstore-microservice"
   echo "GitHub branch/tag:   $GITHUB_REF"
+  echo "Gogs url:            http://$GOGS_ROUTE"
   echo "Gogs admin user:     $GOGS_ADMIN_USER"
   echo "Gogs admin pwd:      $GOGS_ADMIN_PASSWORD"
   echo "Gogs user:           $GOGS_USER"
@@ -113,7 +126,7 @@ function print_info() {
 }
 
 function delete_projects() {
-  oc delete project $PRJ_COOLSTORE_TEST $PRJ_PERSONAL $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI
+  oc delete project $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI
 }
 
 # Create Infra Project
@@ -132,10 +145,10 @@ function create_app_projects() {
   oc new-project $PRJ_COOLSTORE_TEST --display-name='CoolStore TEST' --description='CoolStore Test Environment'
   oc new-project $PRJ_COOLSTORE_PROD --display-name='CoolStore PROD' --description='CoolStore Production Environment'
   oc new-project $PRJ_INVENTORY --display-name='Inventory TEST' --description='Inventory Test Environment'
-  oc new-project $PRJ_PERSONAL --display-name='Developer Project' --description='Personal Developer Project'
+  oc new-project $PRJ_DEVELOPER --display-name='Developer Project' --description='Personal Developer Project'
 
   if [ "$(oc whoami)" == 'system:admin' ] ; then
-    for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_PERSONAL
+    for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_DEVELOPER
     do
       oc annotate --overwrite namespace $project demo=$PROJECT_LABEL
     done
@@ -143,11 +156,18 @@ function create_app_projects() {
 
   # join project networks
   if [ "$(oc whoami)" == 'system:admin' ] ; then
-    oc adm pod-network join-projects --to=$PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_PERSONAL $PRJ_COOLSTORE_PROD $PRJ_INVENTORY
+    oc adm pod-network join-projects --to=$PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY
   fi
 
-  # add Inventory Service template
-  #oc create -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-service.json -n $PRJ_PERSONAL
+}
+
+# Add Inventory Service Template
+function add_inventory_template_to_projects() {
+  local _TEMPLATE=https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-template.json
+  curl -sL $_TEMPLATE | tr -d '\n' | tr -s '[:space:]' \
+    | sed "s|\"MAVEN_MIRROR_URL\", \"value\": \"\"|\"MAVEN_MIRROR_URL\", \"value\": \"$MAVEN_MIRROR_URL\"|g" \
+    | sed "s|\"https://github.com/jbossdemocentral/coolstore-microservice\"|\"http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git\"|g" \
+    | oc create -f - -n $PRJ_DEVELOPER
 }
 
 # Deploy Nexus
@@ -187,16 +207,11 @@ function wait_for_nexus_to_be_ready() {
 # Deploy Gogs
 function deploy_gogs() {
   echo_header "Deploying Gogs git server..."
-  # extract domain
-  oc create route edge testroute --service=testsvc --port=80 -n $PRJ_CI >/dev/null
-  DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n $PRJ_CI | sed "s/testroute-$PRJ_CI.//g")
-  oc delete route testroute -n $PRJ_CI >/dev/null
 
   local _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/master/openshift/gogs-persistent-template.yaml"
   local _DB_USER=gogs
   local _DB_PASSWORD=gogs
   local _DB_NAME=gogs
-  local _GOGS_ROUTE="gogs-$PRJ_CI.$DOMAIN"
   local _GITHUB_REPO="https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git"
 
   echo "Using template $_TEMPLATE"
@@ -231,7 +246,7 @@ function deploy_gogs() {
   echo "Gogs is ready!"
 
   # initialise Gogs
-  _RETURN=$(curl -o /dev/null -sL --post302 -w "%{http_code}" http://$_GOGS_ROUTE/install \
+  _RETURN=$(curl -o /dev/null -sL --post302 -w "%{http_code}" http://$GOGS_ROUTE/install \
     --form db_type=PostgreSQL \
     --form db_host=gogs-postgresql:5432 \
     --form db_user=$_DB_USER \
@@ -246,7 +261,7 @@ function deploy_gogs() {
     --form domain=localhost \
     --form ssh_port=22 \
     --form http_port=3000 \
-    --form app_url=http://$_GOGS_ROUTE/ \
+    --form app_url=http://$GOGS_ROUTE/ \
     --form admin_name=$GOGS_ADMIN_USER \
     --form admin_passwd=$GOGS_ADMIN_PASSWORD \
     --form admin_confirm_passwd=$GOGS_ADMIN_PASSWORD \
@@ -268,7 +283,7 @@ function deploy_gogs() {
 }
 EOM
 
-  _RETURN=$(curl -o /dev/null -sL -w "%{http_code}" -H "Content-Type: application/json" -d "$_DATA_JSON" -u $GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD -X POST http://$_GOGS_ROUTE/api/v1/repos/migrate)
+  _RETURN=$(curl -o /dev/null -sL -w "%{http_code}" -H "Content-Type: application/json" -d "$_DATA_JSON" -u $GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD -X POST http://$GOGS_ROUTE/api/v1/repos/migrate)
   if [ $_RETURN != "201" ] && [ $_RETURN != "200" ] ; then
    echo "WARNING: Failed (http code $_RETURN) to import GitHub repo $_REPO to Gogs"
   fi
@@ -284,7 +299,7 @@ EOM
     "password": "$GOGS_PASSWORD"
 }
 EOM
-  _RETURN=$(curl -o /dev/null -sL -w "%{http_code}" -H "Content-Type: application/json" -d "$_DATA_JSON" -u $GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD -X POST http://$_GOGS_ROUTE/api/v1/admin/users)
+  _RETURN=$(curl -o /dev/null -sL -w "%{http_code}" -H "Content-Type: application/json" -d "$_DATA_JSON" -u $GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD -X POST http://$GOGS_ROUTE/api/v1/admin/users)
   if [ $_RETURN != "201" ] && [ $_RETURN != "200" ] ; then
    echo "WARNING: Failed (http code $_RETURN) to create user $GOGS_USER"
   fi
@@ -294,11 +309,11 @@ EOM
   # import tag to master
   local _CLONE_DIR=/tmp/$(date +%s)-coolstore-microservice
   rm -rf $_CLONE_DIR && \
-      git clone -v http://$_GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git $_CLONE_DIR && \
+      git clone -v http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git $_CLONE_DIR && \
       cd $_CLONE_DIR && \
       git branch -m master master-old && \
       git checkout -b master $GITHUB_REF && \
-      git push -v -f http://$GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD@$_GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git master
+      git push -v -f http://$GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD@$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git master
 }
 
 # Deploy Jenkins
@@ -313,11 +328,10 @@ function deploy_coolstore_test_env() {
   local _TEMPLATE_DEPLOYMENT="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-deployments-template.yaml"
 
   echo_header "Deploying CoolStore app into $PRJ_COOLSTORE_TEST project..."
-
   echo "Using build template $_TEMPLATE_BUILDS"
-  oc process -f $_TEMPLATE_BUILDS -v GIT_URI=$GITHUB_URI -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n $PRJ_COOLSTORE_TEST
-
   echo "Using deployment template $_TEMPLATE_DEPLOYMENT"
+
+  oc process -f $_TEMPLATE_BUILDS -v GIT_URI=$GITHUB_URI -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n $PRJ_COOLSTORE_TEST
   oc process -f $_TEMPLATE_DEPLOYMENT -v APP_VERSION=test | oc create -f - -n $PRJ_COOLSTORE_TEST
 }
 
@@ -327,7 +341,7 @@ function deploy_inventory_service() {
 
   echo_header "Deploying Inventory service into $PRJ_INVENTORY project..."
   echo "Using template $_TEMPLATE"
-  oc process -f $_TEMPLATE -v GIT_URI=$GITHUB_URI -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n $PRJ_INVENTORY
+  oc process -f $_TEMPLATE -v GIT_URI=http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - -n $PRJ_INVENTORY
 }
 
 # Prepare the BuildConfigs and Deployment for CI/CD
@@ -337,8 +351,14 @@ function prepare_objects_for_ci() {
   for buildconfig in coolstore-gw web-ui inventory cart catalog
   do
     x=1
-    while [ -z "$(oc get builds -l buildconfig=$buildconfig | grep 'Complete')" ]
+    while [ -z "$(oc get builds -l buildconfig=$buildconfig -n $PRJ_COOLSTORE_TEST | grep 'Complete')" ]
     do
+      # if build has failed, let's give it another shot
+      if [ ! -z "$(oc get builds -l buildconfig=$buildconfig -n $PRJ_COOLSTORE_TEST | grep 'Failed')" ]
+      then
+        oc start-build $buildconfig -n $PRJ_COOLSTORE_TEST
+      fi
+
       echo "."
       sleep 10
       x=$(( $x + 1 ))
@@ -348,6 +368,8 @@ function prepare_objects_for_ci() {
         exit 255
       fi
     done
+
+    echo "Build $buildconfig completed"
   done
 
   # remove buildconfigs. Jenkins does that!
@@ -369,13 +391,13 @@ function prepare_objects_for_ci() {
 
 function set_permissions() {
   oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_COOLSTORE_TEST
-  oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_PERSONAL
+  oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_DEVELOPER
   oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_COOLSTORE_PROD
   oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_INVENTORY
   oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_CI
 
   oc adm policy add-role-to-user admin system:serviceaccounts:$PRJ_CI -n $PRJ_COOLSTORE_TEST
-  oc adm policy add-role-to-user admin system:serviceaccounts:$PRJ_CI -n $PRJ_PERSONAL
+  oc adm policy add-role-to-user admin system:serviceaccounts:$PRJ_CI -n $PRJ_DEVELOPER
   oc adm policy add-role-to-user admin system:serviceaccounts:$PRJ_CI -n $PRJ_COOLSTORE_PROD
   oc adm policy add-role-to-user admin system:serviceaccounts:$PRJ_CI -n $PRJ_INVENTORY
 }
@@ -404,21 +426,21 @@ fi
 
 START=`date +%s`
 
+set_domain_for_gogs_hack
 print_info
 create_infra_project
 deploy_gogs
 deploy_nexus
 deploy_jenkins
-
 create_app_projects
+add_inventory_template_to_projects
 wait_for_nexus_to_be_ready
 deploy_coolstore_test_env
-# deploy_inventory_service
-
+deploy_inventory_service
 set_default_project
 set_permissions
-
 prepare_objects_for_ci
 
 END=`date +%s`
-echo "Provisioning done! (completed in $(( $END - $START )))"
+echo
+echo "Provisioning done! (Completed in $(( ($END - $START)/60 )) min $(( ($END - $START)%60 )) sec)"
