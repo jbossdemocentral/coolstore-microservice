@@ -12,22 +12,35 @@ objects:
     labels:
       build: ${APPLICATION_NAME}-pipeline
     name: ${APPLICATION_NAME}-pipeline
+    annotations:
+      pipeline.alpha.openshift.io/uses: '[{"name": "inventory", "namespace": "${DEV_PROJECT}", "kind": "BuildConfig"},{"name": "inventory", "namespace": "${TEST_PROJECT}", "kind": "DeploymentConfig"},,{"name": "inventory", "namespace": "${PROD_PROJECT}", "kind": "DeploymentConfig"}]'
   spec:
     runPolicy: Serial
     strategy:
       jenkinsPipelineStrategy:
         jenkinsfile: |-
           node ('maven') {
-            stage ('build') {
-              echo 'Build'
-              openshiftBuild(buildConfig: 'inventory', namespace: '${INVENTORY_PROJECT}', showBuildLogs: 'true')
-            }
+            stage 'Build'
+            openshiftBuild(buildConfig: 'inventory', namespace: '${DEV_PROJECT}', showBuildLogs: 'true')
+
+            stage 'Promote to TEST'
+            openshiftTag(sourceStream: 'inventory', sourceTag: 'latest', namespace: '${DEV_PROJECT}', destinationStream: 'inventory', destinationTag: 'test', destinationNamespace: '${TEST_PROJECT}')
+
+            stage 'Run Tests'
+            sleep 10
+          }
+
+          stage 'Approve PROD'
+          timeout(time:10, unit:'MINUTES') {
+            input message:'Approve deployment to Production?'
           }
 
           node {
-            stage ('test') {
-              echo "Test"
-            }
+            stage 'Promote to PROD'
+            openshiftTag(sourceStream: 'inventory', sourceTag: 'test', namespace: '${TEST_PROJECT}', destinationStream: 'inventory', destinationTag: 'prod', destinationNamespace: '${PROD_PROJECT}')
+
+            stage 'Smoke Tests PROD'
+            sleep 10
           }
       type: JenkinsPipeline
     triggers:
@@ -42,19 +55,18 @@ parameters:
   displayName: Application Name
   name: APPLICATION_NAME
   required: true
-- description: Inventory DEV project name containting the "inventory" buildconfig
-  displayName: Inventory DEV project name
-  name: INVENTORY_PROJECT
+- description: DEV project name containting the buildconfigs
+  displayName: DEV project name
+  name: DEV_PROJECT
   required: true
-# - description: Git source URI for application
-#   displayName: Git source repository
-#   name: GIT_URI
-#   required: true
-# - description: Git branch/tag reference
-#   displayName: Git branch/tag reference
-#   name: GIT_REF
-#   required: true
-#   value: master
+- description: TEST project name containting the buildconfigs
+  displayName: TEST project name
+  name: TEST_PROJECT
+  required: true
+- description: PROD project name containting the buildconfigs
+  displayName: PROD project name
+  name: PROD_PROJECT
+  required: true
 - description: GitHub webhook secret
   displayName: GitHub webhook secret
   from: '[a-zA-Z0-9]{8}'
