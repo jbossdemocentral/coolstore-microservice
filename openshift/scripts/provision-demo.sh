@@ -331,11 +331,12 @@ EOM
   # import tag to master
   local _CLONE_DIR=/tmp/$(date +%s)-coolstore-microservice
   rm -rf $_CLONE_DIR && \
-      git clone -v http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git $_CLONE_DIR && \
+      git clone http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git $_CLONE_DIR && \
       cd $_CLONE_DIR && \
       git branch -m master master-old && \
-      git checkout -b master $GITHUB_REF && \
-      git push -v -f http://$GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD@$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git master
+      git checkout $GITHUB_REF && \
+      git branch -m $GITHUB_REF master $GITHUB_REF && \
+      git push -f http://$GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD@$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git master
 }
 
 # Deploy Jenkins
