@@ -11,6 +11,7 @@ steps:
 * Deploys CoolStore microservices app in TEST project
 * Deploys Inventory service in Inventory DEV project
 * Configures CI/CD for Inventory service across projects
+* Configures webhook on Gogs repository to trigger the pipeline
 
 Prerequisites
 ============
@@ -21,6 +22,8 @@ Usage
 ============
 ```
 $ provision-demo.sh --user <username>
+
+--master               Required. OpenShift master url
 
 --user                 Required. OpenShift username to own the projects
 

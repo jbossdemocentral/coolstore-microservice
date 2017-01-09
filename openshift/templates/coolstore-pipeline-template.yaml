@@ -10,8 +10,8 @@ objects:
   kind: BuildConfig
   metadata:
     labels:
-      build: ${APPLICATION_NAME}-pipeline
-    name: ${APPLICATION_NAME}-pipeline
+      build: ${PIPELINE_NAME}
+    name: ${PIPELINE_NAME}
     annotations:
       pipeline.alpha.openshift.io/uses: '[{"name": "inventory", "namespace": "${DEV_PROJECT}", "kind": "BuildConfig"},{"name": "inventory", "namespace": "${TEST_PROJECT}", "kind": "DeploymentConfig"},,{"name": "inventory", "namespace": "${PROD_PROJECT}", "kind": "DeploymentConfig"}]'
   spec:
@@ -53,7 +53,7 @@ objects:
 parameters:
 - description: The name for the application.
   displayName: Application Name
-  name: APPLICATION_NAME
+  name: PIPELINE_NAME
   required: true
 - description: DEV project name containting the buildconfigs
   displayName: DEV project name

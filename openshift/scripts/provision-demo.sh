@@ -5,11 +5,11 @@
 function usage() {
     echo
     echo "Usage:"
-    echo " $0 --user <username> [ --maven-mirror-url <value> ] [--project-suffix <value>]"
+    echo " $0 --master <openshift-master> --user <username> [ --maven-mirror-url <value> ] [--project-suffix <value>]"
     echo " $0 --help "
     echo
     echo "Example:"
-    echo " $0 --user demo --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d"
+    echo " $0 --master https://console.preview.openshift.com --user demo --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d"
     echo
     echo "If --maven-mirror-url is not specified, a Nexus container will be deployed and used"
     echo "If --project-suffix is not specified, <username> will be used as the suffix"
@@ -19,6 +19,7 @@ ARG_USERNAME=demo
 ARG_PROJECT_SUFFIX=
 ARG_MAVEN_MIRROR_URL=
 ARG_DELETE=false
+ARG_OPENSHIFT_MASTER=
 
 while :; do
     case $1 in
@@ -41,6 +42,15 @@ while :; do
                 shift
             else
                 printf 'ERROR: "--maven-mirror-url" requires a non-empty value.\n' >&2
+                exit 1
+            fi
+            ;;
+        --master)
+            if [ -n "$2" ]; then
+                ARG_OPENSHIFT_MASTER=$2
+                shift
+            else
+                printf 'ERROR: "--master" requires a non-empty value.\n' >&2
                 exit 1
             fi
             ;;
@@ -73,6 +83,8 @@ done
 ################################################################################
 # CONFIGURATION                                                                #
 ################################################################################
+OPENSHIFT_MASTER=${ARG_OPENSHIFT_MASTER}
+
 # project
 PRJ_SUFFIX=${ARG_PROJECT_SUFFIX:-`echo $ARG_USERNAME | sed -e 's/-.*//g'`}
 PRJ_LABEL=demo1-$PRJ_SUFFIX
@@ -86,11 +98,14 @@ PRJ_DEVELOPER=developer-$PRJ_SUFFIX
 GITHUB_ACCOUNT=${GITHUB_ACCOUNT:-jbossdemocentral}
 GITHUB_REF=${GITHUB_REF:-demo-1-gpte}
 GITHUB_URI=https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git
+
 MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.$PRJ_CI.svc.cluster.local:8081/content/groups/public}
+
 GOGS_USER=developer
 GOGS_PASSWORD=developer
 GOGS_ADMIN_USER=team
 GOGS_ADMIN_PASSWORD=team
+
 JENKINS_PASSWORD=openshift
 WEBHOOK_SECRET=UfW7gQ6Jx4
 
@@ -318,24 +333,6 @@ EOM
       git branch -m master master-old && \
       git checkout -b master $GITHUB_REF && \
       git push -v -f http://$GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD@$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git master
-
-
-  # configure webhook to trigger pipeline
-#   read -r -d '' _DATA_JSON << EOM
-# {
-#   "type": "gogs",
-#   "config": {
-#     "url": "http://admin:$JENKINS_PASSWORD@$jenkins/job/tasks-cd-pipeline/build?delay=0sec",
-#     "content_type": "json"
-#   },
-#   "events": [
-#     "push"
-#   ],
-#   "active": true
-# }
-# EOM
-#
-#   https://master.test.openshift.opentlc.com/oapi/v1/namespaces/ci-ssadeghi/buildconfigs/coolstore-pipeline/webhooks/$WEBHOOK_SECRET/generic
 }
 
 # Deploy Jenkins
@@ -421,8 +418,31 @@ function prepare_objects_for_ci() {
 function configure_ci_cd() {
   echo_header "Configuring CI/CD..."
 
+  local _PIPELINE_NAME=coolstore
+
   oc create -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-pipeline-template.yaml -n $PRJ_CI
-  oc new-app pipeline -p APPLICATION_NAME=coolstore -p GIT_URI=http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git -p GENERIC_WEBHOOK_SECRET=$WEBHOOK_SECRET
+  oc new-app coolstore-pipeline -p APPLICATION_NAME=$_PIPELINE_NAME -p DEV_PROJECT=$PRJ_DEVELOPER -p TEST_PROJECT=$PRJ_COOLSTORE_TEST -p PROD_PROJECT=$PRJ_COOLSTORE_PROD -p GENERIC_WEBHOOK_SECRET=$WEBHOOK_SECRET -n $PRJ_CI
+
+  # configure webhook to trigger pipeline
+  read -r -d '' _DATA_JSON << EOM
+{
+  "type": "gogs",
+  "config": {
+    "url": "https://$OPENSHIFT_MASTER/oapi/v1/namespaces/$PRJ_CI/buildconfigs/$_PIPELINE_NAME/webhooks/$WEBHOOK_SECRET/generic",
+    "content_type": "json"
+  },
+  "events": [
+    "push"
+  ],
+  "active": true
+}
+EOM
+
+
+  _RETURN=$(curl -o /dev/null -sL -w "%{http_code}" -H "Content-Type: application/json" -d "$_DATA_JSON" -u $GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD -X POST http://$GOGS_ROUTE/api/v1/repos/$GOGS_ADMIN_USER/coolstore-microservice/hooks)
+  if [ $_RETURN != "201" ] && [ $_RETURN != "200" ] ; then
+   echo "WARNING: Failed (http code $_RETURN) to configure webhook on Gogs"
+  fi
 }
 
 function set_permissions() {
