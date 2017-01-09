@@ -227,14 +227,14 @@ function wait_for_nexus_to_be_ready() {
 function deploy_gogs() {
   echo_header "Deploying Gogs git server..."
 
-  local _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/master/openshift/gogs-persistent-template.yaml"
+  local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/gogs-persistent-template.yaml"
   local _DB_USER=gogs
   local _DB_PASSWORD=gogs
   local _DB_NAME=gogs
   local _GITHUB_REPO="https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git"
 
   echo "Using template $_TEMPLATE"
-  oc process -f $_TEMPLATE -v HOSTNAME=gogs-$PRJ_CI.$DOMAIN,GOGS_VERSION=0.9.113,DATABASE_USER=$_DB_USER,DATABASE_PASSWORD=$_DB_PASSWORD,DATABASE_NAME=$_DB_NAME,INSTALL_LOCK=false,SKIP_TLS_VERIFY=true -n $PRJ_CI | oc create -f - -n $PRJ_CI
+  oc process -f $_TEMPLATE -v HOSTNAME=gogs-$PRJ_CI.$DOMAIN,GOGS_VERSION=0.9.113,DATABASE_USER=$_DB_USER,DATABASE_PASSWORD=$_DB_PASSWORD,DATABASE_NAME=$_DB_NAME -n $PRJ_CI | oc create -f - -n $PRJ_CI
 
   echo "Waiting for Gogs to be ready..."
   x=1
@@ -292,6 +292,9 @@ function deploy_gogs() {
   fi
 
   sleep 5
+
+  # disable TLS verification for webhooks
+  oc rsh $(oc get pod -o name -l deploymentconfig=gogs) /bin/bash -c "if ! grep TLS /opt/gogs/data/custom/conf/app.ini; then printf '[webhook]\nSKIP_TLS_VERIFY = true\n' >> /opt/gogs/data/custom/conf/app.ini ; fi"
 
   # import GitHub repo
   read -r -d '' _DATA_JSON << EOM
@@ -367,7 +370,6 @@ function deploy_inventory_dev_env() {
 
 # Prepare the BuildConfigs and Deployment for CI/CD
 function prepare_objects_for_ci() {
-  set -x
   # wait for builds to finish
   echo_header "Preparing builds and deployments for CI/CD..."
   echo "Waiting for builds to finish..."
@@ -411,8 +413,6 @@ function prepare_objects_for_ci() {
 
   # remove fis image
   oc delete is fis-java-openshift -n $PRJ_COOLSTORE_TEST
-
-  set +x
 }
 
 function configure_ci_cd() {
