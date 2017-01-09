@@ -79,7 +79,7 @@ PRJ_LABEL=demo1-$PRJ_SUFFIX
 PRJ_CI=ci-$PRJ_SUFFIX
 PRJ_COOLSTORE_TEST=coolstore-test-$PRJ_SUFFIX
 PRJ_COOLSTORE_PROD=coolstore-prod-$PRJ_SUFFIX
-PRJ_INVENTORY=inventory-test-$PRJ_SUFFIX
+PRJ_INVENTORY=inventory-dev-$PRJ_SUFFIX
 PRJ_DEVELOPER=developer-$PRJ_SUFFIX
 
 # config
@@ -92,6 +92,7 @@ GOGS_PASSWORD=developer
 GOGS_ADMIN_USER=team
 GOGS_ADMIN_PASSWORD=team
 JENKINS_PASSWORD=openshift
+WEBHOOK_SECRET=UfW7gQ6Jx4
 
 ################################################################################
 # FUNCTIONS                                                                    #
@@ -108,6 +109,7 @@ function print_info() {
   echo "Gogs admin pwd:      $GOGS_ADMIN_PASSWORD"
   echo "Gogs user:           $GOGS_USER"
   echo "Gogs pwd:            $GOGS_PASSWORD"
+  echo "Gogs webhook secret: $WEBHOOK_SECRET"
   echo "Jenkins admin user:  admin"
   echo "Jenkins admin pwd:   $JENKINS_PASSWORD"
   echo "Maven mirror url:    $MAVEN_MIRROR_URL"
@@ -161,7 +163,6 @@ function create_app_projects() {
   if [ "$(oc whoami)" == 'system:admin' ] ; then
     oc adm pod-network join-projects --to=$PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY
   fi
-
 }
 
 # Add Inventory Service Template
@@ -218,7 +219,7 @@ function deploy_gogs() {
   local _GITHUB_REPO="https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git"
 
   echo "Using template $_TEMPLATE"
-  oc process -f $_TEMPLATE -v HOSTNAME=gogs-$PRJ_CI.$DOMAIN,GOGS_VERSION=0.9.113,DATABASE_USER=$_DB_USER,DATABASE_PASSWORD=$_DB_PASSWORD,DATABASE_NAME=$_DB_NAME,INSTALL_LOCK=false -n $PRJ_CI | oc create -f - -n $PRJ_CI
+  oc process -f $_TEMPLATE -v HOSTNAME=gogs-$PRJ_CI.$DOMAIN,GOGS_VERSION=0.9.113,DATABASE_USER=$_DB_USER,DATABASE_PASSWORD=$_DB_PASSWORD,DATABASE_NAME=$_DB_NAME,INSTALL_LOCK=false,SKIP_TLS_VERIFY=true -n $PRJ_CI | oc create -f - -n $PRJ_CI
 
   echo "Waiting for Gogs to be ready..."
   x=1
@@ -317,12 +318,32 @@ EOM
       git branch -m master master-old && \
       git checkout -b master $GITHUB_REF && \
       git push -v -f http://$GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD@$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git master
+
+
+  # configure webhook to trigger pipeline
+#   read -r -d '' _DATA_JSON << EOM
+# {
+#   "type": "gogs",
+#   "config": {
+#     "url": "http://admin:$JENKINS_PASSWORD@$jenkins/job/tasks-cd-pipeline/build?delay=0sec",
+#     "content_type": "json"
+#   },
+#   "events": [
+#     "push"
+#   ],
+#   "active": true
+# }
+# EOM
+#
+#   https://master.test.openshift.opentlc.com/oapi/v1/namespaces/ci-ssadeghi/buildconfigs/coolstore-pipeline/webhooks/$WEBHOOK_SECRET/generic
 }
 
 # Deploy Jenkins
 function deploy_jenkins() {
   echo_header "Deploying Jenkins..."
-  oc new-app jenkins-persistent -l app=jenkins -p JENKINS_PASSWORD=$JENKINS_PASSWORD -n $PRJ_CI
+  # TODO: remove extra steps when Jenkins 2 becomes default in OpenShift
+  oc import-image jenkins:2 --from=registry.access.redhat.com/openshift3/jenkins-2-rhel7:latest --confirm -n $PRJ_CI
+  oc new-app jenkins-persistent -l app=jenkins -p JENKINS_PASSWORD=$JENKINS_PASSWORD -p NAMESPACE=$PRJ_CI -p JENKINS_IMAGE_STREAM_TAG=jenkins:2 -n $PRJ_CI
 }
 
 # Deploy Coolstore into Coolstore TEST project
@@ -400,8 +421,8 @@ function prepare_objects_for_ci() {
 function configure_ci_cd() {
   echo_header "Configuring CI/CD..."
 
-  oc create -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/pipeline-template.yaml -n $PRJ_CI
-  oc new-app pipeline -p APPLICATION_NAME=coolstore -p GIT_URI=http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git
+  oc create -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-pipeline-template.yaml -n $PRJ_CI
+  oc new-app pipeline -p APPLICATION_NAME=coolstore -p GIT_URI=http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git -p GENERIC_WEBHOOK_SECRET=$WEBHOOK_SECRET
 }
 
 function set_permissions() {
@@ -411,10 +432,12 @@ function set_permissions() {
   oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_INVENTORY
   oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_CI
 
-  oc adm policy add-role-to-user admin system:serviceaccounts:$PRJ_CI -n $PRJ_COOLSTORE_TEST
-  oc adm policy add-role-to-user admin system:serviceaccounts:$PRJ_CI -n $PRJ_DEVELOPER
-  oc adm policy add-role-to-user admin system:serviceaccounts:$PRJ_CI -n $PRJ_COOLSTORE_PROD
-  oc adm policy add-role-to-user admin system:serviceaccounts:$PRJ_CI -n $PRJ_INVENTORY
+  oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $PRJ_COOLSTORE_TEST
+  oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $PRJ_DEVELOPER
+  oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $PRJ_COOLSTORE_PROD
+  oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $PRJ_INVENTORY
+
+  oc policy add-role-to-group admin system:serviceaccounts:ci-ssadeghi -n developer-ssadeghi
 }
 
 # GPTE convention
