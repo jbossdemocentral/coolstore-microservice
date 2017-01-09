@@ -51,30 +51,31 @@ objects:
         secret: ${GENERIC_WEBHOOK_SECRET}
       type: Generic
 parameters:
-- description: The name for the application.
-  displayName: Application Name
+- description: The name for the pipeline.
+  displayName: Pipeline Name
   name: PIPELINE_NAME
   required: true
+  value: coolstore-pipeline
 - description: DEV project name containting the buildconfigs
-  displayName: DEV project name
+  displayName: DEV Project Name
   name: DEV_PROJECT
   required: true
 - description: TEST project name containting the buildconfigs
-  displayName: TEST project name
+  displayName: TEST Project Name
   name: TEST_PROJECT
   required: true
 - description: PROD project name containting the buildconfigs
-  displayName: PROD project name
+  displayName: PROD Project Name
   name: PROD_PROJECT
   required: true
 - description: GitHub webhook secret
-  displayName: GitHub webhook secret
+  displayName: GitHub Webhook Secret
   from: '[a-zA-Z0-9]{8}'
   generate: expression
   name: GITHUB_WEBHOOK_SECRET
   required: true
 - description: Generic webhook secret
-  displayName: Generic webhook secret
+  displayName: Generic Webhook Secret
   from: '[a-zA-Z0-9]{8}'
   generate: expression
   name: GENERIC_WEBHOOK_SECRET

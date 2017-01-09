@@ -9,7 +9,7 @@ function usage() {
     echo " $0 --help "
     echo
     echo "Example:"
-    echo " $0 --master https://console.preview.openshift.com --user demo --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d"
+    echo " $0 --master console.preview.openshift.com --user demo --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d"
     echo
     echo "If --maven-mirror-url is not specified, a Nexus container will be deployed and used"
     echo "If --project-suffix is not specified, <username> will be used as the suffix"
@@ -418,10 +418,10 @@ function prepare_objects_for_ci() {
 function configure_ci_cd() {
   echo_header "Configuring CI/CD..."
 
-  local _PIPELINE_NAME=coolstore
+  local _PIPELINE_NAME=coolstore-pipeline
 
   oc create -f https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-pipeline-template.yaml -n $PRJ_CI
-  oc new-app coolstore-pipeline -p APPLICATION_NAME=$_PIPELINE_NAME -p DEV_PROJECT=$PRJ_DEVELOPER -p TEST_PROJECT=$PRJ_COOLSTORE_TEST -p PROD_PROJECT=$PRJ_COOLSTORE_PROD -p GENERIC_WEBHOOK_SECRET=$WEBHOOK_SECRET -n $PRJ_CI
+  oc new-app coolstore-pipeline -p PIPELINE_NAME=$_PIPELINE_NAME -p DEV_PROJECT=$PRJ_DEVELOPER -p TEST_PROJECT=$PRJ_COOLSTORE_TEST -p PROD_PROJECT=$PRJ_COOLSTORE_PROD -p GENERIC_WEBHOOK_SECRET=$WEBHOOK_SECRET -n $PRJ_CI
 
   # configure webhook to trigger pipeline
   read -r -d '' _DATA_JSON << EOM

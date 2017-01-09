@@ -36,3 +36,9 @@ $ provision-demo.sh --user <username>
 --delete               Used in combination with --user or --project-suffix to delete the demo
                        components and clean the environment
 ```
+
+Example
+============
+```
+$ provision-demo.sh --master console.preview.openshift.com --user john --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d
+```
