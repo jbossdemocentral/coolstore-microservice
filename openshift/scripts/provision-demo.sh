@@ -421,7 +421,7 @@ function configure_ci_cd() {
   local _PIPELINE_NAME=coolstore-pipeline
   local _TEMPLATE=https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-pipeline-template.yaml
 
-  oc process -f $_TEMPLATE -v PIPELINE_NAME=$_PIPELINE_NAME -v DEV_PROJECT=$PRJ_DEVELOPER -v TEST_PROJECT=$PRJ_COOLSTORE_TEST -v PROD_PROJECT=$PRJ_COOLSTORE_PROD -v GENERIC_WEBHOOK_SECRET=$WEBHOOK_SECRET -n $PRJ_CI | oc create -f - -n $PRJ_CI
+  oc process -f $_TEMPLATE -v PIPELINE_NAME=$_PIPELINE_NAME -v DEV_PROJECT=$PRJ_INVENTORY -v TEST_PROJECT=$PRJ_COOLSTORE_TEST -v PROD_PROJECT=$PRJ_COOLSTORE_PROD -v GENERIC_WEBHOOK_SECRET=$WEBHOOK_SECRET -n $PRJ_CI | oc create -f - -n $PRJ_CI
 
   # configure webhook to trigger pipeline
   read -r -d '' _DATA_JSON << EOM
