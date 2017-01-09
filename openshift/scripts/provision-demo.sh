@@ -415,7 +415,7 @@ function prepare_objects_for_ci() {
   oc delete is fis-java-openshift -n $PRJ_COOLSTORE_TEST
 }
 
-function configure_ci_cd() {
+function deploy_pipeline() {
   echo_header "Configuring CI/CD..."
 
   local _PIPELINE_NAME=coolstore-pipeline
@@ -498,7 +498,7 @@ deploy_inventory_dev_env
 set_default_project
 set_permissions
 prepare_objects_for_ci
-configure_ci_cd
+deploy_pipeline
 
 END=`date +%s`
 echo
