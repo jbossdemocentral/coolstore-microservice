@@ -335,7 +335,7 @@ EOM
       cd $_CLONE_DIR && \
       git branch -m master master-old && \
       git checkout $GITHUB_REF && \
-      git branch -m $GITHUB_REF master $GITHUB_REF && \
+      git branch -m $GITHUB_REF master && \
       git push -f http://$GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD@$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git master
 }
 
