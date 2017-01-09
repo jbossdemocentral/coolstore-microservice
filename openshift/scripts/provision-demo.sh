@@ -295,6 +295,19 @@ function deploy_gogs() {
 
   # disable TLS verification for webhooks
   oc rsh $(oc get pod -o name -l deploymentconfig=gogs) /bin/bash -c "if ! grep TLS /opt/gogs/data/custom/conf/app.ini; then printf '[webhook]\nSKIP_TLS_VERIFY = true\n' >> /opt/gogs/data/custom/conf/app.ini ; fi"
+  oc delete pod -l deploymentconfig=gogs
+  x=1
+  while [ -z "$(oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:')" ]
+  do
+    echo "."
+    sleep 5
+    x=$(( $x + 1 ))
+    if [ $x -gt 30 ]
+    then
+      echo "Gogs still not ready, I GIVE UP!"
+      exit 255
+    fi
+  done
 
   # import GitHub repo
   read -r -d '' _DATA_JSON << EOM
