@@ -145,6 +145,30 @@ function set_domain_for_gogs_hack() {
   oc delete project $_TEMP_PROJECT > /dev/null
 }
 
+# waits while the condition is true until it becomes false or it times out
+function wait_while_empty() {
+  local _NAME=$1
+  local _TIMEOUT=$(($2/5))
+  local _CONDITION=$3
+
+  echo "Waiting for $_NAME to be ready..."
+  local x=1
+  while [ -z "$(eval ${_CONDITION})" ]
+  do
+    echo "."
+    sleep 5
+    x=$(( $x + 1 ))
+    if [ $x -gt $_TIMEOUT ]
+    then
+      echo "$_NAME still not ready, I GIVE UP!"
+      exit 255
+    fi
+  done
+
+  echo "$_NAME is ready."
+}
+
+
 function delete_projects() {
   oc delete project $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI
 }
@@ -205,21 +229,7 @@ function deploy_nexus() {
 # Wait till Nexus is ready
 function wait_for_nexus_to_be_ready() {
   if [ -z "$ARG_MAVEN_MIRROR_URL" ] ; then # no maven mirror specified
-    echo_header "Waiting for Nexus to be ready..."
-    x=1
-    while [ -z "$(oc get ep nexus -o yaml -n $PRJ_CI | grep '\- addresses:')" ]
-    do
-      echo "."
-      sleep 5
-      x=$(( $x + 1 ))
-      if [ $x -gt 120 ]
-      then
-        echo "Nexus still not ready, I GIVE UP!"
-        exit 255
-      fi
-    done
-
-    echo "Nexus is ready!"
+    wait_while_empty "Nexus" 600 "oc get ep nexus -o yaml -n $PRJ_CI | grep '\- addresses:'"
   fi
 }
 
@@ -236,33 +246,9 @@ function deploy_gogs() {
   echo "Using template $_TEMPLATE"
   oc process -f $_TEMPLATE -v HOSTNAME=gogs-$PRJ_CI.$DOMAIN,GOGS_VERSION=0.9.113,DATABASE_USER=$_DB_USER,DATABASE_PASSWORD=$_DB_PASSWORD,DATABASE_NAME=$_DB_NAME -n $PRJ_CI | oc create -f - -n $PRJ_CI
 
-  echo "Waiting for Gogs to be ready..."
-  x=1
-  while [ -z "$(oc get ep gogs-postgresql -o yaml -n $PRJ_CI | grep '\- addresses:')" ]
-  do
-    echo "."
-    sleep 5
-    x=$(( $x + 1 ))
-    if [ $x -gt 120 ]
-    then
-      echo "Gogs PostgreSQL still not ready, I GIVE UP!"
-      exit 255
-    fi
-  done
-
-  x=1
-  while [ -z "$(oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:')" ]
-  do
-    echo "."
-    sleep 5
-    x=$(( $x + 1 ))
-    if [ $x -gt 120 ]
-    then
-      echo "Gogs still not ready, I GIVE UP!"
-      exit 255
-    fi
-  done
-  echo "Gogs is ready!"
+  # wait for Gogs to be ready
+  wait_while_empty "Gogs PostgreSQL" 600 "oc get ep gogs-postgresql -o yaml -n $PRJ_CI | grep '\- addresses:'"
+  wait_while_empty "Gogs" 600 "oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:'"
 
   # initialise Gogs
   _RETURN=$(curl -o /dev/null -sL --post302 -w "%{http_code}" http://$GOGS_ROUTE/install \
@@ -295,19 +281,8 @@ function deploy_gogs() {
 
   # disable TLS verification for webhooks
   oc rsh $(oc get pod -o name -l deploymentconfig=gogs) /bin/bash -c "if ! grep TLS /opt/gogs/data/custom/conf/app.ini; then printf '[webhook]\nSKIP_TLS_VERIFY = true\n' >> /opt/gogs/data/custom/conf/app.ini ; fi"
-  oc delete pod -l deploymentconfig=gogs
-  x=1
-  while [ -z "$(oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:')" ]
-  do
-    echo "."
-    sleep 5
-    x=$(( $x + 1 ))
-    if [ $x -gt 30 ]
-    then
-      echo "Gogs still not ready, I GIVE UP!"
-      exit 255
-    fi
-  done
+  oc delete pod -l deploymentconfig=gogs >/dev/null
+  wait_while_empty "Gogs" 300 "oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:'"
 
   # import GitHub repo
   read -r -d '' _DATA_JSON << EOM
@@ -383,13 +358,13 @@ function deploy_inventory_dev_env() {
 }
 
 # Prepare the BuildConfigs and Deployment for CI/CD
-function prepare_objects_for_ci() {
+function tag_images_and_delete_builds_for_ci() {
   # wait for builds to finish
   echo_header "Preparing builds and deployments for CI/CD..."
   echo "Waiting for builds to finish..."
   for buildconfig in coolstore-gw web-ui inventory cart catalog
   do
-    x=1
+    local x=1
     while [ -z "$(oc get builds -l buildconfig=$buildconfig -n $PRJ_COOLSTORE_TEST | grep 'Complete')" ]
     do
       # if build has failed, let's give it another shot
@@ -511,7 +486,7 @@ deploy_coolstore_test_env
 deploy_inventory_dev_env
 set_default_project
 set_permissions
-prepare_objects_for_ci
+tag_images_and_delete_builds_for_ci
 deploy_pipeline
 
 END=`date +%s`
