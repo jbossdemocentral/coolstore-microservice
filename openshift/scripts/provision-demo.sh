@@ -280,6 +280,7 @@ function deploy_gogs() {
   sleep 5
 
   # disable TLS verification for webhooks
+  echo "Configuring and restarting Gogs"
   oc rsh $(oc get pod -o name -l deploymentconfig=gogs) /bin/bash -c "if ! grep TLS /opt/gogs/data/custom/conf/app.ini; then printf '[webhook]\nSKIP_TLS_VERIFY = true\n' >> /opt/gogs/data/custom/conf/app.ini ; fi"
   oc delete pod -l deploymentconfig=gogs >/dev/null
   wait_while_empty "Gogs" 300 "oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:'"
@@ -337,16 +338,29 @@ function deploy_jenkins() {
 
 # Deploy Coolstore into Coolstore TEST project
 function deploy_coolstore_test_env() {
-  local _TEMPLATE_BUILDS="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-builds-template.yaml"
-  local _TEMPLATE_DEPLOYMENT="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-deployments-template.yaml"
+  local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-deployments-template.yaml"
 
   echo_header "Deploying CoolStore app into $PRJ_COOLSTORE_TEST project..."
-  echo "Using build template $_TEMPLATE_BUILDS"
   echo "Using deployment template $_TEMPLATE_DEPLOYMENT"
 
-  oc process -f $_TEMPLATE_BUILDS -v GIT_URI=$GITHUB_URI -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
-  oc process -f $_TEMPLATE_DEPLOYMENT -v APP_VERSION=test -v HOSTNAME_SUFFIX=$PRJ_COOLSTORE_TEST.$DOMAIN -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
+  oc process -f $_TEMPLATE -v APP_VERSION=test -v HOSTNAME_SUFFIX=$PRJ_COOLSTORE_TEST.$DOMAIN -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
 }
+
+# Deploy Coolstore into Coolstore TEST project
+function deploy_coolstore_prod_env() {
+  local _TEMPLATE_DEPLOYMENT="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-deployments-template.yaml"
+  local _TEMPLATE_BLUEGREEN="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-bluegreen-template.yaml"
+
+  echo_header "Deploying CoolStore app into $PRJ_COOLSTORE_PROD project..."
+  echo "Using deployment template $_TEMPLATE_DEPLOYMENT"
+  echo "Using bluegreen template $_TEMPLATE_BLUEGREEN"
+
+  oc process -f $_TEMPLATE_DEPLOYMENT -v APP_VERSION=prod -v HOSTNAME_SUFFIX=$PRJ_COOLSTORE_PROD.$DOMAIN -n $PRJ_COOLSTORE_PROD | oc create -f - -n $PRJ_COOLSTORE_PROD
+  sleep 10
+  oc delete all,pvc -l application=inventory --now
+  oc process -f $_TEMPLATE_BLUEGREEN -v APP_VERSION_BLUE=prod-blue -v APP_VERSION_GREEN=prod-green -v HOSTNAME_SUFFIX=$PRJ_COOLSTORE_PROD.$DOMAIN -n $PRJ_COOLSTORE_PROD | oc create -f - -n $PRJ_COOLSTORE_PROD
+}
+
 
 # Deploy Inventory service into Inventory DEV project
 function deploy_inventory_dev_env() {
@@ -358,7 +372,13 @@ function deploy_inventory_dev_env() {
 }
 
 # Prepare the BuildConfigs and Deployment for CI/CD
-function tag_images_and_delete_builds_for_ci() {
+function build_and_tag_images_for_ci() {
+  local _TEMPLATE_BUILDS="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-builds-template.yaml"
+  echo "Using build template $_TEMPLATE_BUILDS"
+  oc process -f $_TEMPLATE_BUILDS -v GIT_URI=$GITHUB_URI -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
+
+  sleep 10
+
   # wait for builds to finish
   echo_header "Preparing builds and deployments for CI/CD..."
   echo "Waiting for builds to finish..."
@@ -475,6 +495,7 @@ START=`date +%s`
 
 set_domain_for_gogs_hack
 print_info
+
 create_infra_project
 deploy_gogs
 deploy_nexus
@@ -483,11 +504,13 @@ create_app_projects
 add_inventory_template_to_projects
 wait_for_nexus_to_be_ready
 deploy_coolstore_test_env
+deploy_coolstore_prod_env
 deploy_inventory_dev_env
+build_and_tag_images_for_ci
+deploy_pipeline
+
 set_default_project
 set_permissions
-tag_images_and_delete_builds_for_ci
-deploy_pipeline
 
 END=`date +%s`
 echo

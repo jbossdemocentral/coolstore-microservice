@@ -23,7 +23,7 @@ objects:
             stage 'Build'
             openshiftBuild(buildConfig: 'inventory', namespace: '${DEV_PROJECT}', showBuildLogs: 'true')
 
-            stage 'Promote to TEST'
+            stage 'Deploy to TEST'
             openshiftTag(sourceStream: 'inventory', sourceTag: 'latest', namespace: '${DEV_PROJECT}', destinationStream: 'inventory', destinationTag: 'test', destinationNamespace: '${TEST_PROJECT}')
             sleep 10
 
@@ -31,18 +31,34 @@ objects:
             sleep 10
           }
 
-          stage 'Approve promotion to PROD'
+          def tag="blue"
+          def altTag="green"
+
+          node {
+            stage 'Deploy to PROD (Not Live)'
+            sh "oc get route inventory -n ${PROD_PROJECT} -o jsonpath='{ .spec.to.name }' > activeservice"
+            activeService = readFile('activeservice').trim()
+            if (activeService == "inventory-blue") {
+              tag = "green"
+              altTag = "blue"
+            }
+            openshiftTag(sourceStream: 'inventory', sourceTag: 'test', namespace: '${TEST_PROJECT}', destinationStream: 'inventory', destinationTag: "prod-${tag}", destinationNamespace: '${PROD_PROJECT}')
+            sleep 10
+            openshiftVerifyDeployment(deploymentConfig: "inventory-${tag}", replicaCount: 1, verifyReplicaCount: true, namespace: '${PROD_PROJECT}')
+
+            stage 'Run Smoke Tests in PROD (Not Live)'
+            sleep 10
+          }
+
+          stage 'Approve Go Live'
           timeout(time:10, unit:'MINUTES') {
-            input message:'Approve deployment to Production?'
+            input message:'Go Live in Production (switch to new version)?'
           }
 
           node {
-            stage 'Promote to PROD'
-            openshiftTag(sourceStream: 'inventory', sourceTag: 'test', namespace: '${TEST_PROJECT}', destinationStream: 'inventory', destinationTag: 'prod', destinationNamespace: '${PROD_PROJECT}')
-            sleep 10
-
-            stage 'Smoke Tests PROD'
-            sleep 10
+            stage 'Go Live'
+            sh "oc set route-backends inventory inventory-${tag}=100 inventory-${altTag}=0 -n ${PROD_PROJECT}"
+            sleep 5
           }
       type: JenkinsPipeline
     triggers:
