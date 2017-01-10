@@ -42,7 +42,7 @@ objects:
         containers:
         - env:
           - name: COOLSTORE_GW_SERVICE
-            value: coolstore-gw
+            value: gw
           - name: HOSTNAME_HTTP
             value: web-ui:8080
           image: web-ui
@@ -106,6 +106,7 @@ objects:
   metadata:
     name: web-ui
   spec:
+    host: web-ui-${HOSTNAME_SUFFIX}
     to:
       kind: Service
       name: web-ui
@@ -134,6 +135,12 @@ objects:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+          - name: CART_ENDPOINT
+            value: cart-${HOSTNAME_SUFFIX}
+          - name: INVENTORY_ENDPOINT
+            value: inventory-${HOSTNAME_SUFFIX}
+          - name: CATALOG_ENDPOINT
+            value: catalog-${HOSTNAME_SUFFIX}
           image: library/coolstore-gw:${APP_VERSION}
           livenessProbe:
             httpGet:
@@ -179,6 +186,7 @@ objects:
   metadata:
     name: coolstore-gw
   spec:
+    host: gw-${HOSTNAME_SUFFIX}
     to:
       kind: Service
       name: coolstore-gw
@@ -300,6 +308,18 @@ objects:
       targetPort: 8080
     selector:
       deploymentconfig: inventory
+- apiVersion: v1
+  kind: Route
+  metadata:
+    labels:
+      application: inventory
+    name: inventory
+  spec:
+    host: inventory-${HOSTNAME_SUFFIX}
+    to:
+      kind: Service
+      name: inventory
+      weight: 100
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -478,6 +498,18 @@ objects:
       targetPort: 8080
     selector:
       deploymentconfig: catalog
+- apiVersion: v1
+  kind: Route
+  metadata:
+    labels:
+      application: catalog
+    name: catalog
+  spec:
+    host: catalog-${HOSTNAME_SUFFIX}
+    to:
+      kind: Service
+      name: catalog
+      weight: 100
 - apiVersion: v1
   kind: Service
   metadata:
@@ -704,6 +736,18 @@ objects:
       targetPort: 8080
     selector:
       deploymentconfig: cart
+- apiVersion: v1
+  kind: Route
+  metadata:
+    labels:
+      application: cart
+    name: cart
+  spec:
+    host: cart-${HOSTNAME_SUFFIX}
+    to:
+      kind: Service
+      name: cart
+      weight: 100
 # Netflix Turbine Server
 - apiVersion: v1
   kind: ImageStream
@@ -806,6 +850,7 @@ objects:
       application: turbine-server
     name: turbine-server
   spec:
+    host: turbine-server-${HOSTNAME_SUFFIX}
     port:
       targetPort: 8080-tcp
     to:
@@ -911,6 +956,7 @@ objects:
       application: hystrix-dashboard
     name: hystrix-dashboard
   spec:
+    host: hystrix-dashboard-${HOSTNAME_SUFFIX}
     port:
       targetPort: 8080-tcp
     to:
@@ -923,6 +969,10 @@ parameters:
   name: APP_VERSION
   required: true
   value: latest
+- description: Hostname suffix used for routes e.g. cart-<HOSTNAME_SUFFIX> inventory-<HOSTNAME_SUFFIX>
+  displayName: Hostname suffix used for routes
+  name: HOSTNAME_SUFFIX
+  required: true
 - description: Inventory Service database user name
   from: user[a-zA-Z0-9]{3}
   generate: expression
