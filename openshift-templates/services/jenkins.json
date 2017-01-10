@@ -108,7 +108,7 @@
             "metadata": {
                 "name": "jenkins",
                 "labels": {
-                    "template": "jenkins-ephemeral-template"
+                    "template": "jenkins-persistent-template"
                 }
             },
             "spec": {
@@ -152,7 +152,9 @@
                         "volumes": [
                             {
                                 "name": "jenkins-data",
-                                "emptyDir": {}
+                                "persistentVolumeClaim": {
+                                    "claimName": "jenkins-pv"
+                                }
                             }
                         ],
                         "containers": [
@@ -227,7 +229,7 @@
             "metadata": {
                 "name": "jenkins",
                 "labels": {
-                    "template": "jenkins-ephemeral-template"
+                    "template": "jenkins-persistent-template"
                 }
             },
             "spec": {
@@ -245,12 +247,29 @@
             }
         },
         {
+      "kind": "PersistentVolumeClaim",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "jenkins-pv"
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "3Gi"
+          }
+        }
+      }
+},
+        {
             "kind": "Route",
             "apiVersion": "v1",
             "metadata": {
                 "name": "jenkins",
                 "labels": {
-                    "template": "jenkins-ephemeral-template"
+                    "template": "jenkins-persistent-template"
                 }
             },
             "spec": {
