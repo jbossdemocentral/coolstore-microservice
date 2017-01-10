@@ -25,12 +25,13 @@ objects:
 
             stage 'Promote to TEST'
             openshiftTag(sourceStream: 'inventory', sourceTag: 'latest', namespace: '${DEV_PROJECT}', destinationStream: 'inventory', destinationTag: 'test', destinationNamespace: '${TEST_PROJECT}')
+            sleep 10
 
             stage 'Run Tests'
             sleep 10
           }
 
-          stage 'Approve PROD'
+          stage 'Approve promotion to PROD'
           timeout(time:10, unit:'MINUTES') {
             input message:'Approve deployment to Production?'
           }
@@ -38,6 +39,7 @@ objects:
           node {
             stage 'Promote to PROD'
             openshiftTag(sourceStream: 'inventory', sourceTag: 'test', namespace: '${TEST_PROJECT}', destinationStream: 'inventory', destinationTag: 'prod', destinationNamespace: '${PROD_PROJECT}')
+            sleep 10
 
             stage 'Smoke Tests PROD'
             sleep 10
