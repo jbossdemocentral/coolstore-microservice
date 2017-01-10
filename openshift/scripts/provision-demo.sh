@@ -332,7 +332,7 @@ function deploy_jenkins() {
   echo_header "Deploying Jenkins..."
   # TODO: remove extra steps when Jenkins 2 becomes default in OpenShift
   oc import-image jenkins:2 --from=registry.access.redhat.com/openshift3/jenkins-2-rhel7:latest --confirm -n $PRJ_CI
-  oc new-app jenkins-persistent -l app=jenkins -p JENKINS_PASSWORD=$JENKINS_PASSWORD -p NAMESPACE=$PRJ_CI -p JENKINS_IMAGE_STREAM_TAG=jenkins:2 -n $PRJ_CI
+  oc new-app jenkins-persistent -l app=jenkins -p JENKINS_PASSWORD=$JENKINS_PASSWORD -p NAMESPACE=$PRJ_CI -p JENKINS_IMAGE_STREAM_TAG=jenkins:2 -p MEMORY_LIMIT=1Gi -n $PRJ_CI
 }
 
 # Deploy Coolstore into Coolstore TEST project
