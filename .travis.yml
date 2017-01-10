@@ -6,6 +6,7 @@ jdk:
 branches:
   only:
   - demo-1
+  - demo-1-gpte
 
 before_install:
   - nvm install 4.4
