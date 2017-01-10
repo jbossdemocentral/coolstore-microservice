@@ -65,7 +65,7 @@ public class ApiGatewayRoute extends RouteBuilder {
                 .setBody(simple("null"))
                 .removeHeaders("CamelHttp*")
                 .setHeader(Exchange.HTTP_METHOD, HttpMethods.GET)
-                .setHeader(Exchange.HTTP_URI, simple("http://catalog-service:8080/api/products"))
+                .setHeader(Exchange.HTTP_URI, simple("http://catalog:8080/api/products"))
                 .hystrix().id("Product Service")
                     .to("http4://DUMMY")
                 .onFallback()
@@ -90,7 +90,7 @@ public class ApiGatewayRoute extends RouteBuilder {
             .setBody(simple("null"))
             .removeHeaders("CamelHttp*")
             .setHeader(Exchange.HTTP_METHOD, HttpMethods.GET)
-            .setHeader(Exchange.HTTP_URI, simple("http://inventory-service:8080/api/availability/${header.itemId}"))
+            .setHeader(Exchange.HTTP_URI, simple("http://inventory:8080/api/availability/${header.itemId}"))
             .hystrix().id("Inventory Service")
                 .to("http4://DUMMY2")
             .onFallback()
@@ -127,7 +127,7 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .removeHeaders("CamelHttp*")
                     .setBody(simple("null"))
                     .setHeader(Exchange.HTTP_METHOD, HttpMethods.POST)
-                    .setHeader(Exchange.HTTP_URI, simple("http://cart-service:8080/api/cart/checkout/${header.cartId}"))
+                    .setHeader(Exchange.HTTP_URI, simple("http://cart:8080/api/cart/checkout/${header.cartId}"))
                     .to("http4://DUMMY")
                 .onFallback()
                     // TODO: improve fallback
@@ -145,7 +145,7 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .removeHeaders("CamelHttp*")
                     .setBody(simple("null"))
                     .setHeader(Exchange.HTTP_METHOD, HttpMethods.GET)
-                    .setHeader(Exchange.HTTP_URI, simple("http://cart-service:8080/api/cart/${header.cartId}"))
+                    .setHeader(Exchange.HTTP_URI, simple("http://cart:8080/api/cart/${header.cartId}"))
                     .to("http4://DUMMY")
                 .onFallback()
                     // TODO: improve fallback
@@ -165,7 +165,7 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .removeHeaders("CamelHttp*")
                     .setBody(simple("null"))
                     .setHeader(Exchange.HTTP_METHOD, HttpMethods.DELETE)
-                    .setHeader(Exchange.HTTP_URI, simple("http://cart-service:8080/api/cart/${header.cartId}/${header.itemId}/${header.quantity}"))
+                    .setHeader(Exchange.HTTP_URI, simple("http://cart:8080/api/cart/${header.cartId}/${header.itemId}/${header.quantity}"))
                     .to("http4://DUMMY")
                 .onFallback()
                     // TODO: improve fallback
@@ -185,7 +185,7 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .removeHeaders("CamelHttp*")
                     .setBody(simple("null"))
                     .setHeader(Exchange.HTTP_METHOD, HttpMethods.POST)
-                    .setHeader(Exchange.HTTP_URI, simple("http://cart-service:8080/api/cart/${header.cartId}/${header.itemId}/${header.quantity}"))
+                    .setHeader(Exchange.HTTP_URI, simple("http://cart:8080/api/cart/${header.cartId}/${header.itemId}/${header.quantity}"))
                     .to("http4://DUMMY")
                 .onFallback()
                     // TODO: improve fallback
@@ -204,7 +204,7 @@ public class ApiGatewayRoute extends RouteBuilder {
                 .removeHeaders("CamelHttp*")
                 .setBody(simple("null"))
                 .setHeader(Exchange.HTTP_METHOD, HttpMethods.POST)
-                .setHeader(Exchange.HTTP_URI, simple("http://cart-service:8080/api/cart/${header.cartId}/${header.tmpId}"))
+                .setHeader(Exchange.HTTP_URI, simple("http://cart:8080/api/cart/${header.cartId}/${header.tmpId}"))
                 .to("http4://DUMMY")
                 .onFallback()
                 // TODO: improve fallback
