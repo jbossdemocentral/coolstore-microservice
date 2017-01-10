@@ -49,7 +49,7 @@ objects:
             sleep 10
             openshiftVerifyDeployment(deploymentConfig: "inventory-${tag}", replicaCount: 1, verifyReplicaCount: true, namespace: '${PROD_PROJECT}')
 
-            stage 'Run Smoke Tests in PROD (Not Live)'
+            stage 'Smoke Tests in PROD (Not Live)'
             sleep 30
           }
 
