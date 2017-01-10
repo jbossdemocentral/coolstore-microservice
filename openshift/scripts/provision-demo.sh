@@ -342,11 +342,10 @@ function deploy_coolstore_test_env() {
 
   echo_header "Deploying CoolStore app into $PRJ_COOLSTORE_TEST project..."
   echo "Using deployment template $_TEMPLATE_DEPLOYMENT"
-
   oc process -f $_TEMPLATE -v APP_VERSION=test -v HOSTNAME_SUFFIX=$PRJ_COOLSTORE_TEST.$DOMAIN -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
 }
 
-# Deploy Coolstore into Coolstore TEST project
+# Deploy Coolstore into Coolstore PROD project
 function deploy_coolstore_prod_env() {
   local _TEMPLATE_DEPLOYMENT="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-deployments-template.yaml"
   local _TEMPLATE_BLUEGREEN="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-bluegreen-template.yaml"
@@ -361,7 +360,6 @@ function deploy_coolstore_prod_env() {
   sleep 2
   oc process -f $_TEMPLATE_BLUEGREEN -v APP_VERSION_BLUE=prod-blue -v APP_VERSION_GREEN=prod-green -v HOSTNAME_SUFFIX=$PRJ_COOLSTORE_PROD.$DOMAIN -n $PRJ_COOLSTORE_PROD | oc create -f - -n $PRJ_COOLSTORE_PROD
 }
-
 
 # Deploy Inventory service into Inventory DEV project
 function deploy_inventory_dev_env() {

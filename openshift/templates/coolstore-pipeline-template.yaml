@@ -23,11 +23,14 @@ objects:
             stage 'Build'
             openshiftBuild(buildConfig: 'inventory', namespace: '${DEV_PROJECT}', showBuildLogs: 'true')
 
+            stage 'Run Tests in DEV'
+            sleep 10
+
             stage 'Deploy to TEST'
             openshiftTag(sourceStream: 'inventory', sourceTag: 'latest', namespace: '${DEV_PROJECT}', destinationStream: 'inventory', destinationTag: 'test', destinationNamespace: '${TEST_PROJECT}')
             sleep 10
 
-            stage 'Run Tests'
+            stage 'Run Tests in TEST'
             sleep 30
           }
 
