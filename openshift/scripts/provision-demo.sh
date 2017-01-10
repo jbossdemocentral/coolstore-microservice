@@ -413,11 +413,9 @@ function build_and_tag_images_for_ci() {
 
   for is in coolstore-gw web-ui inventory cart catalog
   do
-    # tag images in test
     oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_TEST/$is:test
-    # tag images in prod
-    oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_PROD/$is:prod
-    # remove latest tag
+    oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_PROD/$is:prod-green
+    oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_PROD/$is:prod-blue
     oc tag $PRJ_COOLSTORE_TEST/$is:latest -d
   done
 
