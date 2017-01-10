@@ -28,7 +28,7 @@ objects:
             sleep 10
 
             stage 'Run Tests'
-            sleep 10
+            sleep 30
           }
 
           def tag="blue"
@@ -47,7 +47,7 @@ objects:
             openshiftVerifyDeployment(deploymentConfig: "inventory-${tag}", replicaCount: 1, verifyReplicaCount: true, namespace: '${PROD_PROJECT}')
 
             stage 'Run Smoke Tests in PROD (Not Live)'
-            sleep 10
+            sleep 30
           }
 
           stage 'Approve Go Live'
