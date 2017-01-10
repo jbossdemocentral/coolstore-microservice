@@ -25,6 +25,8 @@ objects:
   kind: ImageStream
   metadata:
     name: web-ui
+    labels:
+      application: web-ui
   spec:
     tags:
     - name: latest
@@ -32,6 +34,8 @@ objects:
   kind: BuildConfig
   metadata:
     name: web-ui
+    labels:
+      application: web-ui
   spec:
     output:
       to:
@@ -58,6 +62,8 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: web-ui
+    labels:
+      application: web-ui
   spec:
     replicas: 1
     selector:
@@ -125,6 +131,7 @@ objects:
   metadata:
     labels:
       app: web-ui
+      application: web-ui
     name: web-ui
   spec:
     ports:
@@ -147,6 +154,8 @@ objects:
   kind: ImageStream
   metadata:
     name: fis-java-openshift
+    labels:
+      application: coolstore-gw
   spec:
     dockerImageRepository: registry.access.redhat.com/jboss-fuse-6-tech-preview/fis-java-openshift
     tags:
@@ -161,6 +170,8 @@ objects:
   kind: ImageStream
   metadata:
     name: coolstore-gw
+    labels:
+      application: coolstore-gw
   spec: {}
   status:
     dockerImageRepository: ""
@@ -168,6 +179,8 @@ objects:
   kind: BuildConfig
   metadata:
     name: coolstore-gw
+    labels:
+      application: coolstore-gw
   spec:
     output:
       to:
@@ -199,6 +212,8 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: coolstore-gw
+    labels:
+      application: coolstore-gw
   spec:
     replicas: 1
     selector:
@@ -250,6 +265,7 @@ objects:
   metadata:
     labels:
       app: coolstore-gw
+      application: coolstore-gw
       hystrix.enabled: true
     name: coolstore-gw
   spec:
@@ -263,6 +279,8 @@ objects:
   kind: Route
   metadata:
     name: coolstore-gw
+    labels:
+      application: coolstore-gw
   spec:
     to:
       kind: Service
@@ -272,6 +290,8 @@ objects:
   kind: ImageStream
   metadata:
     name: inventory
+    labels:
+      application: inventory
   spec:
     tags:
     - name: latest
@@ -279,6 +299,8 @@ objects:
   kind: BuildConfig
   metadata:
     name: inventory
+    labels:
+      application: inventory
   spec:
     output:
       to:
@@ -308,6 +330,8 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: inventory
+    labels:
+      application: inventory
   spec:
     replicas: 1
     selector:
@@ -413,6 +437,7 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
       app: inventory
+      application: inventory
     name: inventory
   spec:
     ports:
@@ -425,6 +450,8 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: inventory-postgresql
+    labels:
+      application: inventory
   spec:
     replicas: 1
     selector:
@@ -488,6 +515,7 @@ objects:
   kind: Service
   metadata:
     labels:
+      app: inventory
       application: inventory
     name: inventory-postgresql
   spec:
@@ -501,6 +529,8 @@ objects:
   kind: ImageStream
   metadata:
     name: catalog
+    labels:
+      application: catalog
   spec:
     tags:
     - name: latest
@@ -537,6 +567,8 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: catalog
+    labels:
+      application: catalog
   spec:
     replicas: 1
     selector:
@@ -614,6 +646,7 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'
     labels:
       app: catalog
+      application: catalog
     name: catalog
   spec:
     ports:
@@ -627,6 +660,7 @@ objects:
   metadata:
     labels:
       app: catalog
+      application: catalog
     name: catalog-mongodb
   spec:
     ports:
@@ -642,7 +676,7 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
-      app: catalog
+      application: catalog
     name: catalog-mongodb
   spec:
     replicas: 1
@@ -734,6 +768,8 @@ objects:
   kind: ImageStream
   metadata:
     name: cart
+    labels:
+      application: cart
   spec:
     tags:
     - name: latest
@@ -741,6 +777,8 @@ objects:
   kind: BuildConfig
   metadata:
     name: cart
+    labels:
+      application: cart
   spec:
     output:
       to:
@@ -770,6 +808,8 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: cart
+    labels:
+      application: cart
   spec:
     replicas: 1
     selector:
@@ -863,6 +903,7 @@ objects:
   metadata:
     labels:
       app: cart
+      application: cart
     name: cart
   spec:
     ports:
@@ -956,6 +997,7 @@ objects:
   metadata:
     labels:
       app: turbine-server
+      application: turbine-server
     name: turbine-server
   spec:
     ports:
@@ -1059,6 +1101,7 @@ objects:
   metadata:
     labels:
       app: hystrix-dashboard
+      application: hystrix-dashboard
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"turbine-server","namespace":"","kind":"Service"}]'
     name: hystrix-dashboard

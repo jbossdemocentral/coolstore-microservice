@@ -25,6 +25,8 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: web-ui
+    labels:
+      application: web-ui
   spec:
     replicas: 1
     selector:
@@ -92,6 +94,7 @@ objects:
   metadata:
     labels:
       app: web-ui
+      application: web-ui
     name: web-ui
   spec:
     ports:
@@ -105,6 +108,8 @@ objects:
   kind: Route
   metadata:
     name: web-ui
+    labels:
+      application: web-ui
   spec:
     host: web-ui-${HOSTNAME_SUFFIX}
     to:
@@ -115,6 +120,8 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: coolstore-gw
+    labels:
+      application: coolstore-gw
   spec:
     replicas: 1
     selector:
@@ -172,6 +179,7 @@ objects:
   metadata:
     labels:
       app: coolstore-gw
+      application: coolstore-gw
       hystrix.enabled: true
     name: coolstore-gw
   spec:
@@ -185,6 +193,8 @@ objects:
   kind: Route
   metadata:
     name: coolstore-gw
+    labels:
+      application: coolstore-gw
   spec:
     host: gw-${HOSTNAME_SUFFIX}
     to:
@@ -195,6 +205,8 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: inventory
+    labels:
+      application: inventory
   spec:
     replicas: 1
     selector:
@@ -300,6 +312,7 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
       app: inventory
+      application: inventory
     name: inventory
   spec:
     ports:
@@ -324,6 +337,8 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: inventory-postgresql
+    labels:
+      application: inventory
   spec:
     replicas: 1
     selector:
@@ -413,6 +428,8 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: catalog
+    labels:
+      application: catalog
   spec:
     replicas: 1
     selector:
@@ -490,6 +507,7 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'
     labels:
       app: catalog
+      application: catalog
     name: catalog
   spec:
     ports:
@@ -515,6 +533,7 @@ objects:
   metadata:
     labels:
       app: catalog
+      application: catalog
     name: catalog-mongodb
   spec:
     ports:
@@ -622,7 +641,7 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     labels:
-      application: catalog-mongodb
+      application: catalog
     name: mongodb-data-pv
   spec:
     accessModes:
@@ -635,6 +654,8 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: cart
+    labels:
+      application: cart
   spec:
     replicas: 1
     selector:
@@ -728,6 +749,7 @@ objects:
   metadata:
     labels:
       app: cart
+      application: cart
     name: cart
   spec:
     ports:
@@ -833,6 +855,7 @@ objects:
   metadata:
     labels:
       app: turbine-server
+      application: turbine-server
     name: turbine-server
   spec:
     ports:
@@ -937,6 +960,7 @@ objects:
   metadata:
     labels:
       app: hystrix-dashboard
+      application: hystrix-dashboard
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"turbine-server","namespace":"","kind":"Service"}]'
     name: hystrix-dashboard
