@@ -35,9 +35,9 @@ oc process -f coolstore-template.yaml | oc create -f -
 When all pods are deployed, verify all services are functioning:
 ```
 oc rsh $(oc get pods -o name -l application=coolstore-gw)
-curl http://catalog-service:8080/api/products
-curl http://inventory-service:8080/api/availability/329299
-curl http://cart-service:8080/api/cart/FOO
+curl http://catalog:8080/api/products
+curl http://inventory:8080/api/availability/329299
+curl http://cart:8080/api/cart/FOO
 ```
 
 Deploy Complete Demo
