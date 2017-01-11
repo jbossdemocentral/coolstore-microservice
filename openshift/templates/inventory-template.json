@@ -15,50 +15,52 @@
   },
   "parameters": [
     {
-      "description": "Application name",
+      "displayName": "Application name",
       "name": "APPLICATION_NAME",
       "value": "inventory"
     },
     {
       "description": "Git source URI for application",
+      "displayName": "Git repository",
       "name": "GIT_URI",
       "value": "https://github.com/jbossdemocentral/coolstore-microservice",
       "required": true
     },
     {
-      "description": "Git branch/tag reference",
+      "displayName": "Git branch/tag",
       "name": "GIT_REF",
       "value": "master",
       "required": true
     },
     {
-      "description": "A local Maven Mirror, e.g.: http://nexus.ci.svc.cluster.local:8081/content/groups/public/",
+      "description": "Maven mirror repository, e.g.: http://nexus.ci.svc.cluster.local:8081/content/groups/public/",
+      "displayName": "Maven mirror repository",
       "name": "MAVEN_MIRROR_URL",
       "value": ""
     },
     {
-      "description": "A-MQ cluster admin password",
+      "displayName": "A-MQ cluster admin password",
       "name": "MQ_CLUSTER_PASSWORD",
       "from": "[a-zA-Z0-9]{8}",
       "generate": "expression",
       "required": true
     },
     {
-      "description": "JGroups cluster password",
+      "displayName": "JGroups cluster password",
       "name": "JGROUPS_CLUSTER_PASSWORD",
       "from": "[a-zA-Z0-9]{8}",
       "generate": "expression",
       "required": true
     },
     {
-        "description": "Database user name",
+        "displayName": "Database user name",
         "name": "DB_USERNAME",
         "from": "user[a-zA-Z0-9]{3}",
         "generate": "expression",
         "required": true
     },
     {
-        "description": "Database user password",
+        "displayName": "Database user password",
         "name": "DB_PASSWORD",
         "from": "[a-zA-Z0-9]{8}",
         "generate": "expression",

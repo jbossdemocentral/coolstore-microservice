@@ -1135,8 +1135,7 @@ parameters:
   name: GIT_URI
   required: true
   value: https://github.com/jbossdemocentral/coolstore-microservice
-- description: Git branch/tag reference
-  displayName: Git branch/tag reference
+- displayName: Git branch/tag reference
   name: GIT_REF
   required: true
   value: master
@@ -1144,21 +1143,25 @@ parameters:
   displayName: Maven mirror url
   name: MAVEN_MIRROR_URL
 - description: Inventory Service database user name
+  displayName: Inventory Database username
   from: user[a-zA-Z0-9]{3}
   generate: expression
   name: INVENTORY_DB_USERNAME
   required: true
 - description: Inventory Service database user password
+  displayName: Inventory Database password
   from: '[a-zA-Z0-9]{8}'
   generate: expression
   name: INVENTORY_DB_PASSWORD
   required: true
 - description: Catalog Service database user name
+  displayName: Catalog Database username
   from: user[a-zA-Z0-9]{3}
   generate: expression
   name: CATALOG_DB_USERNAME
   required: true
 - description: Catalog Service database user password
+  displayName: Catalog Database password
   from: '[a-zA-Z0-9]{8}'
   generate: expression
   name: CATALOG_DB_PASSWORD
