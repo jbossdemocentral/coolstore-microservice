@@ -838,6 +838,8 @@ objects:
             value: ZPiKvsqZ9K
           - name: AUTO_DEPLOY_EXPLODED
             value: "false"
+          - name: CATALOG_ENDPOINT
+            value: "http://catalog:8080"
           image: cart
           imagePullPolicy: Always
           lifecycle:
