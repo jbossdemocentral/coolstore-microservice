@@ -2,7 +2,7 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "catalog-service",
+    "name": "catalog-template",
     "annotations": {
       "description": "The catalog service",
       "iconClass": "icon-java",
@@ -10,9 +10,7 @@
     }
   },
   "labels": {
-    "application": "catalog-service",
-    "createdBy": "template-catalog-service",
-    "template": "template-catalog-service",
+    "application": "catalog",
     "hystrix.enabled": "true"
   },
   "parameters": [
@@ -41,7 +39,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "catalog-service"
+        "name": "catalog"
       },
       "spec": {
         "tags": [
@@ -55,7 +53,7 @@
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "catalog-service"
+        "name": "catalog"
       },
       "spec": {
         "triggers": [
@@ -94,7 +92,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "catalog-service:latest"
+            "name": "catalog:latest"
           }
         }
       }
@@ -103,7 +101,7 @@
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "catalog-service"
+        "name": "catalog"
       },
       "spec": {
         "strategy": {
@@ -116,11 +114,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "catalog-service"
+                "catalog"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "catalog-service:latest"
+                "name": "catalog:latest"
               }
             }
           },
@@ -130,21 +128,21 @@
         ],
         "replicas": 1,
         "selector": {
-          "deploymentConfig": "catalog-service"
+          "deploymentConfig": "catalog"
         },
         "template": {
           "metadata": {
-            "name": "catalog-service",
+            "name": "catalog",
             "labels": {
-              "deploymentConfig": "catalog-service",
-              "application": "catalog-service"
+              "deploymentConfig": "catalog",
+              "application": "catalog"
             }
           },
           "spec": {
             "containers": [
               {
-                "name": "catalog-service",
-                "image": "catalog-service",
+                "name": "catalog",
+                "image": "catalog",
                 "ports": [
                   {
                     "name": "jolokia",
@@ -165,7 +163,7 @@
                 "env": [
                   {
                     "name": "OPENSHIFT_KUBE_PING_LABELS",
-                    "value": "application=catalog-service"
+                    "value": "application=catalog"
                   },
                   {
                     "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
@@ -247,7 +245,7 @@
       "kind": "Service",
       "apiVersion": "v1",
       "metadata": {
-        "name": "catalog-service",
+        "name": "catalog",
         "annotations": {
           "description": "The catalog service's http port."
         }
@@ -261,7 +259,7 @@
           }
         ],
         "selector": {
-          "deploymentConfig": "catalog-service"
+          "deploymentConfig": "catalog"
         }
       }
     }

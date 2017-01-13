@@ -2,17 +2,15 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "cart-service",
+    "name": "cart-template",
     "annotations": {
-      "description": "The cart service",
+      "description": "The cart service template",
       "iconClass": "icon-java",
       "tags": "microservice,jboss,angularjs,keycloak,sso"
     }
   },
   "labels": {
-    "application": "cart-service",
-    "createdBy": "template-cart-service",
-    "template": "template-cart-service",
+    "application": "cart",
     "hystrix.enabled": "true"
   },
   "parameters": [
@@ -41,7 +39,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "cart-service"
+        "name": "cart"
       },
       "spec": {
         "tags": [
@@ -55,7 +53,7 @@
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "cart-service"
+        "name": "cart"
       },
       "spec": {
         "triggers": [
@@ -72,7 +70,7 @@
           "git": {
             "uri": "https://github.com/jbossdemocentral/coolstore-microservice"
           },
-          "contextDir": "cart-service"
+          "contextDir": "cart-service-eap"
         },
         "strategy": {
           "type": "Source",
@@ -94,7 +92,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "cart-service:latest"
+            "name": "cart:latest"
           }
         }
       }
@@ -103,7 +101,7 @@
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "cart-service"
+        "name": "cart"
       },
       "spec": {
         "strategy": {
@@ -116,11 +114,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "cart-service"
+                "cart"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "cart-service:latest"
+                "name": "cart:latest"
               }
             }
           },
@@ -130,21 +128,21 @@
         ],
         "replicas": 1,
         "selector": {
-          "deploymentConfig": "cart-service"
+          "deploymentConfig": "cart"
         },
         "template": {
           "metadata": {
-            "name": "cart-service",
+            "name": "cart",
             "labels": {
-              "deploymentConfig": "cart-service",
-              "application": "cart-service"
+              "deploymentConfig": "cart",
+              "application": "cart"
             }
           },
           "spec": {
             "containers": [
               {
-                "name": "cart-service",
-                "image": "cart-service",
+                "name": "cart",
+                "image": "cart",
                 "ports": [
                   {
                     "name": "jolokia",
@@ -165,7 +163,7 @@
                 "env": [
                   {
                     "name": "OPENSHIFT_KUBE_PING_LABELS",
-                    "value": "application=cart-service"
+                    "value": "application=cart"
                   },
                   {
                     "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
@@ -247,7 +245,7 @@
       "kind": "Service",
       "apiVersion": "v1",
       "metadata": {
-        "name": "cart-service",
+        "name": "cart",
         "annotations": {
           "description": "The cart service's http port."
         }
@@ -261,7 +259,7 @@
           }
         ],
         "selector": {
-          "deploymentConfig": "cart-service"
+          "deploymentConfig": "cart"
         }
       }
     }
