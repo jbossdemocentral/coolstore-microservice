@@ -409,13 +409,16 @@ function build_and_tag_images_for_ci() {
   # remove buildconfigs. Jenkins does that!
   oc delete bc --all -n $PRJ_COOLSTORE_TEST
 
-  for is in coolstore-gw web-ui inventory cart catalog
+  for is in coolstore-gw web-ui cart catalog
   do
     oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_TEST/$is:test
-    oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_PROD/$is:prod-green
-    oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_PROD/$is:prod-blue
+    oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_PROD/$is:prod
     oc tag $PRJ_COOLSTORE_TEST/$is:latest -d
   done
+
+  oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_PROD/inventory:prod-green
+  oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_PROD/inventory:prod-blue
+  oc tag $PRJ_COOLSTORE_TEST/inventory:latest -d
 
   # remove fis image
   oc delete is fis-java-openshift -n $PRJ_COOLSTORE_TEST
