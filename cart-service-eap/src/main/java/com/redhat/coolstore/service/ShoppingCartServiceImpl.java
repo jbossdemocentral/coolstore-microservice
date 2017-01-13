@@ -99,7 +99,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 	public Product getProduct(String itemId) {
 		if (!productMap.containsKey(itemId)) {
 
-			String catalogEndpoint = System.getenv("CATALOG_ENDPOINT")
+			String catalogEndpoint = System.getenv("CATALOG_ENDPOINT");
 			CatalogService cat = Feign.builder()
 					.decoder(new JacksonDecoder())
 					.target(CatalogService.class, catalogEndpoint == null ? "http://catalog:8080" : catalogEndpoint);
