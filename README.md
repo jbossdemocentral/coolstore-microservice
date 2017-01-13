@@ -32,6 +32,7 @@ oc create -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift
 
 Deploy the `openshift-templates/coolstore-template.yaml` in order to deploy this demo:
 ```
+oc login -u developer
 oc new-project coolstore
 oc process -f coolstore-template.yaml | oc create -f -
 ```
