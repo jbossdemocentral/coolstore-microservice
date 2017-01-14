@@ -387,7 +387,7 @@ function build_and_tag_images_for_ci() {
     while [ -z "$(oc get builds -l buildconfig=$buildconfig -n $PRJ_COOLSTORE_TEST | grep 'Complete')" ]
     do
       # if build has failed, let's give it another shot
-      if [ ! -z "$(oc get builds -l buildconfig=$buildconfig -n $PRJ_COOLSTORE_TEST | grep 'Failed')" ] && [ -z "_BUILD_RETRIED_$buildconfig" ]
+      if [ ! -z "$(oc get builds -l buildconfig=$buildconfig -n $PRJ_COOLSTORE_TEST | grep 'Failed')" ] && [ "$(eval echo \$_BUILD_RETRIED_$buildconfig)" == '' ]
       then
         oc start-build $buildconfig -n $PRJ_COOLSTORE_TEST
         eval local _BUILD_RETRIED_$buildconfig=true
