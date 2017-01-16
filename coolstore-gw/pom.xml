@@ -6,9 +6,8 @@
 
 	<groupId>com.redhat.coolstore</groupId>
 	<artifactId>gateway</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 
-	<name>coolstore-gateway</name>
 	<description>Coolstore gateway application running Camel and Hystrix in Spring Boot</description>
 
 	<properties>
@@ -121,8 +120,8 @@
 	</dependencies>
 
 	<build>
+		<finalName>coolstore-gw</finalName>
 		<defaultGoal>spring-boot:run</defaultGoal>
-
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
