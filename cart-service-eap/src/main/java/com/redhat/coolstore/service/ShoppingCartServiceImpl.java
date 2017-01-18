@@ -7,15 +7,18 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.ejb.Stateless;
+import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
 import com.redhat.coolstore.model.Product;
 import com.redhat.coolstore.model.ShoppingCart;
 import com.redhat.coolstore.model.ShoppingCartItem;
+
 import feign.Feign;
 import feign.jackson.JacksonDecoder;
 
 @Stateless
+@Alternative
 public class ShoppingCartServiceImpl implements ShoppingCartService {
 	
 	@Inject
@@ -61,7 +64,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 				
 			}
 			
-			ps.applyShippingPromotions(sc);
+			ps.applyCartItemPromotions(sc);
 			
 			sc.setCartTotal(sc.getCartItemTotal() + sc.getShippingTotal());
 		

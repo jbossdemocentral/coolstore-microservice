@@ -45,6 +45,11 @@ objects:
       type: Git
     strategy:
       sourceStrategy:
+        env:
+        - name: NPM_MIRROR
+          value: ${NPM_MIRROR}
+        - name: BOWER_MIRROR
+          value: ${BOWER_MIRROR}
         from:
           kind: ImageStreamTag
           name: nodejs:4
@@ -286,7 +291,7 @@ objects:
   spec:
     to:
       kind: Service
-      name: coolstore-gw      
+      name: coolstore-gw
 # Inventory Service
 - apiVersion: v1
   kind: ImageStream
@@ -802,6 +807,12 @@ objects:
             value: ZPiKvsqZ9K
           - name: AUTO_DEPLOY_EXPLODED
             value: "false"
+          - name: KIE_CONTAINER_DEPLOYMENT
+            value: ${KIE_CONTAINER_DEPLOYMENT}
+          - name: KIE_SERVER_USER
+            value: ${KIE_SERVER_USER}
+          - name: KIE_SERVER_PASSWORD
+            value: ${KIE_SERVER_PASSWORD}
           image: cart-service
           imagePullPolicy: Always
           lifecycle:
@@ -898,14 +909,14 @@ objects:
     source:
       contextDir: coolstore
       git:
-        ref: master
-        uri: https://github.com/jbossdemocentral/brms-coolstore-repo.git
+        ref: ${RULES_GIT_REF}
+        uri: ${RULES_GIT_URI}
       type: Git
     strategy:
       sourceStrategy:
         env:
         - name: KIE_CONTAINER_DEPLOYMENT
-          value: CoolStoreRulesContainer=com.redhat:coolstore:2.0.0
+          value: ${KIE_CONTAINER_DEPLOYMENT}
         - name: MAVEN_MIRROR_URL
           value: ${MAVEN_MIRROR_URL}
         from:
@@ -937,8 +948,18 @@ objects:
       spec:
         containers:
         - env:
+          - name: MQ_CLUSTER_PASSWORD
+            value: 7mzX0pLV03
+          - name: JGROUPS_CLUSTER_PASSWORD
+            value: CqUo3fYDTv
+          - name: AUTO_DEPLOY_EXPLODED
+            value: "false"
           - name: KIE_CONTAINER_DEPLOYMENT
-            value: CoolStoreRulesContainer=com.redhat:coolstore:2.0.0
+            value: ${KIE_CONTAINER_DEPLOYMENT}
+          - name: KIE_SERVER_USER
+            value: ${KIE_SERVER_USER}
+          - name: KIE_SERVER_PASSWORD
+            value: ${KIE_SERVER_PASSWORD}
           - name: OPENSHIFT_KUBE_PING_LABELS
             value: application=pricing-service
           - name: OPENSHIFT_KUBE_PING_NAMESPACE
@@ -1031,9 +1052,25 @@ parameters:
   name: GIT_REF
   required: true
   value: master
+- description: Git source URI for decisionserver ruleset
+  displayName: Git source repository for decisionserver ruleset
+  name: RULES_GIT_URI
+  required: true
+  value: https://github.com/jbossdemocentral/brms-coolstore-repo.git
+- description: Git decisionserver ruleset branch/tag reference
+  displayName: Git decisionserver ruleset branch/tag reference
+  name: RULES_GIT_REF
+  required: true
+  value: master
 - description: Maven mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/content/groups/public/)
   displayName: Maven mirror url
   name: MAVEN_MIRROR_URL
+- description: NPM mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/repository/npm/)
+  displayName: NPM mirror url
+  name: NPM_MIRROR
+- description: Bower mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/repository/bower-mirror/)
+  displayName: Bower mirror url
+  name: BOWER_MIRROR
 - description: Inventory Service database user name
   from: user[a-zA-Z0-9]{3}
   generate: expression
@@ -1054,3 +1091,16 @@ parameters:
   generate: expression
   name: CATALOG_DB_PASSWORD
   required: true
+- description: Decision Server Username
+  name: KIE_SERVER_USER
+  required: true
+  value: brmsAdmin
+- description: Decision Server Password
+  from: '[a-zA-Z]{6}[0-9]{1}!'
+  generate: expression
+  name: KIE_SERVER_PASSWORD
+  required: true
+- description: Decision Server Coolstore Rules Container Spec
+  name: KIE_CONTAINER_DEPLOYMENT
+  required: true
+  value: CoolStoreRulesContainer=com.redhat:coolstore:2.0.0
