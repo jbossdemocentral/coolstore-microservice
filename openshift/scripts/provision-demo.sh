@@ -416,6 +416,7 @@ function build_and_tag_images_for_ci() {
     oc tag $PRJ_COOLSTORE_TEST/$is:latest -d
   done
 
+  oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_TEST/inventory:test
   oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_PROD/inventory:prod-green
   oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_PROD/inventory:prod-blue
   oc tag $PRJ_COOLSTORE_TEST/inventory:latest -d
