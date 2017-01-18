@@ -43,7 +43,7 @@ objects:
       spec:
         containers:
         - env:
-          - name: COOLSTORE_GW_SERVICE
+          - name: COOLSTORE_GW_ENDPOINT
             value: http://gw-${HOSTNAME_SUFFIX}
           - name: HOSTNAME_HTTP
             value: web-ui:8080
@@ -482,7 +482,7 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              memory: 600Mi
+              memory: 512Mi
             requests:
               memory: 200Mi
           terminationMessagePath: /dev/termination-log
