@@ -2,9 +2,9 @@ apiVersion: v1
 kind: Template
 labels:
   demo: coolstore-microservice
-  template: coolstore-pipeline
+  template: inventory-pipeline
 metadata:
-  name: coolstore-pipeline
+  name: inventory-pipeline
 objects:
 - apiVersion: v1
   kind: BuildConfig
@@ -54,7 +54,7 @@ objects:
           }
 
           stage 'Approve Go Live'
-          timeout(time:10, unit:'MINUTES') {
+          timeout(time:30, unit:'MINUTES') {
             input message:'Go Live in Production (switch to new version)?'
           }
 
@@ -76,7 +76,7 @@ parameters:
   displayName: Pipeline Name
   name: PIPELINE_NAME
   required: true
-  value: coolstore-pipeline
+  value: inventory-pipeline
 - description: DEV project name containting the buildconfigs
   displayName: DEV Project Name
   name: DEV_PROJECT
