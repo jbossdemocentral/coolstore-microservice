@@ -349,16 +349,20 @@ function deploy_coolstore_test_env() {
 function deploy_coolstore_prod_env() {
   local _TEMPLATE_DEPLOYMENT="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-deployments-template.yaml"
   local _TEMPLATE_BLUEGREEN="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-bluegreen-template.yaml"
+  local _TEMPLATE_NETFLIX="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/netflix-oss-list.yaml"
 
   echo_header "Deploying CoolStore app into $PRJ_COOLSTORE_PROD project..."
   echo "Using deployment template $_TEMPLATE_DEPLOYMENT"
   echo "Using bluegreen template $_TEMPLATE_BLUEGREEN"
+  echo "Using Netflix OSS template $_TEMPLATE_NETFLIX"
 
   oc process -f $_TEMPLATE_DEPLOYMENT -v APP_VERSION=prod -v HOSTNAME_SUFFIX=$PRJ_COOLSTORE_PROD.$DOMAIN -n $PRJ_COOLSTORE_PROD | oc create -f - -n $PRJ_COOLSTORE_PROD
   sleep 2
   oc delete all,pvc -l application=inventory --now -n $PRJ_COOLSTORE_PROD
   sleep 2
   oc process -f $_TEMPLATE_BLUEGREEN -v APP_VERSION_BLUE=prod-blue -v APP_VERSION_GREEN=prod-green -v HOSTNAME_SUFFIX=$PRJ_COOLSTORE_PROD.$DOMAIN -n $PRJ_COOLSTORE_PROD | oc create -f - -n $PRJ_COOLSTORE_PROD
+  sleep 2
+  oc create -f $_TEMPLATE_NETFLIX -n $PRJ_COOLSTORE_PROD
 }
 
 # Deploy Inventory service into Inventory DEV project
