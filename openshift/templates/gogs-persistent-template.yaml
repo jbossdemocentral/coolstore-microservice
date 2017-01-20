@@ -6,13 +6,6 @@ metadata:
     tags: instant-app,gogs,go,golang
   name: gogs
 objects:
-- kind: ServiceAccount
-  apiVersion: v1
-  metadata:
-    creationTimestamp: null
-    labels:
-      app: ${APPLICATION_NAME}
-    name: ${APPLICATION_NAME}
 - kind: Service
   apiVersion: v1
   metadata:
@@ -159,7 +152,6 @@ objects:
           app: ${APPLICATION_NAME}
           deploymentconfig: ${APPLICATION_NAME}
       spec:
-        serviceAccountName: ${APPLICATION_NAME}
         containers:
         - image: " "
           imagePullPolicy: Always
