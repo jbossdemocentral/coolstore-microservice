@@ -35,6 +35,7 @@ objects:
       type: Git
     strategy:
       sourceStrategy:
+        forcePull: false
         from:
           kind: ImageStreamTag
           name: nodejs:4
@@ -44,6 +45,13 @@ objects:
     - imageChange: {}
       type: ImageChange
     - type: ConfigChange
+    resources:
+      limits:
+        cpu: "400m"
+        memory: "1Gi"
+      requests:
+        cpu: "200m"
+        memory: "1Gi"
 # Coolstore Gateway
 - apiVersion: v1
   kind: ImageStream
@@ -88,7 +96,7 @@ objects:
           value: package -DskipTests -Dfabric8.skip -e -B -Pearly-access-repo
         - name: MAVEN_MIRROR_URL
           value: ${MAVEN_MIRROR_URL}
-        forcePull: true
+        forcePull: false
         from:
           kind: ImageStreamTag
           name: fis-java-openshift:2.0
@@ -97,6 +105,13 @@ objects:
     - type: ConfigChange
     - imageChange: {}
       type: ImageChange
+    resources:
+      limits:
+        cpu: "400m"
+        memory: "1Gi"
+      requests:
+        cpu: "200m"
+        memory: "1Gi"
 # Inventory Service
 - apiVersion: v1
   kind: ImageStream
@@ -125,6 +140,7 @@ objects:
         env:
         - name: MAVEN_MIRROR_URL
           value: ${MAVEN_MIRROR_URL}
+        forcePull: false
         from:
           kind: ImageStreamTag
           name: jboss-eap70-openshift:1.4
@@ -134,6 +150,13 @@ objects:
     - type: ConfigChange
     - imageChange: {}
       type: ImageChange
+    resources:
+      limits:
+        cpu: "400m"
+        memory: "1Gi"
+      requests:
+        cpu: "200m"
+        memory: "1Gi"
 # Catalog Service
 - apiVersion: v1
   kind: ImageStream
@@ -162,6 +185,7 @@ objects:
         env:
         - name: MAVEN_MIRROR_URL
           value: ${MAVEN_MIRROR_URL}
+        forcePull: false
         from:
           kind: ImageStreamTag
           name: jboss-webserver30-tomcat8-openshift:1.2
@@ -171,6 +195,13 @@ objects:
     - type: ConfigChange
     - imageChange: {}
       type: ImageChange
+    resources:
+      limits:
+        cpu: "400m"
+        memory: "1Gi"
+      requests:
+        cpu: "200m"
+        memory: "1Gi"
 # Cart Service
 - apiVersion: v1
   kind: ImageStream
@@ -199,6 +230,7 @@ objects:
         env:
         - name: MAVEN_MIRROR_URL
           value: ${MAVEN_MIRROR_URL}
+        forcePull: false
         from:
           kind: ImageStreamTag
           name: jboss-eap70-openshift:1.4
@@ -208,6 +240,13 @@ objects:
     - type: ConfigChange
     - imageChange: {}
       type: ImageChange
+    resources:
+      limits:
+        cpu: "400m"
+        memory: "1Gi"
+      requests:
+        cpu: "200m"
+        memory: "1Gi"
 parameters:
 - description: Git source URI for application
   displayName: Git source repository

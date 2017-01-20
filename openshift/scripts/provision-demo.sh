@@ -501,6 +501,8 @@ fi
 
 START=`date +%s`
 
+echo_header "Mult-product MSA Demo ($(date))"
+
 set_domain_for_gogs_hack
 print_info
 
