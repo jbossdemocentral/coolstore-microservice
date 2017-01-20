@@ -404,7 +404,7 @@ objects:
               memory: 512Mi
             requests:
               cpu: 50m
-              memory: 256Mi
+              memory: 512Mi
         terminationGracePeriodSeconds: 60
         volumes:
         - name: inventory-postgresql-data
@@ -637,7 +637,7 @@ objects:
               memory: 512Mi
             requests:
               cpu: 50m
-              memory: 256Mi
+              memory: 512Mi
           securityContext:
             capabilities: {}
             privileged: false
