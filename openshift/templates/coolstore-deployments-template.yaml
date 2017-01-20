@@ -75,11 +75,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
               cpu: 50m
               memory: 128Mi
-            requests:
-              cpu: 10m
-              memory: 64Mi
           resources: {}
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
@@ -175,8 +175,8 @@ objects:
               cpu: 100m
               memory: 600Mi
             requests:
-              cpu: 10m
-              memory: 128Mi
+              cpu: 50m
+              memory: 256Mi
     triggers:
     - imageChangeParams:
         automatic: true
@@ -300,11 +300,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 50m
+              cpu: 100m
               memory: 1Gi
             requests:
-              cpu: 10m
-              memory: 128Mi
+              cpu: 50m
+              memory: 256Mi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
@@ -400,11 +400,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 50m
-              memory: 320Mi
+              cpu: 100m
+              memory: 512Mi
             requests:
-              cpu: 20m
-              memory: 128Mi
+              cpu: 50m
+              memory: 256Mi
         terminationGracePeriodSeconds: 60
         volumes:
         - name: inventory-postgresql-data
@@ -507,8 +507,8 @@ objects:
               cpu: 100m
               memory: 512Mi
             requests:
-              cpu: 10m
-              memory: 128Mi
+              cpu: 50m
+              memory: 256Mi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
@@ -634,10 +634,10 @@ objects:
           resources:
             limits:
               cpu: 100m
-              memory: 320Mi
+              memory: 512Mi
             requests:
-              cpu: 20m
-              memory: 128Mi
+              cpu: 50m
+              memory: 256Mi
           securityContext:
             capabilities: {}
             privileged: false
@@ -756,11 +756,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 50m
+              cpu: 100m
               memory: 1Gi
             requests:
-              cpu: 20m
-              memory: 128Mi
+              cpu: 50m
+              memory: 256Mi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
