@@ -477,6 +477,15 @@ function set_permissions() {
   oc policy add-role-to-group admin system:serviceaccounts:ci-ssadeghi -n developer-ssadeghi
 }
 
+function verify_deployments() {
+  for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI; do
+    for dc in $(oc get pods -n $project | grep Error | cut -d ' ' -f 1 | sed 's/\(.*\)\-[0-9]\+\-deploy/\1/g'); do
+      echo "WARNING: Deployment $dc in project $project has failed. Starting a new deployment"
+      oc deploy $dc -n $project --latest
+    done
+  done
+}
+
 # GPTE convention
 function set_default_project() {
   if [ "$(oc whoami)" == 'system:admin' ] ; then
@@ -518,6 +527,7 @@ deploy_coolstore_prod_env
 deploy_inventory_dev_env
 build_and_tag_images_for_ci
 deploy_pipeline
+verify_deployments
 
 set_default_project
 set_permissions
