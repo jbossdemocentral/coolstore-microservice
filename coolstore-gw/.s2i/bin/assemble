@@ -86,8 +86,8 @@ function setup_maven() {
       <url>$MAVEN_MIRROR_URL</url>\
       <mirrorOf>external:*</mirrorOf>\
     </mirror>"
-    sed -i "s|<!-- ### configured mirrors ### -->|$xml|" ${S2I_SOURCE_DIR}/openshift/settings.xml
-    maven_env_args="${maven_env_args} -s ${S2I_SOURCE_DIR}/openshift/settings.xml"
+    sed -i "s|<!-- ### configured mirrors ### -->|$xml|" ${S2I_SOURCE_DIR}/.s2i/maven/settings.xml
+    maven_env_args="${maven_env_args} -s ${S2I_SOURCE_DIR}/.s2i/maven/settings.xml"
   fi
   # /workaround
 
