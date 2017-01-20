@@ -1,0 +1,14 @@
+package com.redhat.coolstore
+
+rule "Total Shopping Cart Items"
+    ruleflow-group "pricing-rules"
+    no-loop true
+    when
+	$sc : ShoppingCart( )
+	$sci : ShoppingCartItem( shoppingCart == $sc )
+    then
+	$sc.setCartItemTotal( $sc.getCartItemTotal() + ($sci.getPrice() * $sci.getQuantity()));
+	$sc.setCartItemPromoSavings($sc.getCartItemPromoSavings() + ($sci.getPromoSavings() * $sci.getQuantity()));
+	update( $sc );
+	retract ($sci);
+end
