@@ -481,6 +481,12 @@ function verify_deployments() {
   done
 }
 
+function deploy_demo_guides() {
+  echo_header "Deploying Demo Guides"
+  oc new-app --name=guide -e GOGS_URL=http://$GOGS_ROUTE -e GOGS_DEV_REPO_URL=http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git -e JENKINS_URL=http://jenkins-$PRJ_CI.$DOMAIN -e COOLSTORE_WEB_PROD_URL=http://web-ui-$PRJ_COOLSTORE_PROD.$DOMAIN -e GOGS_DEV_USER=$GOGS_USER -e GOGS_DEV_PASSWORD=$GOGS_PASSWORD -e GOGS_REVIEWER_USER=$GOGS_ADMIN_USER -e GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD -e DEFAULT_LAB=demo-msa ruby~https://github.com/siamaksade/openshift-workshops.git -n $PRJ_CI
+  oc expose svc/guide -n $PRJ_CI
+}
+
 # GPTE convention
 function set_default_project() {
   if [ "$(oc whoami)" == 'system:admin' ] ; then
@@ -523,6 +529,7 @@ deploy_inventory_dev_env
 build_and_tag_images_for_ci
 deploy_pipeline
 verify_deployments
+deploy_demo_guides
 
 set_default_project
 set_permissions
