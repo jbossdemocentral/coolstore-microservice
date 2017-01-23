@@ -771,8 +771,6 @@ objects:
 - apiVersion: v1
   kind: BuildConfig
   metadata:
-    labels:
-      app: catalog-dv
     name: catalog-dv-ext
   spec:
     output:
@@ -800,8 +798,6 @@ objects:
 - apiVersion: v1
   kind: BuildConfig
   metadata:
-    labels:
-      app: catalog-dv
     name: catalog-dv  
   spec:
     output:
@@ -1341,7 +1337,7 @@ parameters:
 - description: The URL of the repository with your application source code.
   displayName: Git Repository URL
   name: SOURCE_REPOSITORY_URL
-  value: https://github.com/jbossdemocentral/coolstore-microservice/jdv-catalog-service
+  value: https://github.com/cvanball/coolstore-microservice/jdv-catalog-service
 - description: Set this to a branch name, tag or other ref of your repository if you are not using the default branch.
   displayName: Git Reference
   name: SOURCE_REPOSITORY_REF
@@ -1353,7 +1349,7 @@ parameters:
 - description: The URL of the repository with source code for the extensions image.  The image should have all modules, etc., placed in the \"/extensions/\" directory in the image.  If the contents are in a different directory, the sourcePath for the ImageSource in the BuildConfig must be modified.
   displayName: Extensions Git Repository URL
   name: EXTENSIONS_REPOSITORY_URL
-  value: https://github.com/jbossdemocentral/coolstore-microservice/jdv-catalog-service
+  value: https://github.com/cvanball/coolstore-microservice/jdv-catalog-service
 - description: Set this to a branch name, tag or other ref of your extensions repository if you are not using the default branch.
   displayName: Extensions Git Reference
   name: EXTENSIONS_REPOSITORY_REF
@@ -1409,6 +1405,12 @@ parameters:
   displayName: Modeshape User Password
   name: MODESHAPE_PASSWORD
   from: '[a-zA-Z]{6}[0-9]{1}!'
+  generate: expression
+  required: true
+- description: A secret string used to configure the Generic webhook.
+  displayName: Generic Webhook Secret
+  name: GITHUB_WEBHOOK_SECRET
+  from: '[a-zA-Z0-9]{8}!'
   generate: expression
   required: true
 - description: A secret string used to configure the Generic webhook.
