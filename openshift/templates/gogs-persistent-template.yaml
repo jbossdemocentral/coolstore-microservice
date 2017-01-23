@@ -114,7 +114,6 @@ objects:
     loadBalancer: {}
 - kind: Route
   apiVersion: v1
-  id: ${APPLICATION_NAME}-http
   metadata:
     annotations:
       description: Route for application's http service.
