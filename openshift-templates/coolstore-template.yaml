@@ -1348,6 +1348,11 @@ parameters:
   name: KIE_CONTAINER_DEPLOYMENT
   required: true
   value: CoolStoreRulesContainer=com.redhat:coolstore:2.0.0
+- description: The name of the secret containing configuration properties for the data sources.
+  displayName: Configuration Secret Name
+  name: CONFIGURATION_NAME
+  value: datavirt-app-config
+  required: true
 - description: The URL of the repository with your application source code.
   displayName: Git Repository URL
   name: SOURCE_REPOSITORY_URL
