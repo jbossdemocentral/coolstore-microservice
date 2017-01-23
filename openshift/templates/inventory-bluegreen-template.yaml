@@ -99,9 +99,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              memory: 600Mi
+              cpu: 300m
+              memory: 1Gi
             requests:
-              memory: 200Mi
+              cpu: 200m
+              memory: 512Mi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
@@ -223,9 +225,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              memory: 600Mi
+              cpu: 300m
+              memory: 1Gi
             requests:
-              memory: 200Mi
+              cpu: 200m
+              memory: 512Mi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
@@ -325,6 +329,13 @@ objects:
               - psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c 'SELECT 1'
             initialDelaySeconds: 5
             timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 100m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 512Mi
         terminationGracePeriodSeconds: 60
         volumes:
         - name: inventory-postgresql-data

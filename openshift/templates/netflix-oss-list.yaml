@@ -73,11 +73,11 @@ items:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 50m
+              cpu: 300m
               memory: 1536Mi
             requests:
-              cpu: 20m
-              memory: 128Mi
+              cpu: 200m
+              memory: 1Gi
     triggers:
     - type: ConfigChange
     - imageChangeParams:
@@ -196,11 +196,11 @@ items:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 50m
-              memory: 320Mi
+              cpu: 200m
+              memory: 512Mi
             requests:
-              cpu: 10m
-              memory: 128Mi
+              cpu: 100m
+              memory: 256Mi
     triggers:
     - type: ConfigChange
     - imageChangeParams:

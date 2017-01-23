@@ -106,7 +106,6 @@ GOGS_PASSWORD=developer
 GOGS_ADMIN_USER=team
 GOGS_ADMIN_PASSWORD=team
 
-JENKINS_PASSWORD=openshift
 WEBHOOK_SECRET=UfW7gQ6Jx4
 
 ################################################################################
@@ -125,8 +124,6 @@ function print_info() {
   echo "Gogs user:           $GOGS_USER"
   echo "Gogs pwd:            $GOGS_PASSWORD"
   echo "Gogs webhook secret: $WEBHOOK_SECRET"
-  echo "Jenkins admin user:  admin"
-  echo "Jenkins admin pwd:   $JENKINS_PASSWORD"
   echo "Maven mirror url:    $MAVEN_MIRROR_URL"
 }
 
@@ -332,9 +329,7 @@ EOM
 # Deploy Jenkins
 function deploy_jenkins() {
   echo_header "Deploying Jenkins..."
-  # TODO: remove extra steps when Jenkins 2 becomes default in OpenShift
-  oc import-image jenkins:2 --from=registry.access.redhat.com/openshift3/jenkins-2-rhel7:latest --confirm -n $PRJ_CI
-  oc new-app jenkins-persistent -l app=jenkins -p JENKINS_PASSWORD=$JENKINS_PASSWORD -p NAMESPACE=$PRJ_CI -p JENKINS_IMAGE_STREAM_TAG=jenkins:2 -p MEMORY_LIMIT=1Gi -n $PRJ_CI
+  oc new-app jenkins-persistent -l app=jenkins -p MEMORY_LIMIT=1Gi -n $PRJ_CI
 }
 
 # Deploy Coolstore into Coolstore TEST project
@@ -481,7 +476,7 @@ function verify_deployments() {
   for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI; do
     for dc in $(oc get pods -n $project | grep Error | cut -d ' ' -f 1 | sed 's/\(.*\)\-[0-9]\+\-deploy/\1/g'); do
       echo "WARNING: Deployment $dc in project $project has failed. Starting a new deployment"
-      oc deploy $dc -n $project --latest
+      oc rollout latest dc/$dc -n $project
     done
   done
 }

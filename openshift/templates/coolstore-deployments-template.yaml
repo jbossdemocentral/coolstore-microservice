@@ -172,11 +172,11 @@ objects:
             initialDelaySeconds: 10
           resources:
             limits:
-              cpu: 100m
-              memory: 600Mi
+              cpu: 300m
+              memory: 1Gi
             requests:
-              cpu: 50m
-              memory: 256Mi
+              cpu: 200m
+              memory: 512Mi
     triggers:
     - imageChangeParams:
         automatic: true
@@ -300,10 +300,10 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 100m
+              cpu: 200m
               memory: 1Gi
             requests:
-              cpu: 50m
+              cpu: 100m
               memory: 256Mi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
@@ -504,11 +504,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
+              cpu: 200m
+              memory: 768Mi
+            requests:
               cpu: 100m
               memory: 512Mi
-            requests:
-              cpu: 50m
-              memory: 256Mi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
@@ -756,11 +756,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 100m
+              cpu: 200m
               memory: 1Gi
             requests:
-              cpu: 50m
-              memory: 256Mi
+              cpu: 100m
+              memory: 1Gi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
