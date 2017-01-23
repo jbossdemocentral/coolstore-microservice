@@ -769,6 +769,13 @@ objects:
     sessionAffinity: None
     type: ClusterIP
 - apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: catalog-dv-ext
+  spec:
+    tags:
+    - name: latest
+- apiVersion: v1
   kind: BuildConfig
   metadata:
     name: catalog-dv-ext
@@ -795,6 +802,13 @@ objects:
         generic:
           secret: ${GENERIC_WEBHOOK_SECRET}  
       - type: ConfigChange
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: catalog-dv
+  spec:
+    tags:
+    - name: latest      
 - apiVersion: v1
   kind: BuildConfig
   metadata:
@@ -1337,7 +1351,7 @@ parameters:
 - description: The URL of the repository with your application source code.
   displayName: Git Repository URL
   name: SOURCE_REPOSITORY_URL
-  value: https://github.com/cvanball/coolstore-microservice/jdv-catalog-service
+  value: https://github.com/cvanball/coolstore-microservice
 - description: Set this to a branch name, tag or other ref of your repository if you are not using the default branch.
   displayName: Git Reference
   name: SOURCE_REPOSITORY_REF
@@ -1345,11 +1359,11 @@ parameters:
 - description: Set this to the relative path to your project if it is not in the root of your repository.
   displayName: Context Directory
   name: CONTEXT_DIR
-  value: vdb
+  value: jdv-catalog-service/vdb
 - description: The URL of the repository with source code for the extensions image.  The image should have all modules, etc., placed in the \"/extensions/\" directory in the image.  If the contents are in a different directory, the sourcePath for the ImageSource in the BuildConfig must be modified.
   displayName: Extensions Git Repository URL
   name: EXTENSIONS_REPOSITORY_URL
-  value: https://github.com/cvanball/coolstore-microservice/jdv-catalog-service
+  value: https://github.com/cvanball/coolstore-microservice
 - description: Set this to a branch name, tag or other ref of your extensions repository if you are not using the default branch.
   displayName: Extensions Git Reference
   name: EXTENSIONS_REPOSITORY_REF
@@ -1357,7 +1371,7 @@ parameters:
 - description: Set this to the relative path to your project if it is not in the root of your extensions repository.
   displayName: Extensions Context Directory
   name: EXTENSIONS_DIR
-  value: extensions
+  value: jdv-catalog-service/extensions
 - description: Set this to the relative path to the Dockerfile in your extensions directory.
   displayName: Extensions Dockerfile
   name: EXTENSIONS_DOCKERFILE
