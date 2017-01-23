@@ -738,6 +738,185 @@ objects:
           namespace: openshift
       type: ImageChange
     - type: ConfigChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+       service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"},{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'           
+    labels:
+      app: catalog-service
+    name: catalog-dv
+  spec:
+    ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: https
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+    - name: jdbc
+      port: 31000
+      protocol: TCP
+      targetPort: 31000
+    - name: jdbcs
+      port: 31443
+      protocol: TCP
+      targetPort: 31443            
+    selector:
+      deploymentconfig: catalog-dv
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: BuildConfig
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: catalog-dv-ext:latest
+    source:
+      contextDir: ${EXTENSIONS_DIR}
+      git:
+        ref: ${EXTENSIONS_REPOSITORY_REF}
+        uri: ${EXTENSIONS_REPOSITORY_URL}
+      type: Git
+    strategy:
+      dockerStrategy:
+        dockerfilePath: ${EXTENSIONS_DOCKERFILE}
+      type: Docker
+    triggers:
+      - type: GitHub
+        github:
+          - secret: ${GITHUB_WEBHOOK_SECRET}
+      - type: Generic
+        generic:
+        - secret: ${GENERIC_WEBHOOK_SECRET}  
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: catalog-service
+    name: catalog-dv
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: catalog-dv
+    strategy:
+      recreateParams:
+        timeoutSeconds: 600
+      resources: {}
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          application: catalog-service
+          deploymentconfig: catalog-dv
+      spec:
+        containers:
+        - env:
+          - name: KUBERNETES_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: TEIID_USERNAME
+            value: ${TEIID_USERNAME}
+          - name: TEIID_PASSWORD
+            value: ${TEIID_PASSWORD}
+          - name: MODESHAPE_USERNAME
+            value: ${MODESHAPE_USERNAME}
+          - name: MODESHAPE_PASSWORD
+            value: ${MODESHAPE_PASSWORD}   
+          - name: JGROUPS_CLUSTER_PASSWORD
+            value: ${JGROUPS_CLUSTER_PASSWORD}       
+          - name: MONGODB_USER
+            value: ${CATALOG_DB_USERNAME}
+          - name: MONGODB_PASSWORD
+            value: ${CATALOG_DB_PASSWORD}
+          - name: MONGODB_DATABASE
+            value: catalogdb
+          - name: MONGODB_ADMIN_PASSWORD
+            value: ${CATALOG_DB_PASSWORD}                                  
+          image: jboss-datavirt63-openshift
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/eap/bin/livenessProbe.sh
+          name: catalog-dv
+          ports:
+          - name: jolokia
+            containerPort: 8778
+            protocol: TCP          
+          - name: http
+            containerPort: 8080
+            protocol: TCP          
+          - name: https
+            containerPort: 8443
+            protocol: TCP          
+          - name: jdbc
+            containerPort: 31000
+            protocol: TCP          
+          - name: jdbcs
+            containerPort: 31443
+            protocol: TCP    
+          - name: ping
+            containerPort: 8888
+            protocol: TCP                                      
+          readinessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/eap/bin/readinessProbe.sh
+          securityContext:
+            capabilities: {}
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /var/lib/dv/data
+            name: dv-data
+          - mountPath: /etc/datavirt-environment
+            name: configuration
+            readOnly: true
+          - mountPath: /etc/datavirt-secret-volume
+            name: datavirt-keystore-volume
+            readOnly: true
+          - mountPath: /etc/jgroups-encrypt-secret-volume
+            name: datavirt-jgroups-keystore-volume
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir: {}
+          name: dv-data
+        - name: configuration
+          secret: 
+            secretName: ${CONFIGURATION_NAME}
+        - name: datavirt-keystore-volume
+          secret: 
+            secretName: ${HTTPS_SECRET}
+        - name: datavirt-jgroups-keystore-volume
+          secret: 
+            secretName: ${JGROUPS_ENCRYPT_SECRET}
+    test: false
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - catalog-dv
+        from:
+          kind: ImageStreamTag
+          name: jboss-datavirt63-openshift:1.0
+          namespace: openshift
+      type: ImageChange
+    - type: ConfigChange
 # Cart Service
 - apiVersion: v1
   kind: ImageStream
@@ -1104,3 +1283,114 @@ parameters:
   name: KIE_CONTAINER_DEPLOYMENT
   required: true
   value: CoolStoreRulesContainer=com.redhat:coolstore:2.0.0
+- description: The URL of the repository with your application source code.
+  displayName: Git Repository URL
+  name: SOURCE_REPOSITORY_URL
+  value: https://github.com/jbossdemocentral/coolstore-microservice/jdv-catalog-service
+- description: Set this to a branch name, tag or other ref of your repository if you are not using the default branch.
+  displayName: Git Reference
+  name: SOURCE_REPOSITORY_REF
+  value: feature/issue-27
+- description: Set this to the relative path to your project if it is not in the root of your repository.
+  displayName: Context Directory
+  name: CONTEXT_DIR
+  value: vdb
+- description: The URL of the repository with source code for the extensions image.  The image should have all modules, etc., placed in the \"/extensions/\" directory in the image.  If the contents are in a different directory, the sourcePath for the ImageSource in the BuildConfig must be modified.
+  displayName: Extensions Git Repository URL
+  name: EXTENSIONS_REPOSITORY_URL
+  value: https://github.com/jbossdemocentral/coolstore-microservice/jdv-catalog-service
+- description: Set this to a branch name, tag or other ref of your extensions repository if you are not using the default branch.
+  displayName: Extensions Git Reference
+  name: EXTENSIONS_REPOSITORY_REF
+  value: feature/issue-27
+- description: Set this to the relative path to your project if it is not in the root of your extensions repository.
+  displayName: Extensions Context Directory
+  name: EXTENSIONS_DIR
+  value: extensions
+- description: Set this to the relative path to the Dockerfile in your extensions directory.
+  displayName: Extensions Dockerfile
+  name: EXTENSIONS_DOCKERFILE
+  value: Dockerfile
+- description: The name of the service account to use for the deployment.  The service account should be configured to allow usage of the secret(s) specified by CONFIGURATION_NAME, HTTPS_SECRET and JGROUPS_ENCRYPT_SECRET.
+  name: SERVICE_ACCOUNT_NAME
+  value: datavirt-app-secret
+- description: The name of the secret containing the keystore to be used for serving secure content.
+  displayName: Server Keystore Secret Name
+  name: HTTPS_SECRET
+  value: datavirt-app-secret
+- description: The name of the keystore file within the secret.
+  displayName: Server Keystore Filename
+  name: HTTPS_KEYSTORE
+  value: keystore.jks
+- description: The type of the keystore file (JKS or JCEKS).
+  displayName: Server Keystore Type
+  name: HTTPS_KEYSTORE_TYPE
+  value: 
+- description: The name associated with the server certificate.
+  displayName: Server Certificate Name
+  name: HTTPS_NAME
+  value: jboss
+- description: The password for the keystore and certificate
+  displayName: Server Keystore Password
+  name: HTTPS_PASSWORD
+  value: mykeystorepass
+- description: Username associated with Teiid data service
+  displayName: Teiid Username
+  name: TEIID_USERNAME
+  required: true
+  value: teiidUser
+- description: Password for Teiid user
+  displayName: Teiid User Password
+  name: TEIID_PASSWORD
+  from: '[a-zA-Z]{6}[0-9]{1}!'
+  generate: expression
+  required: true
+- description: Username associated with ModeShape
+  displayName: Modeshape Username
+  name: MODESHAPE_USERNAME
+  required: true  
+  value: modeshapeUser
+- description: Password for ModeShape user
+  displayName: Modeshape User Password
+  name: MODESHAPE_PASSWORD
+  from: '[a-zA-Z]{6}[0-9]{1}!'
+  generate: expression
+  required: true
+- description: A secret string used to configure the Generic webhook.
+  displayName: Generic Webhook Secret
+  name: GENERIC_WEBHOOK_SECRET
+  from: '[a-zA-Z0-9]{8}!'
+  generate: expression
+  required: true
+- description: Namespace in which the ImageStreams for Red Hat Middleware images are installed. These ImageStreams are normally installed in the openshift namespace. You should only need to modify this if you've installed the ImageStreams in a different namespace/project.
+  displayName: ImageStream Namespace
+  name: IMAGE_STREAM_NAMESPACE
+  value: openshift
+  required: true
+- description: The name of the secret containing the keystore to be used for securing JGroups communications.
+  displayName: JGroups Secret Name
+  name: JGROUPS_ENCRYPT_SECRET
+  value: datavirt-app-secret
+  required: false
+- description: The name of the keystore file within the JGroups secret.
+  displayName: JGroups Keystore Filename
+  name: JGROUPS_ENCRYPT_KEYSTORE
+  value: jgroups.jceks
+  required: false
+- description: The name associated with the JGroups server certificate
+  displayName: JGroups Certificate Name
+  name: JGROUPS_ENCRYPT_NAME
+  value: secret-key
+  required: false
+- description: The password for the keystore and certificate
+  displayName: JGroups Keystore Password
+  name: JGROUPS_ENCRYPT_PASSWORD
+  value: password
+  required: false
+- description: Password used by JGroups to authenticate nodes in the ClusterFirst
+  name: JGROUPS_CLUSTER_PASSWORD
+  from: '[a-zA-Z]{6}[0-9]{1}!'
+  generate: expression
+  required: true
+
+

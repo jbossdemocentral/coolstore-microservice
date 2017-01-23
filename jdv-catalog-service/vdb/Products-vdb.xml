@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<vdb name="CatalogVDB" version="1">
+	<description/>
+	<property name="validationDateTime" value="Thu Sep 01 10:33:00 CEST 2016"/>
+	<property name="validationVersion" value="8.12.6"/>
+
+	<model name="CatalogDB" type="VIRTUAL">
+		<metadata type="DDL"><![CDATA[
+			CREATE VIEW products (
+				itemId integer,
+				name string(50),
+				description varchar(1024),
+				price bigdecimal,
+				CONSTRAINT ITEMID_UK UNIQUE (itemId)
+			) AS select * from Products_MONGODB.product;
+		]]></metadata>
+	</model>
+
+
+	<model name="Products_MONGODB">
+		<source connection-jndi-name="java:jboss/datasources/MongoDS" name="local" translator-name="mongodb"/>
+		<metadata type="DDL"><![CDATA[
+			CREATE FOREIGN TABLE product (
+				itemId integer,
+				name varchar(50),
+				description varchar(1024),
+				price bigdecimal    
+			) OPTIONS(UPDATABLE 'TRUE');
+		]]></metadata>
+	</model>
+
+	<model name="file">
+        <source name="text-connector" translator-name="file" connection-jndi-name="java:/productdata-file-DS"/>
+	</model>
+    <model name="Products_FILE" type="VIRTUAL">
+        <metadata type="DDL"><![CDATA[
+
+        CREATE VIEW product (
+            itemId string PRIMARY KEY,
+			name varchar(50),
+			description varchar(1024),
+            price bigdecimal
+        ) AS
+          SELECT P.itemId, P.name, P.description, P.price
+          FROM (EXEC file.getTextFiles('*.txt')) AS f,
+            TEXTTABLE(f.file COLUMNS itemId string, name string, description string, price bigdecimal HEADER) AS P;
+
+        ]]> </metadata>
+	</model>
+</vdb>
