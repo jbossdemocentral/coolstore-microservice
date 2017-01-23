@@ -770,6 +770,10 @@ objects:
     type: ClusterIP
 - apiVersion: v1
   kind: BuildConfig
+  metadata:
+    labels:
+      app: catalog-dv
+    name: catalog-dv-ext
   spec:
     output:
       to:
@@ -788,13 +792,65 @@ objects:
     triggers:
       - type: GitHub
         github:
-          - secret: ${GITHUB_WEBHOOK_SECRET}
+          secret: ${GITHUB_WEBHOOK_SECRET}
       - type: Generic
         generic:
-        - secret: ${GENERIC_WEBHOOK_SECRET}  
-    - type: ConfigChange
-    - imageChange: {}
-      type: ImageChange
+          secret: ${GENERIC_WEBHOOK_SECRET}  
+      - type: ConfigChange
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: catalog-dv
+    name: catalog-dv  
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: catalog-dv:latest
+    source:
+      contextDir: ${CONTEXT_DIR}
+      git:
+        ref: ${SOURCE_REPOSITORY_REF}
+        uri: ${SOURCE_REPOSITORY_URL}
+      type: Git
+    images: 
+      from: 
+        kind: ImageStreamTag
+        name: catalog-dv-ext
+      paths: 
+        destinationDir: ./${CONTEXT_DIR}/extensions/extras
+        sourcePath: /extensions/.
+    strategy:
+      type: Source
+      sourceStrategy:
+        forcePull: true
+        from: 
+          kind: ImageStreamTag
+          namespace: openshift
+          name: jboss-datavirt63-openshift:1.0
+        env:
+          name: CUSTOM_INSTALL_DIRECTORIES
+          value: extensions/*
+    output:
+      to:
+        kind: ImageStreamTag
+        name: catalog-dv:latest
+    triggers:
+      - type: GitHub
+        github:
+          secret: ${GITHUB_WEBHOOK_SECRET}
+      - type: Generic
+        generic:
+          secret: ${GENERIC_WEBHOOK_SECRET}        
+      - type: ImageChange
+        imageChange: {}
+      - type: ImageChange
+        imageChange: 
+          from: 
+            kind: ImageStreamTag
+            name: catalog-dv-ext:latest
+      - type: ConfigChange
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -1067,7 +1123,6 @@ objects:
       targetPort: 8080
     selector:
       deploymentconfig: cart-service
-
 # Pricing Rules Service
 - apiVersion: v1
   kind: ImageStream
@@ -1392,5 +1447,3 @@ parameters:
   from: '[a-zA-Z]{6}[0-9]{1}!'
   generate: expression
   required: true
-
-
