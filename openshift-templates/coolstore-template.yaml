@@ -838,7 +838,7 @@ objects:
         from: 
           kind: ImageStreamTag
           namespace: openshift
-          name: jboss-datavirt63-openshift:1.0
+          name: datavirt63-openshift
         env:
           name: CUSTOM_INSTALL_DIRECTORIES
           value: extensions/*
