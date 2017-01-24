@@ -969,16 +969,16 @@ objects:
         - name: datavirt-jgroups-keystore-volume
           secret: 
             secretName: ${JGROUPS_ENCRYPT_SECRET}
-      triggers:
-      - imageChangeParams:
+    triggers:
+    - imageChangeParams:
         automatic: true
         containerNames:
         - catalog-dv
         from:
           kind: ImageStreamTag
           name: catalog-dv:latest
-        type: ImageChange
-      - type: ConfigChange
+      type: ImageChange
+    - type: ConfigChange
 # Cart Service
 - apiVersion: v1
   kind: ImageStream
