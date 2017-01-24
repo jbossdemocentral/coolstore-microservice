@@ -808,11 +808,11 @@ objects:
     name: catalog-dv
   spec:
     tags:
-    - name: latest      
+    - name: latest       
 - apiVersion: v1
   kind: BuildConfig
   metadata:
-    name: catalog-dv  
+    name: catalog-dv
   spec:
     output:
       to:
@@ -824,40 +824,36 @@ objects:
         ref: ${SOURCE_REPOSITORY_REF}
         uri: ${SOURCE_REPOSITORY_URL}
       type: Git
-    images: 
-      from: 
-        kind: ImageStreamTag
-        name: catalog-dv-ext
-      paths: 
-        destinationDir: ./${CONTEXT_DIR}/extensions/extras
-        sourcePath: /extensions/.
+      images: 
+        - from:
+            kind: ImageStreamTag
+            name: catalog-dv-ext:latest
+          paths:
+          - destinationDir: ./${CONTEXT_DIR}/extensions/extras
+            sourcePath: /extensions/.
     strategy:
       type: Source
       sourceStrategy:
         forcePull: true
-        from: 
+        from:
           kind: ImageStreamTag
           namespace: openshift
-          name: datavirt63-openshift
+          name: jboss-datavirt63-openshift:latest
         env:
-          name: CUSTOM_INSTALL_DIRECTORIES
-          value: extensions/*
-    output:
-      to:
-        kind: ImageStreamTag
-        name: catalog-dv:latest
+          - name: CUSTOM_INSTALL_DIRECTORIES
+            value: extensions/*
     triggers:
       - type: GitHub
-        github:
+        github: 
           secret: ${GITHUB_WEBHOOK_SECRET}
       - type: Generic
         generic:
-          secret: ${GENERIC_WEBHOOK_SECRET}        
+          secret: ${GENERIC_WEBHOOK_SECRET}
       - type: ImageChange
         imageChange: {}
       - type: ImageChange
-        imageChange: 
-          from: 
+        imageChange:
+          from:
             kind: ImageStreamTag
             name: catalog-dv-ext:latest
       - type: ConfigChange
@@ -879,11 +875,17 @@ objects:
     template:
       metadata:
         labels:
-          application: catalog-service
+          application: catalog-dv
           deploymentconfig: catalog-dv
       spec:
         containers:
         - env:
+          - name: OPENSHIFT_KUBE_PING_LABELS
+            value: application=catalog-dv
+          - name: OPENSHIFT_KUBE_PING_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace                    
           - name: KUBERNETES_NAMESPACE
             valueFrom:
               fieldRef:
@@ -906,8 +908,8 @@ objects:
             value: catalogdb
           - name: MONGODB_ADMIN_PASSWORD
             value: ${CATALOG_DB_PASSWORD}                                  
-          image: jboss-datavirt63-openshift
-          imagePullPolicy: IfNotPresent
+          image: catalog-dv
+          imagePullPolicy: Always
           livenessProbe:
             exec:
               command:
@@ -945,8 +947,6 @@ objects:
             privileged: false
           terminationMessagePath: /dev/termination-log
           volumeMounts:
-          - mountPath: /var/lib/dv/data
-            name: dv-data
           - mountPath: /etc/datavirt-environment
             name: configuration
             readOnly: true
@@ -955,13 +955,11 @@ objects:
             readOnly: true
           - mountPath: /etc/jgroups-encrypt-secret-volume
             name: datavirt-jgroups-keystore-volume
-        dnsPolicy: ClusterFirst
+        serviceAccountName: ${SERVICE_ACCOUNT_NAME}
         restartPolicy: Always
         securityContext: {}
-        terminationGracePeriodSeconds: 30
+        terminationGracePeriodSeconds: 60
         volumes:
-        - emptyDir: {}
-          name: dv-data
         - name: configuration
           secret: 
             secretName: ${CONFIGURATION_NAME}
@@ -971,18 +969,16 @@ objects:
         - name: datavirt-jgroups-keystore-volume
           secret: 
             secretName: ${JGROUPS_ENCRYPT_SECRET}
-    test: false
-    triggers:
-    - imageChangeParams:
+      triggers:
+      - imageChangeParams:
         automatic: true
         containerNames:
         - catalog-dv
         from:
           kind: ImageStreamTag
-          name: jboss-datavirt63-openshift:1.0
-          namespace: openshift
-      type: ImageChange
-    - type: ConfigChange
+          name: catalog-dv:latest
+        type: ImageChange
+      - type: ConfigChange
 # Cart Service
 - apiVersion: v1
   kind: ImageStream
@@ -1383,7 +1379,7 @@ parameters:
   value: Dockerfile
 - description: The name of the service account to use for the deployment.  The service account should be configured to allow usage of the secret(s) specified by CONFIGURATION_NAME, HTTPS_SECRET and JGROUPS_ENCRYPT_SECRET.
   name: SERVICE_ACCOUNT_NAME
-  value: datavirt-app-secret
+  value: datavirt-service-account
 - description: The name of the secret containing the keystore to be used for serving secure content.
   displayName: Server Keystore Secret Name
   name: HTTPS_SECRET
