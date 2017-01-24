@@ -573,6 +573,10 @@ objects:
             value: catalogdb
           - name: DB_SERVER
             value: catalog-mongodb
+          - name: TEIID_USERNAME
+            value: ${TEIID_USERNAME}
+          - name: TEIID_PASSWORD
+            value: ${TEIID_PASSWORD}            
           image: catalog-service
           imagePullPolicy: Always
           name: catalog-service

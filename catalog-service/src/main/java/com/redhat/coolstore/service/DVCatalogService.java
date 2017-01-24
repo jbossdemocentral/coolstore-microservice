@@ -56,19 +56,24 @@ public class DVCatalogService implements CatalogService {
     protected void init() {
         log.info("@PostConstruct is called...");
 
-        String hostName = System.getenv("HOSTNAME_HTTP");
-        String portNo = "8080";
+        String hostName = System.getenv("CATALOG_DV_SERVICE_HOST");
+        String portNo = System.getenv("CATALOG_DV_SERVICE_PORT");
         String userName = System.getenv("TEIID_USERNAME");
         String password = System.getenv("TEIID_PASSWORD");
-        String vdbName = System.getenv("VDB_NAME");
+        String vdbName = "CatalogVDB";
         String schemaName = "CatalogDB";
         String entitySetName = "products";
 
         if(hostName==null || hostName.isEmpty()) {
-            log.info("Could not get environment variable HOSTNAME_HTTP using the default value of 'localhost'");
+            log.info("Could not get environment variable CATALOG_DV_SERVICE_HOST using the default value of 'localhost'");
             hostName = "localhost";
         }
-
+        
+        if(portNo==null || portNo.isEmpty()) {
+            log.info("Could not get environment variable CATALOG_DV_SERVICE_PORT using the default value of '8080'");
+            hostName = "8080";
+        }
+        
         if(userName==null || userName.isEmpty()) {
             log.info("Could not get environment variable TEIID_USERNAME using the default value of 'teiidUser'");
             userName = "teiidUser";
@@ -77,11 +82,6 @@ public class DVCatalogService implements CatalogService {
         if(password==null || password.isEmpty()) {
             log.info("Could not get environment variable TEIID_PASSWORD using the default value of 'redhat1!'");
             password = "redhat1!";
-        }
-        
-        if(vdbName==null || vdbName.isEmpty()) {
-            log.info("Could not get environment variable VDB_NAME using the default value of 'CatalogDB'");
-            vdbName = "CatalogDB";
         }
 
         StringBuilder odataUrl = new StringBuilder();
