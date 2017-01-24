@@ -171,8 +171,8 @@ objects:
             initialDelaySeconds: 10
           resources:
             limits:
-              cpu: 300m
-              memory: 1Gi
+              cpu: 400m
+              memory: 1536Mi
             requests:
               cpu: 200m
               memory: 512Mi
