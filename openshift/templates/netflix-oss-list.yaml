@@ -103,8 +103,8 @@ items:
     name: turbine-server
   spec:
     ports:
-    - name: 8080-tcp
-      port: 8080
+    - name: 80-tcp
+      port: 80
       protocol: TCP
       targetPort: 8080
     selector:
@@ -120,7 +120,7 @@ items:
     name: turbine-server
   spec:
     port:
-      targetPort: 8080-tcp
+      targetPort: 80-tcp
     to:
       kind: Service
       name: turbine-server

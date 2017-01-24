@@ -266,7 +266,7 @@ objects:
     labels:
       app: coolstore-gw
       application: coolstore-gw
-      hystrix.enabled: true
+      hystrix.enabled: "true"
     name: coolstore-gw
   spec:
     ports:

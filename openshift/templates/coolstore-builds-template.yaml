@@ -2,13 +2,12 @@ apiVersion: v1
 kind: Template
 labels:
   demo: coolstore-microservice
-  template: coolstore-builds
 metadata:
   annotations:
     description: CoolStore demo microservices application buildconfigs template
     iconClass: icon-java
     tags: microservice,jboss,spring
-  name: coolstore
+  name: coolstore-builds
 objects:
 # UI
 - apiVersion: v1
