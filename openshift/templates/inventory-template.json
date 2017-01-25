@@ -6,7 +6,7 @@
     "annotations": {
       "description": "The inventory service",
       "iconClass": "icon-java",
-      "tags": "microservice,jboss,angularjs,keycloak,sso"
+      "tags": "microservice,jboss,angularjs"
     }
   },
   "labels": {
