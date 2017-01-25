@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.coolstore.model.Promotion;
@@ -89,11 +88,11 @@ public class PromoService implements Serializable {
 		
 	}
 	
-	public void setPromotions(Set<Promotion> promotionSet) {
+	public void setPromotions(Set<Promotion> PromotionSet) {
 		
-		if ( promotionSet != null ) {
+		if ( PromotionSet != null ) {
 		
-			this.promotionSet = new HashSet<Promotion>(promotionSet);
+			this.promotionSet = new HashSet<Promotion>(PromotionSet);
 			
 		} else {
 			

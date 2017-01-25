@@ -1,0 +1,6 @@
+<kmodule xmlns="http://jboss.org/kie/6.0.0/kmodule" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <kbase name="coolstore-kie-base" default="true" eventProcessingMode="cloud" equalsBehavior="equality">
+    <ksession name="coolstore-stateful-kie-session" type="stateful" default="true" clockType="realtime"/>
+    <ksession name="coolstore-kie-session" type="stateless" default="false" clockType="realtime"/>
+  </kbase>
+</kmodule>

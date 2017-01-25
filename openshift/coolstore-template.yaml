@@ -49,6 +49,11 @@ objects:
       type: Git
     strategy:
       sourceStrategy:
+        env:
+        - name: NPM_MIRROR
+          value: ${NPM_MIRROR}
+        - name: BOWER_MIRROR
+          value: ${BOWER_MIRROR}
         from:
           kind: ImageStreamTag
           name: nodejs:4
@@ -840,6 +845,12 @@ objects:
             value: "false"
           - name: CATALOG_ENDPOINT
             value: "http://catalog:8080"
+          - name: KIE_CONTAINER_DEPLOYMENT
+            value: ${KIE_CONTAINER_DEPLOYMENT}
+          - name: KIE_SERVER_USER
+            value: ${KIE_SERVER_USER}
+          - name: KIE_SERVER_PASSWORD
+            value: ${KIE_SERVER_PASSWORD}
           image: cart
           imagePullPolicy: Always
           lifecycle:
@@ -914,6 +925,158 @@ objects:
       targetPort: 8080
     selector:
       deploymentconfig: cart
+# Pricing Rules Service
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: pricing
+  spec:
+    tags:
+    - name: latest
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: pricing
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: pricing:latest
+    source:
+      contextDir: pricing-service
+      git:
+        ref: ${GIT_REF}
+        uri: ${GIT_URI}
+      type: Git
+    strategy:
+      sourceStrategy:
+        env:
+        - name: KIE_CONTAINER_DEPLOYMENT
+          value: ${KIE_CONTAINER_DEPLOYMENT}
+        - name: MAVEN_MIRROR_URL
+          value: ${MAVEN_MIRROR_URL}
+        from:
+          kind: ImageStreamTag
+          name: jboss-decisionserver63-openshift:1.3
+          namespace: openshift
+      type: Source
+    triggers:
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: pricing
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: pricing
+    strategy:
+      resources: {}
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          application: pricing
+          deploymentconfig: pricing
+        name: pricing
+      spec:
+        containers:
+        - env:
+          - name: MQ_CLUSTER_PASSWORD
+            value: 7mzX0pLV03
+          - name: JGROUPS_CLUSTER_PASSWORD
+            value: CqUo3fYDTv
+          - name: AUTO_DEPLOY_EXPLODED
+            value: "false"
+          - name: KIE_CONTAINER_DEPLOYMENT
+            value: ${KIE_CONTAINER_DEPLOYMENT}
+          - name: KIE_SERVER_USER
+            value: ${KIE_SERVER_USER}
+          - name: KIE_SERVER_PASSWORD
+            value: ${KIE_SERVER_PASSWORD}
+          - name: OPENSHIFT_KUBE_PING_LABELS
+            value: application=pricing-service
+          - name: OPENSHIFT_KUBE_PING_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          image: pricing
+          imagePullPolicy: Always
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /opt/eap/bin/jboss-cli.sh
+                - -c
+                - :shutdown(timeout=60)
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /kie-server/docs/
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 120
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: pricing
+          ports:
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 8888
+            name: ping
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /kie-server/docs/
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 600Mi
+            requests:
+              memory: 200Mi
+          terminationMessagePath: /dev/termination-log
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 75
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - pricing
+        from:
+          kind: ImageStreamTag
+          name: pricing:latest
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The pricing service's http port.
+    labels:
+      app: pricing
+    name: pricing
+  spec:
+    ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      deploymentconfig: pricing
 # Netflix Turbine Server
 - apiVersion: v1
   kind: ImageStream
@@ -1142,6 +1305,12 @@ parameters:
 - description: Maven mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/content/groups/public/)
   displayName: Maven mirror url
   name: MAVEN_MIRROR_URL
+- description: NPM mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/repository/npm/)
+  displayName: NPM mirror url
+  name: NPM_MIRROR
+- description: Bower mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/repository/bower-mirror/)
+  displayName: Bower mirror url
+  name: BOWER_MIRROR
 - description: Inventory Service database user name
   displayName: Inventory Database username
   from: user[a-zA-Z0-9]{3}
@@ -1166,3 +1335,16 @@ parameters:
   generate: expression
   name: CATALOG_DB_PASSWORD
   required: true
+- description: Decision Server Username
+  name: KIE_SERVER_USER
+  required: true
+  value: brmsAdmin
+- description: Decision Server Password
+  from: '[a-zA-Z]{6}[0-9]{1}!'
+  generate: expression
+  name: KIE_SERVER_PASSWORD
+  required: true
+- description: Decision Server Coolstore Rules Container Spec
+  name: KIE_CONTAINER_DEPLOYMENT
+  required: true
+  value: CoolStoreRulesContainer=com.redhat:coolstore:2.0.0

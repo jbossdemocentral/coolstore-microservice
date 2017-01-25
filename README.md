@@ -28,6 +28,7 @@ Deploy CoolStore Microservices Application
 ================
 Deploy the CoolStore microservices application using this template `openshift/coolstore-template.yaml`:
 ```
+oc login -u developer
 oc new-project coolstore
 oc process -f coolstore-template.yaml | oc create -f -
 ```

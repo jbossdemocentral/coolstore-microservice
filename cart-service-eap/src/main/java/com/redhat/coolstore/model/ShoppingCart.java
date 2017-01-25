@@ -4,9 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.enterprise.context.Dependent;
-
-@Dependent
 public class ShoppingCart implements Serializable {
 
 	private static final long serialVersionUID = -1108043957592113528L;
