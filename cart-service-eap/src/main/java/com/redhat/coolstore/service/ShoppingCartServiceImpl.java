@@ -31,6 +31,8 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
 	private Map<String, Product> productMap = new HashMap<>();
 
+	private static final String CATALOG_ENDPOINT = System.getenv("CATALOG_ENDPOINT");
+
 	@Override
 	public ShoppingCart getShoppingCart(String cartId) {
 		if (!cartDB.containsKey(cartId)) {
@@ -104,7 +106,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
 			CatalogService cat = Feign.builder()
 					.decoder(new JacksonDecoder())
-					.target(CatalogService.class, "http://catalog-service:8080");
+					.target(CatalogService.class, CATALOG_ENDPOINT);
 
 			// Fetch and cache products. TODO: Cache should expire at some point!
 			List<Product> products = cat.products();

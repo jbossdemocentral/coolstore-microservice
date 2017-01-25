@@ -40,7 +40,9 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ShoppingCartServiceImplDecisionServer.class);
 
-	private static final String URL = "http://pricing-service:8080/kie-server/services/rest/server";
+	private static final String CATALOG_ENDPOINT = System.getenv("CATALOG_ENDPOINT");
+	private static final String PRICING_ENDPOINT = System.getenv("PRICING_ENDPOINT");
+	private static final String URL = PRICING_ENDPOINT + "/kie-server/services/rest/server";
 	private static final String USER = System.getenv("KIE_SERVER_USER");
 	private static final String PASSWORD = System.getenv("KIE_SERVER_PASSWORD");
 	private static final String CONTAINER_SPEC = System.getenv("KIE_CONTAINER_DEPLOYMENT");
@@ -112,7 +114,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	public Product getProduct(String itemId) {
 		if (!productMap.containsKey(itemId)) {
 
-			CatalogService cat = Feign.builder().decoder(new JacksonDecoder()).target(CatalogService.class, "http://catalog-service:8080");
+			CatalogService cat = Feign.builder().decoder(new JacksonDecoder()).target(CatalogService.class, CATALOG_ENDPOINT);
 
 			// Fetch and cache products. TODO: Cache should expire at some point!
 			List<Product> products = cat.products();

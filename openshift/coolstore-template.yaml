@@ -845,6 +845,8 @@ objects:
             value: "false"
           - name: CATALOG_ENDPOINT
             value: "http://catalog:8080"
+          - name: PRICING_ENDPOINT
+            value: "http://pricing:8080"
           - name: KIE_CONTAINER_DEPLOYMENT
             value: ${KIE_CONTAINER_DEPLOYMENT}
           - name: KIE_SERVER_USER
@@ -1166,8 +1168,8 @@ objects:
     name: turbine-server
   spec:
     ports:
-    - name: 8080-tcp
-      port: 8080
+    - name: 80-tcp
+      port: 80
       protocol: TCP
       targetPort: 8080
     selector:
