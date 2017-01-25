@@ -243,6 +243,8 @@ function deploy_gogs() {
   echo "Using template $_TEMPLATE"
   oc process -f $_TEMPLATE -v HOSTNAME=$GOGS_ROUTE -v GOGS_VERSION=0.9.113 -v DATABASE_USER=$_DB_USER -v DATABASE_PASSWORD=$_DB_PASSWORD -v DATABASE_NAME=$_DB_NAME -n $PRJ_CI | oc create -f - -n $PRJ_CI
 
+  sleep 5
+
   # wait for Gogs to be ready
   wait_while_empty "Gogs PostgreSQL" 600 "oc get ep gogs-postgresql -o yaml -n $PRJ_CI | grep '\- addresses:'"
   wait_while_empty "Gogs" 600 "oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:'"
@@ -278,9 +280,11 @@ function deploy_gogs() {
 
   # disable TLS verification for webhooks
   echo "Configuring and restarting Gogs"
-  oc rsh $(oc get pod -o name -l deploymentconfig=gogs) /bin/bash -c "if ! grep TLS /opt/gogs/data/custom/conf/app.ini; then printf '[webhook]\nSKIP_TLS_VERIFY = true\n' >> /opt/gogs/data/custom/conf/app.ini ; fi"
-  oc delete pod -l deploymentconfig=gogs >/dev/null
+  oc rsh $(oc get pod -o name -l deploymentconfig=gogs -n $PRJ_CI) /bin/bash -c "if ! grep TLS /opt/gogs/data/custom/conf/app.ini; then printf '[webhook]\nSKIP_TLS_VERIFY = true\n' >> /opt/gogs/data/custom/conf/app.ini ; fi" -n $PRJ_CI
+  oc delete pod -l deploymentconfig=gogs -n $PRJ_CI >/dev/null
   wait_while_empty "Gogs" 300 "oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:'"
+
+  sleep 30
 
   # import GitHub repo
   read -r -d '' _DATA_JSON << EOM
@@ -293,10 +297,10 @@ EOM
 
   _RETURN=$(curl -o /dev/null -sL -w "%{http_code}" -H "Content-Type: application/json" -d "$_DATA_JSON" -u $GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD -X POST http://$GOGS_ROUTE/api/v1/repos/migrate)
   if [ $_RETURN != "201" ] && [ $_RETURN != "200" ] ; then
-   echo "WARNING: Failed (http code $_RETURN) to import GitHub repo $_REPO to Gogs"
+    echo "WARNING: Failed (http code $_RETURN) to import GitHub repo $_REPO to Gogs"
+  else
+    echo "CoolStore GitHub repo imported to Gogs"
   fi
-
-  sleep 2
 
   # create user
   read -r -d '' _DATA_JSON << EOM
@@ -309,7 +313,9 @@ EOM
 EOM
   _RETURN=$(curl -o /dev/null -sL -w "%{http_code}" -H "Content-Type: application/json" -d "$_DATA_JSON" -u $GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD -X POST http://$GOGS_ROUTE/api/v1/admin/users)
   if [ $_RETURN != "201" ] && [ $_RETURN != "200" ] ; then
-   echo "WARNING: Failed (http code $_RETURN) to create user $GOGS_USER"
+    echo "WARNING: Failed (http code $_RETURN) to create user $GOGS_USER"
+  else
+    echo "Gogs user created: $GOGS_USER"
   fi
 
   sleep 2
@@ -483,8 +489,14 @@ function verify_deployments() {
 
 function deploy_demo_guides() {
   echo_header "Deploying Demo Guides"
-  oc new-app --name=guide -e GOGS_URL=http://$GOGS_ROUTE -e GOGS_DEV_REPO_URL=http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git -e JENKINS_URL=http://jenkins-$PRJ_CI.$DOMAIN -e COOLSTORE_WEB_PROD_URL=http://web-ui-$PRJ_COOLSTORE_PROD.$DOMAIN -e GOGS_DEV_USER=$GOGS_USER -e GOGS_DEV_PASSWORD=$GOGS_PASSWORD -e GOGS_REVIEWER_USER=$GOGS_ADMIN_USER -e GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD -e DEFAULT_LAB=demo-msa ruby~https://github.com/siamaksade/openshift-workshops.git -n $PRJ_CI
-  oc expose svc/guide -n $PRJ_CI
+  local _DEMO_REPO="https://raw.githubusercontent.com/osevg/workshopper-content/master/demos"
+  local _DEMOS="$_DEMO_REPO/_demo-msa.yml,$_DEMO_REPO/_demo-agile-integration.yml"
+  #oc new-app --name=guide -e GOGS_URL=http://$GOGS_ROUTE -e GOGS_DEV_REPO_URL=http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git -e JENKINS_URL=http://jenkins-$PRJ_CI.$DOMAIN -e COOLSTORE_WEB_PROD_URL=http://web-ui-$PRJ_COOLSTORE_PROD.$DOMAIN -e GOGS_DEV_USER=$GOGS_USER -e GOGS_DEV_PASSWORD=$GOGS_PASSWORD -e GOGS_REVIEWER_USER=$GOGS_ADMIN_USER -e GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD -e DEFAULT_LAB=demo-msa ruby~https://github.com/siamaksade/openshift-workshops.git -n $PRJ_CI
+  oc new-app --name=guides jboss-eap70-openshift~https://github.com/osevg/workshopper.git -e WORKSHOPS_URLS=$_DEMOS -e GOGS_URL=http://$GOGS_ROUTE -e GOGS_DEV_REPO_URL=http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git -e JENKINS_URL=http://jenkins-$PRJ_CI.$DOMAIN -e COOLSTORE_WEB_PROD_URL=http://web-ui-$PRJ_COOLSTORE_PROD.$DOMAIN -e GOGS_DEV_USER=$GOGS_USER -e GOGS_DEV_PASSWORD=$GOGS_PASSWORD -e GOGS_REVIEWER_USER=$GOGS_ADMIN_USER -e GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD -n $PRJ_CI
+  oc expose svc/guides -n $PRJ_CI
+  oc cancel-build bc/guides -n $PRJ_CI
+  oc set env bc/guides MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_CI
+  oc start-build guides -n $PRJ_CI
 }
 
 # GPTE convention
@@ -529,6 +541,7 @@ deploy_coolstore_prod_env
 deploy_inventory_dev_env
 build_and_tag_images_for_ci
 deploy_pipeline
+sleep 30
 verify_deployments
 
 set_default_project
