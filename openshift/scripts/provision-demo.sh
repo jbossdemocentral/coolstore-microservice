@@ -106,6 +106,7 @@ GOGS_PASSWORD=developer
 GOGS_ADMIN_USER=team
 GOGS_ADMIN_PASSWORD=team
 
+JENKINS_PASSWORD=openshift
 WEBHOOK_SECRET=UfW7gQ6Jx4
 
 ################################################################################
@@ -124,6 +125,8 @@ function print_info() {
   echo "Gogs user:           $GOGS_USER"
   echo "Gogs pwd:            $GOGS_PASSWORD"
   echo "Gogs webhook secret: $WEBHOOK_SECRET"
+  echo "Jenkins admin user:  admin"
+  echo "Jenkins admin pwd:   $JENKINS_PASSWORD"
   echo "Maven mirror url:    $MAVEN_MIRROR_URL"
 }
 
@@ -243,11 +246,11 @@ function deploy_gogs() {
   echo "Using template $_TEMPLATE"
   oc process -f $_TEMPLATE -v HOSTNAME=$GOGS_ROUTE -v GOGS_VERSION=0.9.113 -v DATABASE_USER=$_DB_USER -v DATABASE_PASSWORD=$_DB_PASSWORD -v DATABASE_NAME=$_DB_NAME -n $PRJ_CI | oc create -f - -n $PRJ_CI
 
-  sleep 5
-
   # wait for Gogs to be ready
   wait_while_empty "Gogs PostgreSQL" 600 "oc get ep gogs-postgresql -o yaml -n $PRJ_CI | grep '\- addresses:'"
   wait_while_empty "Gogs" 600 "oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:'"
+
+  sleep 5
 
   # initialise Gogs
   _RETURN=$(curl -o /dev/null -sL --post302 -w "%{http_code}" http://$GOGS_ROUTE/install \
@@ -284,7 +287,7 @@ function deploy_gogs() {
   oc delete pod -l deploymentconfig=gogs -n $PRJ_CI >/dev/null
   wait_while_empty "Gogs" 300 "oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:'"
 
-  sleep 30
+  sleep 10
 
   # import GitHub repo
   read -r -d '' _DATA_JSON << EOM
@@ -301,6 +304,8 @@ EOM
   else
     echo "CoolStore GitHub repo imported to Gogs"
   fi
+
+  sleep 2
 
   # create user
   read -r -d '' _DATA_JSON << EOM
@@ -335,7 +340,9 @@ EOM
 # Deploy Jenkins
 function deploy_jenkins() {
   echo_header "Deploying Jenkins..."
-  oc new-app jenkins-persistent -l app=jenkins -p MEMORY_LIMIT=1Gi -n $PRJ_CI
+  # TODO: remove extra steps when Jenkins 2 becomes default in OpenShift
+  oc import-image jenkins:2 --from=registry.access.redhat.com/openshift3/jenkins-2-rhel7:latest --confirm -n $PRJ_CI
+  oc new-app jenkins-persistent -l app=jenkins -p JENKINS_PASSWORD=$JENKINS_PASSWORD -p NAMESPACE=$PRJ_CI -p JENKINS_IMAGE_STREAM_TAG=jenkins:2 -p MEMORY_LIMIT=1Gi -n $PRJ_CI
 }
 
 # Deploy Coolstore into Coolstore TEST project
@@ -482,20 +489,22 @@ function verify_deployments() {
   for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI; do
     for dc in $(oc get pods -n $project | grep Error | cut -d ' ' -f 1 | sed 's/\(.*\)\-[0-9]\+\-deploy/\1/g'); do
       echo "WARNING: Deployment $dc in project $project has failed. Starting a new deployment"
-      oc rollout latest dc/$dc -n $project
+      oc deploy $dc -n $project --latest
     done
   done
 }
 
 function deploy_demo_guides() {
   echo_header "Deploying Demo Guides"
-  local _DEMO_REPO="https://raw.githubusercontent.com/osevg/workshopper-content/master/demos"
+
+  local _DEMO_REPO="https://raw.githubusercontent.com/osevg/workshopper-content/stable-ocp-3.3/demos"
   local _DEMOS="$_DEMO_REPO/_demo-msa.yml,$_DEMO_REPO/_demo-agile-integration.yml"
-  #oc new-app --name=guide -e GOGS_URL=http://$GOGS_ROUTE -e GOGS_DEV_REPO_URL=http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git -e JENKINS_URL=http://jenkins-$PRJ_CI.$DOMAIN -e COOLSTORE_WEB_PROD_URL=http://web-ui-$PRJ_COOLSTORE_PROD.$DOMAIN -e GOGS_DEV_USER=$GOGS_USER -e GOGS_DEV_PASSWORD=$GOGS_PASSWORD -e GOGS_REVIEWER_USER=$GOGS_ADMIN_USER -e GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD -e DEFAULT_LAB=demo-msa ruby~https://github.com/siamaksade/openshift-workshops.git -n $PRJ_CI
-  oc new-app --name=guides jboss-eap70-openshift~https://github.com/osevg/workshopper.git -e WORKSHOPS_URLS=$_DEMOS -e GOGS_URL=http://$GOGS_ROUTE -e GOGS_DEV_REPO_URL=http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git -e JENKINS_URL=http://jenkins-$PRJ_CI.$DOMAIN -e COOLSTORE_WEB_PROD_URL=http://web-ui-$PRJ_COOLSTORE_PROD.$DOMAIN -e GOGS_DEV_USER=$GOGS_USER -e GOGS_DEV_PASSWORD=$GOGS_PASSWORD -e GOGS_REVIEWER_USER=$GOGS_ADMIN_USER -e GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD -n $PRJ_CI
+
+  oc new-app --name=guides jboss-eap70-openshift~https://github.com/osevg/workshopper.git -n $PRJ_CI
   oc expose svc/guides -n $PRJ_CI
   oc cancel-build bc/guides -n $PRJ_CI
   oc set env bc/guides MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_CI
+  oc set env dc/guides WORKSHOPS_URLS=$_DEMOS GOGS_URL=http://$GOGS_ROUTE GOGS_DEV_REPO_URL=http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git JENKINS_URL=http://jenkins-$PRJ_CI.$DOMAIN COOLSTORE_WEB_PROD_URL=http://web-ui-$PRJ_COOLSTORE_PROD.$DOMAIN GOGS_DEV_USER=$GOGS_USER GOGS_DEV_PASSWORD=$GOGS_PASSWORD GOGS_REVIEWER_USER=$GOGS_ADMIN_USER GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD
   oc start-build guides -n $PRJ_CI
 }
 
@@ -541,7 +550,7 @@ deploy_coolstore_prod_env
 deploy_inventory_dev_env
 build_and_tag_images_for_ci
 deploy_pipeline
-sleep 30
+sleep 10
 verify_deployments
 
 set_default_project

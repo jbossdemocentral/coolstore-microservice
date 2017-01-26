@@ -171,10 +171,10 @@ objects:
             initialDelaySeconds: 10
           resources:
             limits:
-              cpu: 400m
-              memory: 1536Mi
+              cpu: 200
+              memory: 1Gi
             requests:
-              cpu: 200m
+              cpu: 100
               memory: 512Mi
     triggers:
     - imageChangeParams:
@@ -761,7 +761,7 @@ objects:
               memory: 1Gi
             requests:
               cpu: 100m
-              memory: 1Gi
+              memory: 512Mi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
