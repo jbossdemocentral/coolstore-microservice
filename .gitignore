@@ -12,3 +12,4 @@ out/
 .idea
 workspace
 data
+logs/

@@ -1,4 +1,4 @@
-Red Hat Cool Store Microservice Demo
+Red Hat Cool Store Microservice Demo [![Build Status](https://travis-ci.org/jbossdemocentral/coolstore-microservice.svg?branch=demo-1)](https://travis-ci.org/jbossdemocentral/coolstore-microservice)
 ====================================
 This is an example demo showing a retail store consisting of several of microservices based on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/) and [Node.js](https://access.redhat.com/documentation/en/openshift-enterprise/3.2/paged/using-images/chapter-1-source-to-image-s2i), deployed to [OpenShift](https://access.redhat.com/products/openshift-enterprise-red-hat/).
 
@@ -16,21 +16,17 @@ There are several individual microservices and infrastructure components that ma
 
 ![Architecture Screenshot](/docs/images/arch-diagram.png?raw=true "Architecture Diagram")
 
-Demo Setup
+Prerequisites
 ================
-This demo makes use of OpenShift Source-to-Image process for JBoss EAP, JBoss Web Server and NodeJS.
-Therefore you need to have an Image Stream defined for each respective builder image. If they are not
-already available on your OpenShift environment, run the following to create them:
+In order to deploy the CoolStore microservices application, you need an OpenShift environment with
+* min 4 GB memory quota if deploying CoolStore
+* min 12 GB memory quota if deploying complete demo infrastructure
+* RHEL and JBoss imagestreams installed (check _Troubleshooting_ section for details)
+* Persistent volumes in your OpenShift environment
 
-```
-oc login -u system:admin
-oc delete -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
-oc delete -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
-oc create -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
-oc create -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
-```
-
-Deploy the `openshift-templates/coolstore-template.yaml` in order to deploy this demo:
+Deploy CoolStore Microservices Application
+================
+Deploy the CoolStore microservices application using this template `openshift/coolstore-template.yaml`:
 ```
 oc login -u developer
 oc new-project coolstore
@@ -40,9 +36,22 @@ oc process -f coolstore-template.yaml | oc create -f -
 When all pods are deployed, verify all services are functioning:
 ```
 oc rsh $(oc get pods -o name -l application=coolstore-gw)
-curl http://catalog-service:8080/api/products
-curl http://inventory-service:8080/api/availability/329299
-curl http://cart-service:8080/api/cart/FOO
+curl http://catalog:8080/api/products
+curl http://inventory:8080/api/availability/329299
+curl http://cart:8080/api/cart/FOO
+```
+
+Deploy Complete Demo
+================
+In order to deploy the complete demo infrastructure for demonstrating Microservices, CI/CD, agile integrations and more, use this provisioning script:
+
+```
+$ openshift/scripts/create-demo.sh
+```
+
+You can delete the demo projects and containers with:
+```
+$ openshift/scripts/delete-demo.sh
 ```
 
 Demo Instructions
@@ -55,5 +64,14 @@ OpenShift handles the TLS termination at the routing layer.
 
 Troubleshooting
 ================
+* If you see an error like `An error occurred while starting the build.imageStream ...` it might be due to RHEL or JBoss imagestreams not being installed on your OpenShift environment. Contact the OpenShift admin to install these imagestreams with the following commands:
+
+  ```
+  oc login -u system:admin
+  oc delete -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
+  oc delete -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
+  oc create -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
+  oc create -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
+  ```
 * If you attempt to deploy any of the services, and nothing happens, it may just be taking a while to download the Docker builder images. Visit the OpenShift web console and navigate to
 Browse->Events and look for errors, and re-run the 'oc delete ; oc create' commands to re-install the images (as outlined at the beginning.)

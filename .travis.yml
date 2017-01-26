@@ -11,4 +11,13 @@ branches:
 before_install:
   - nvm install 4.4
 
-script: mvn -f catalog-service/pom.xml install
+env:
+  - BUILD_CMD="mvn -f catalog-service/pom.xml package -s openshift/maven/settings.xml"
+  - BUILD_CMD="mvn -f inventory-service/pom.xml package -s openshift/maven/settings.xml"
+  - BUILD_CMD="mvn -f pricing-service/pom.xml package -s openshift/maven/settings.xml"
+  - BUILD_CMD="mvn -f cart-service-spring/pom.xml package -s openshift/maven/settings.xml"
+  - BUILD_CMD="mvn -f coolstore-gw/pom.xml package -s openshift/maven/settings.xml"
+  - BUILD_CMD="npm install --prefix coolstore-ui"
+
+script:
+  - $BUILD_CMD

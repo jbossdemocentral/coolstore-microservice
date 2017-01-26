@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: Template
+labels:
+  demo: coolstore-microservice
+  template: inventory-pipeline
+metadata:
+  name: inventory-pipeline
+objects:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      build: ${PIPELINE_NAME}
+    name: ${PIPELINE_NAME}
+    annotations:
+      pipeline.alpha.openshift.io/uses: '[{"name": "inventory", "namespace": "${DEV_PROJECT}", "kind": "BuildConfig"},{"name": "inventory", "namespace": "${TEST_PROJECT}", "kind": "DeploymentConfig"},,{"name": "inventory", "namespace": "${PROD_PROJECT}", "kind": "DeploymentConfig"}]'
+  spec:
+    runPolicy: Serial
+    strategy:
+      jenkinsPipelineStrategy:
+        jenkinsfile: |-
+          node ('maven') {
+            stage 'Build'
+            openshiftBuild(buildConfig: 'inventory', namespace: '${DEV_PROJECT}', showBuildLogs: 'true')
+
+            stage 'Run Tests in DEV'
+            sleep 10
+
+            stage 'Deploy to TEST'
+            openshiftTag(sourceStream: 'inventory', sourceTag: 'latest', namespace: '${DEV_PROJECT}', destinationStream: 'inventory', destinationTag: 'test', destinationNamespace: '${TEST_PROJECT}')
+            sleep 10
+
+            stage 'Run Tests in TEST'
+            sleep 30
+          }
+
+          def tag="blue"
+          def altTag="green"
+
+          node {
+            stage 'Deploy to PROD (Not Live)'
+            sh "oc get route inventory -n ${PROD_PROJECT} -o jsonpath='{ .spec.to.name }' > activeservice"
+            activeService = readFile('activeservice').trim()
+            if (activeService == "inventory-blue") {
+              tag = "green"
+              altTag = "blue"
+            }
+            openshiftTag(sourceStream: 'inventory', sourceTag: 'test', namespace: '${TEST_PROJECT}', destinationStream: 'inventory', destinationTag: "prod-${tag}", destinationNamespace: '${PROD_PROJECT}')
+            sleep 10
+            openshiftVerifyDeployment(deploymentConfig: "inventory-${tag}", replicaCount: 1, verifyReplicaCount: true, namespace: '${PROD_PROJECT}')
+
+            stage 'Smoke Tests in PROD (Not Live)'
+            sleep 30
+          }
+
+          stage 'Approve Go Live'
+          timeout(time:30, unit:'MINUTES') {
+            input message:'Go Live in Production (switch to new version)?'
+          }
+
+          node {
+            stage 'Go Live'
+            sh "oc set route-backends inventory inventory-${tag}=100 inventory-${altTag}=0 -n ${PROD_PROJECT}"
+            sleep 5
+          }
+      type: JenkinsPipeline
+    triggers:
+    - github:
+        secret: ${GITHUB_WEBHOOK_SECRET}
+      type: GitHub
+    - generic:
+        secret: ${GENERIC_WEBHOOK_SECRET}
+      type: Generic
+parameters:
+- description: The name for the pipeline.
+  displayName: Pipeline Name
+  name: PIPELINE_NAME
+  required: true
+  value: inventory-pipeline
+- description: DEV project name containting the buildconfigs
+  displayName: DEV Project Name
+  name: DEV_PROJECT
+  required: true
+- description: TEST project name containting the buildconfigs
+  displayName: TEST Project Name
+  name: TEST_PROJECT
+  required: true
+- description: PROD project name containting the buildconfigs
+  displayName: PROD Project Name
+  name: PROD_PROJECT
+  required: true
+- description: GitHub webhook secret
+  displayName: GitHub Webhook Secret
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: GITHUB_WEBHOOK_SECRET
+  required: true
+- description: Generic webhook secret
+  displayName: Generic Webhook Secret
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: GENERIC_WEBHOOK_SECRET
+  required: true

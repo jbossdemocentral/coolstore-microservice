@@ -16,10 +16,11 @@
  */
 package com.redhat.coolstore.api_gateway;
 
-import com.redhat.coolstore.api_gateway.model.Inventory;
-import com.redhat.coolstore.api_gateway.model.Product;
-import com.redhat.coolstore.api_gateway.model.ShoppingCart;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.http4.HttpMethods;
 import org.apache.camel.component.jackson.JacksonDataFormat;
@@ -28,18 +29,34 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.apache.camel.model.rest.RestParamType;
 import org.apache.camel.processor.aggregate.AggregationStrategy;
+import org.apache.camel.processor.interceptor.Tracer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.List;
+import com.redhat.coolstore.api_gateway.model.Inventory;
+import com.redhat.coolstore.api_gateway.model.Product;
+import com.redhat.coolstore.api_gateway.model.ShoppingCart;
 
 @Component
 public class ApiGatewayRoute extends RouteBuilder {
-
+	private static final Logger LOG = LoggerFactory.getLogger(ApiGatewayRoute.class);
+	
+	@Autowired
+	private Environment env;
+	
     @Override
     public void configure() throws Exception {
-
+    	try {
+    		getContext().setTracing(Boolean.parseBoolean(env.getProperty("ENABLE_TRACER", "false")));	
+		} catch (Exception e) {
+			LOG.error("Failed to parse the ENABLE_TRACER value: {}", env.getProperty("ENABLE_TRACER", "false"));
+		}
+    	
+        
         JacksonDataFormat productFormatter = new ListJacksonDataFormat();
         productFormatter.setUnmarshalType(Product.class);
 
@@ -65,7 +82,7 @@ public class ApiGatewayRoute extends RouteBuilder {
                 .setBody(simple("null"))
                 .removeHeaders("CamelHttp*")
                 .setHeader(Exchange.HTTP_METHOD, HttpMethods.GET)
-                .setHeader(Exchange.HTTP_URI, simple("http://catalog-service:8080/api/products"))
+                .setHeader(Exchange.HTTP_URI, simple("http://{{env:CATALOG_ENDPOINT:catalog:8080}}/api/products"))
                 .hystrix().id("Product Service")
                     .to("http4://DUMMY")
                 .onFallback()
@@ -90,7 +107,7 @@ public class ApiGatewayRoute extends RouteBuilder {
             .setBody(simple("null"))
             .removeHeaders("CamelHttp*")
             .setHeader(Exchange.HTTP_METHOD, HttpMethods.GET)
-            .setHeader(Exchange.HTTP_URI, simple("http://inventory-service:8080/api/availability/${header.itemId}"))
+            .setHeader(Exchange.HTTP_URI, simple("http://{{env:INVENTORY_ENDPOINT:inventory:8080}}/api/availability/${header.itemId}"))
             .hystrix().id("Inventory Service")
                 .to("http4://DUMMY2")
             .onFallback()
@@ -127,7 +144,7 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .removeHeaders("CamelHttp*")
                     .setBody(simple("null"))
                     .setHeader(Exchange.HTTP_METHOD, HttpMethods.POST)
-                    .setHeader(Exchange.HTTP_URI, simple("http://cart-service:8080/api/cart/checkout/${header.cartId}"))
+                    .setHeader(Exchange.HTTP_URI, simple("http://{{env:CART_ENDPOINT:cart:8080}}/api/cart/checkout/${header.cartId}"))
                     .to("http4://DUMMY")
                 .onFallback()
                     // TODO: improve fallback
@@ -145,7 +162,7 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .removeHeaders("CamelHttp*")
                     .setBody(simple("null"))
                     .setHeader(Exchange.HTTP_METHOD, HttpMethods.GET)
-                    .setHeader(Exchange.HTTP_URI, simple("http://cart-service:8080/api/cart/${header.cartId}"))
+                    .setHeader(Exchange.HTTP_URI, simple("http://{{env:CART_ENDPOINT:cart:8080}}/api/cart/${header.cartId}"))
                     .to("http4://DUMMY")
                 .onFallback()
                     // TODO: improve fallback
@@ -165,7 +182,7 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .removeHeaders("CamelHttp*")
                     .setBody(simple("null"))
                     .setHeader(Exchange.HTTP_METHOD, HttpMethods.DELETE)
-                    .setHeader(Exchange.HTTP_URI, simple("http://cart-service:8080/api/cart/${header.cartId}/${header.itemId}/${header.quantity}"))
+                    .setHeader(Exchange.HTTP_URI, simple("http://{{env:CART_ENDPOINT:cart:8080}}/api/cart/${header.cartId}/${header.itemId}/${header.quantity}"))
                     .to("http4://DUMMY")
                 .onFallback()
                     // TODO: improve fallback
@@ -185,7 +202,7 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .removeHeaders("CamelHttp*")
                     .setBody(simple("null"))
                     .setHeader(Exchange.HTTP_METHOD, HttpMethods.POST)
-                    .setHeader(Exchange.HTTP_URI, simple("http://cart-service:8080/api/cart/${header.cartId}/${header.itemId}/${header.quantity}"))
+                    .setHeader(Exchange.HTTP_URI, simple("http://{{env:CART_ENDPOINT:cart:8080}}/api/cart/${header.cartId}/${header.itemId}/${header.quantity}"))
                     .to("http4://DUMMY")
                 .onFallback()
                     // TODO: improve fallback
@@ -204,7 +221,7 @@ public class ApiGatewayRoute extends RouteBuilder {
                 .removeHeaders("CamelHttp*")
                 .setBody(simple("null"))
                 .setHeader(Exchange.HTTP_METHOD, HttpMethods.POST)
-                .setHeader(Exchange.HTTP_URI, simple("http://cart-service:8080/api/cart/${header.cartId}/${header.tmpId}"))
+                .setHeader(Exchange.HTTP_URI, simple("http://{{env:CART_ENDPOINT:cart:8080}}/api/cart/${header.cartId}/${header.tmpId}"))
                 .to("http4://DUMMY")
                 .onFallback()
                 // TODO: improve fallback
