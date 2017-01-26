@@ -497,6 +497,8 @@ function deploy_demo_guides() {
   oc cancel-build bc/guides -n $PRJ_CI
   oc set env bc/guides MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_CI
   oc start-build guides -n $PRJ_CI
+  oc set probe dc/guides -n $PRJ_CI --readiness -- /bin/bash -c /opt/eap/bin/readinessProbe.sh
+  oc set probe dc/guides -n $PRJ_CI --liveness -- /bin/bash -c /opt/eap/bin/livenessProbe.sh
 }
 
 # GPTE convention
