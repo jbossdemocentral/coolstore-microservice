@@ -12,22 +12,30 @@
         <field-data>
           <name>cartItemTotal</name>
           <value>0.00</value>
-          <nature>1</nature>
+          <nature>4</nature>
         </field-data>
       </fieldData>
       <name>$sc</name>
       <isModify>false</isModify>
     </fact-data>
-    <execution-trace/>
+    <execution-trace>
+      <executionTimeResult>7</executionTimeResult>
+      <numberOfRulesFired>1</numberOfRulesFired>
+    </execution-trace>
     <expect-rule>
       <ruleName>Row 1 Shipping Rules</ruleName>
       <expectedCount>1</expectedCount>
+      <explanation>Rule [Row 1 Shipping Rules] activated 1 times.</explanation>
+      <successResult>true</successResult>
+      <actualResult>1</actualResult>
     </expect-rule>
     <expect-fact>
       <fieldValues>
         <expect-field>
           <fieldName>shippingTotal</fieldName>
           <expected>2.99</expected>
+          <successResult>true</successResult>
+          <explanation>[$sc] field [shippingTotal] was [2.99].</explanation>
           <operator>==</operator>
           <nature>1</nature>
         </expect-field>
@@ -41,22 +49,35 @@
         <field-data>
           <name>cartItemTotal</name>
           <value>24.00</value>
-          <nature>1</nature>
-        </field-data>
-        <field-data>
-          <name>shippingTotal</name>
-          <value>0</value>
-          <nature>1</nature>
+          <nature>4</nature>
         </field-data>
       </fieldData>
-      <name>$sc</name>
-      <isModify>true</isModify>
+      <name>$sc2</name>
+      <isModify>false</isModify>
     </fact-data>
-    <execution-trace/>
+    <execution-trace>
+      <executionTimeResult>1</executionTimeResult>
+      <numberOfRulesFired>1</numberOfRulesFired>
+    </execution-trace>
     <expect-rule>
       <ruleName>Row 1 Shipping Rules</ruleName>
       <expectedCount>1</expectedCount>
+      <explanation>Rule [Row 1 Shipping Rules] activated 1 times.</explanation>
+      <successResult>true</successResult>
+      <actualResult>1</actualResult>
     </expect-rule>
+    <fact-data>
+      <type>ShoppingCart</type>
+      <fieldData>
+        <field-data>
+          <name>cartItemTotal</name>
+          <value>25.00</value>
+          <nature>4</nature>
+        </field-data>
+      </fieldData>
+      <name>$sc3</name>
+      <isModify>false</isModify>
+    </fact-data>
     <expect-fact>
       <fieldValues>
         <expect-field>
@@ -66,31 +87,13 @@
           <nature>1</nature>
         </expect-field>
       </fieldValues>
-      <name>$sc</name>
+      <name>$sc2</name>
       <anonymous>false</anonymous>
     </expect-fact>
-    <fact-data>
-      <type>ShoppingCart</type>
-      <fieldData>
-        <field-data>
-          <name>cartItemTotal</name>
-          <value>25</value>
-          <nature>1</nature>
-        </field-data>
-        <field-data>
-          <name>shippingTotal</name>
-          <value>0</value>
-          <nature>1</nature>
-        </field-data>
-      </fieldData>
-      <name>$sc</name>
-      <isModify>true</isModify>
-    </fact-data>
-    <execution-trace/>
-    <expect-rule>
-      <ruleName>Row 2 Shipping Rules</ruleName>
-      <expectedCount>1</expectedCount>
-    </expect-rule>
+    <execution-trace>
+      <executionTimeResult>0</executionTimeResult>
+      <numberOfRulesFired>0</numberOfRulesFired>
+    </execution-trace>
     <expect-fact>
       <fieldValues>
         <expect-field>
@@ -100,7 +103,7 @@
           <nature>1</nature>
         </expect-field>
       </fieldValues>
-      <name>$sc</name>
+      <name>$sc3</name>
       <anonymous>false</anonymous>
     </expect-fact>
     <fact-data>
@@ -109,27 +112,31 @@
         <field-data>
           <name>cartItemTotal</name>
           <value>50</value>
-          <nature>1</nature>
-        </field-data>
-        <field-data>
-          <name>shippingTotal</name>
-          <value>0</value>
-          <nature>1</nature>
+          <nature>4</nature>
         </field-data>
       </fieldData>
-      <name>$sc</name>
-      <isModify>true</isModify>
+      <name>$sc4</name>
+      <isModify>false</isModify>
     </fact-data>
-    <execution-trace/>
+    <execution-trace>
+      <executionTimeResult>1</executionTimeResult>
+      <numberOfRulesFired>0</numberOfRulesFired>
+    </execution-trace>
     <expect-rule>
       <ruleName>Row 3 Shipping Rules</ruleName>
       <expectedCount>1</expectedCount>
+      <explanation>Rule [Row 3 Shipping Rules] activated 0 times. Expected 1 times.</explanation>
+      <successResult>false</successResult>
+      <actualResult>0</actualResult>
     </expect-rule>
     <expect-fact>
       <fieldValues>
         <expect-field>
           <fieldName>shippingTotal</fieldName>
           <expected>6.99</expected>
+          <actualResult>0.0</actualResult>
+          <successResult>false</successResult>
+          <explanation>[$sc] field [shippingTotal] was [0.0] expected [6.99].</explanation>
           <operator>==</operator>
           <nature>1</nature>
         </expect-field>
@@ -137,33 +144,25 @@
       <name>$sc</name>
       <anonymous>false</anonymous>
     </expect-fact>
-    <fact-data>
-      <type>ShoppingCart</type>
-      <fieldData>
-        <field-data>
-          <name>cartItemTotal</name>
-          <value>75</value>
-          <nature>1</nature>
-        </field-data>
-        <field-data>
-          <name>shippingTotal</name>
-          <value>0</value>
-          <nature>1</nature>
-        </field-data>
-      </fieldData>
-      <name>$sc</name>
-      <isModify>true</isModify>
-    </fact-data>
-    <execution-trace/>
+    <execution-trace>
+      <executionTimeResult>0</executionTimeResult>
+      <numberOfRulesFired>0</numberOfRulesFired>
+    </execution-trace>
     <expect-rule>
       <ruleName>Row 4 Shipping Rules</ruleName>
       <expectedCount>1</expectedCount>
+      <explanation>Rule [Row 4 Shipping Rules] activated 0 times. Expected 1 times.</explanation>
+      <successResult>false</successResult>
+      <actualResult>0</actualResult>
     </expect-rule>
     <expect-fact>
       <fieldValues>
         <expect-field>
           <fieldName>shippingTotal</fieldName>
           <expected>8.99</expected>
+          <actualResult>0.0</actualResult>
+          <successResult>false</successResult>
+          <explanation>[$sc] field [shippingTotal] was [0.0] expected [8.99].</explanation>
           <operator>==</operator>
           <nature>1</nature>
         </expect-field>
@@ -177,35 +176,45 @@
         <field-data>
           <name>cartItemTotal</name>
           <value>100</value>
-          <nature>1</nature>
+          <nature>4</nature>
         </field-data>
         <field-data>
           <name>shippingTotal</name>
           <value>0</value>
-          <nature>1</nature>
+          <nature>4</nature>
         </field-data>
       </fieldData>
       <name>$sc</name>
       <isModify>true</isModify>
     </fact-data>
-    <execution-trace/>
+    <execution-trace>
+      <executionTimeResult>0</executionTimeResult>
+      <numberOfRulesFired>0</numberOfRulesFired>
+    </execution-trace>
     <expect-rule>
       <ruleName>Row 5 Shipping Rules</ruleName>
       <expectedCount>1</expectedCount>
+      <explanation>Rule [Row 5 Shipping Rules] activated 0 times. Expected 1 times.</explanation>
+      <successResult>false</successResult>
+      <actualResult>0</actualResult>
     </expect-rule>
     <expect-fact>
       <fieldValues>
         <expect-field>
           <fieldName>shippingTotal</fieldName>
           <expected>10.99</expected>
+          <actualResult>0.0</actualResult>
+          <successResult>false</successResult>
+          <explanation>[$sc] field [shippingTotal] was [0.0] expected [10.99].</explanation>
           <operator>==</operator>
-          <nature>0</nature>
+          <nature>1</nature>
         </expect-field>
       </fieldValues>
       <name>$sc</name>
       <anonymous>false</anonymous>
     </expect-fact>
   </fixtures>
+  <lastRunResult>2017-01-26 12:50:28.659 UTC</lastRunResult>
   <rules/>
   <inclusive>false</inclusive>
   <packageName></packageName>
@@ -216,4 +225,7 @@
       </org.drools.workbench.models.datamodel.imports.Import>
     </imports>
   </imports>
+  <ksessions>
+    <string>coolstore-kie-session</string>
+  </ksessions>
 </scenario>
