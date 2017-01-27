@@ -1290,12 +1290,12 @@ parameters:
   displayName: Git source repository
   name: GIT_URI
   required: true
-  value: https://github.com/jbossdemocentral/coolstore-microservice
+  value: https://github.com/cvanball/coolstore-microservice
 - description: Git branch/tag reference
   displayName: Git branch/tag reference
   name: GIT_REF
   required: true
-  value: master
+  value: feature/issue-27
 - description: Git source URI for decisionserver ruleset
   displayName: Git source repository for decisionserver ruleset
   name: RULES_GIT_URI

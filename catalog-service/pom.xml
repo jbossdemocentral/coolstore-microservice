@@ -95,7 +95,6 @@
       <groupId>org.apache.olingo</groupId>
       <artifactId>odata-client-core</artifactId>
       <version>${odata.version}</version>
-      <scope>runtime</scope>
     </dependency>    
     <dependency>
       <groupId>org.apache.olingo</groupId>
