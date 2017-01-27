@@ -497,7 +497,7 @@ function verify_deployments() {
 function deploy_demo_guides() {
   echo_header "Deploying Demo Guides"
 
-  local _DEMO_REPO="https://raw.githubusercontent.com/osevg/workshopper-content/stable-ocp-3.3/demos"
+  local _DEMO_REPO="https://raw.githubusercontent.com/osevg/workshopper-content/stable/demos"
   local _DEMOS="$_DEMO_REPO/_demo-msa.yml,$_DEMO_REPO/_demo-agile-integration.yml"
 
   oc new-app --name=guides jboss-eap70-openshift~https://github.com/osevg/workshopper.git -n $PRJ_CI
@@ -506,7 +506,7 @@ function deploy_demo_guides() {
   oc set env bc/guides MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_CI
   oc set env dc/guides WORKSHOPS_URLS=$_DEMOS GOGS_URL=http://$GOGS_ROUTE GOGS_DEV_REPO_URL=http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git JENKINS_URL=http://jenkins-$PRJ_CI.$DOMAIN COOLSTORE_WEB_PROD_URL=http://web-ui-$PRJ_COOLSTORE_PROD.$DOMAIN HYSTRIX_PROD_URL=http://hystrix-dashboard-$PRJ_COOLSTORE_PROD.$DOMAIN GOGS_DEV_USER=$GOGS_USER GOGS_DEV_PASSWORD=$GOGS_PASSWORD GOGS_REVIEWER_USER=$GOGS_ADMIN_USER GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD
   oc start-build guides -n $PRJ_CI
-  oc set probe dc/guides -n $PRJ_CI --readiness -- /bin/bash -c /opt/eap/bin/readinessProbe.sh 
+  oc set probe dc/guides -n $PRJ_CI --readiness -- /bin/bash -c /opt/eap/bin/readinessProbe.sh
   oc set probe dc/guides -n $PRJ_CI --liveness -- /bin/bash -c /opt/eap/bin/livenessProbe.sh
 }
 
