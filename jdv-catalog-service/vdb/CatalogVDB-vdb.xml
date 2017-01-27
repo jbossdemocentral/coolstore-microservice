@@ -16,7 +16,6 @@
 		]]></metadata>
 	</model>
 
-
 	<model name="Products_MONGODB">
 		<source connection-jndi-name="java:jboss/datasources/MongoDS" name="local" translator-name="mongodb"/>
 		<metadata type="DDL"><![CDATA[
@@ -30,7 +29,7 @@
 	</model>
 
 	<model name="file">
-        <source name="text-connector" translator-name="file" connection-jndi-name="java:/productdata-file-DS"/>
+        <source name="text-connector" translator-name="file" connection-jndi-name="java:jboss/datasources/productdata-file-DS"/>
 	</model>
     <model name="Products_FILE" type="VIRTUAL">
         <metadata type="DDL"><![CDATA[

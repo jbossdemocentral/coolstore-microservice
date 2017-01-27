@@ -662,7 +662,7 @@ objects:
     selector:
       deploymentconfig: catalog-mongodb
     strategy:
-      recreateParams:
+      recreateParams:        
         timeoutSeconds: 600
       resources: {}
       type: Recreate
@@ -707,7 +707,7 @@ objects:
               - -i
               - -c
               - mongo 127.0.0.1:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD
-                --eval="quit()"
+                --eval="quit()" && curl https://raw.githubusercontent.com/cvanball/coolstore-microservice/feature/issue-27/jdv-catalog-service/mongodb-data/products.js -o /tmp/products.js && mongo -u $MONGODB_USER -p $MONGODB_PASSWORD $MONGODB_DATABASE /tmp/products.js
             failureThreshold: 3
             initialDelaySeconds: 3
             periodSeconds: 10
