@@ -1328,13 +1328,11 @@ parameters:
   name: INVENTORY_DB_PASSWORD
   required: true
 - description: Catalog Service database user name
-  from: user[a-zA-Z0-9]{3}
-  generate: expression
   name: CATALOG_DB_USERNAME
+  value: catalogAdmin
   required: true
 - description: Catalog Service database user password
-  from: '[a-zA-Z0-9]{8}'
-  generate: expression
+  value: catalogPW
   name: CATALOG_DB_PASSWORD
   required: true
 - description: Decision Server Username
