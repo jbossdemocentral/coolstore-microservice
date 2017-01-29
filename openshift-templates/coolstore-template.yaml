@@ -913,7 +913,7 @@ objects:
           - name: MONGODB_ADMIN_PASSWORD
             value: ${CATALOG_DB_PASSWORD}    
           - name: ENV_FILES
-            value: /etc/datavirt-environment/*                              
+            value: /etc/datavirt-environment/*
           image: catalog-dv
           imagePullPolicy: Always
           livenessProbe:
@@ -1474,8 +1474,3 @@ parameters:
   from: '[a-zA-Z]{6}[0-9]{1}!'
   generate: expression
   required: true
-- description: Controls whether exploded deployment content should be automatically deployed
-  displayName: Deploy Exploded Archives
-  name: AUTO_DEPLOY_EXPLODED
-  value: false
-  required: false
