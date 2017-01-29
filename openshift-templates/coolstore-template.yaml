@@ -911,7 +911,9 @@ objects:
           - name: MONGODB_DATABASE
             value: catalogdb
           - name: MONGODB_ADMIN_PASSWORD
-            value: ${CATALOG_DB_PASSWORD}                                  
+            value: ${CATALOG_DB_PASSWORD}    
+          - name: ENV_FILES
+            value: /etc/datavirt-environment/*                              
           image: catalog-dv
           imagePullPolicy: Always
           livenessProbe:
@@ -1392,23 +1394,27 @@ parameters:
   displayName: Server Keystore Filename
   name: HTTPS_KEYSTORE
   value: keystore.jks
+  required: false
 - description: The type of the keystore file (JKS or JCEKS).
   displayName: Server Keystore Type
   name: HTTPS_KEYSTORE_TYPE
   value: 
+  required: false
 - description: The name associated with the server certificate.
   displayName: Server Certificate Name
   name: HTTPS_NAME
   value: jboss
+  required: false  
 - description: The password for the keystore and certificate
   displayName: Server Keystore Password
   name: HTTPS_PASSWORD
   value: mykeystorepass
+  required: false  
 - description: Username associated with Teiid data service
   displayName: Teiid Username
   name: TEIID_USERNAME
-  required: true
   value: teiidUser
+  required: true
 - description: Password for Teiid user
   displayName: Teiid User Password
   name: TEIID_PASSWORD
@@ -1417,9 +1423,9 @@ parameters:
   required: true
 - description: Username associated with ModeShape
   displayName: Modeshape Username
-  name: MODESHAPE_USERNAME
-  required: true  
+  name: MODESHAPE_USERNAME  
   value: modeshapeUser
+  required: true
 - description: Password for ModeShape user
   displayName: Modeshape User Password
   name: MODESHAPE_PASSWORD
@@ -1468,3 +1474,8 @@ parameters:
   from: '[a-zA-Z]{6}[0-9]{1}!'
   generate: expression
   required: true
+- description: Controls whether exploded deployment content should be automatically deployed
+  displayName: Deploy Exploded Archives
+  name: AUTO_DEPLOY_EXPLODED
+  value: false
+  required: false
