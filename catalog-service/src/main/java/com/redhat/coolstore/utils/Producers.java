@@ -1,14 +1,18 @@
 package com.redhat.coolstore.utils;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
+import java.util.Arrays;
+import java.util.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
-import java.util.Arrays;
-import java.util.logging.Logger;
+
+import org.apache.olingo.client.api.ODataClient;
+import org.apache.olingo.client.core.ODataClientImpl;
+
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 
 
 public class Producers {
@@ -20,7 +24,10 @@ public class Producers {
         return Logger.getLogger(injectionPoint.getMember().getDeclaringClass().getName());
     }
 
-
+    @Produces @ApplicationScoped
+    public ODataClient createODataClient() {
+    		return new ODataClientImpl();
+    }
 
     @Produces @ApplicationScoped
     public MongoClient createMongoClient() {

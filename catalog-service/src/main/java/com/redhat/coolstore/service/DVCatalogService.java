@@ -27,8 +27,8 @@ import com.redhat.coolstore.model.Product;
 
 @ApplicationScoped
 public class DVCatalogService implements CatalogService {
-
-    @Inject
+	
+	@Inject
     private ODataClient oc;
 
     @Inject
