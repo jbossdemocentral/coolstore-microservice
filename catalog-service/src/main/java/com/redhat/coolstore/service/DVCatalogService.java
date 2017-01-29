@@ -85,8 +85,8 @@ public class DVCatalogService implements CatalogService {
         }
 
         StringBuilder odataUrl = new StringBuilder();
-        odataUrl.append("http://").append(hostName).append(":").append(portNo).append("/").append(vdbName).append("/").append(schemaName);
-
+        odataUrl.append("http://").append(hostName).append(":").append(portNo).append("/odata4/").append(vdbName).append("/").append(schemaName);
+        log.info("OData URL: "+odataUrl.toString());
 
         oc.getConfiguration().setHttpClientFactory(new BasicAuthHttpClientFactory(userName,password));
 		URI absoluteUri = oc.newURIBuilder(odataUrl.toString()).appendEntitySetSegment(entitySetName).build();

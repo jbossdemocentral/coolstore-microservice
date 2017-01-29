@@ -26,6 +26,7 @@ public class Producers {
 
     @Produces @ApplicationScoped
     public ODataClient createODataClient() {
+            log.info("Creating ODataClient");
     		return new ODataClientImpl();
     }
 
