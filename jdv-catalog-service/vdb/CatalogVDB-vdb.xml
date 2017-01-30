@@ -12,7 +12,9 @@
 				description varchar(1024),
 				price bigdecimal,
 				CONSTRAINT ITEMID_UK UNIQUE (itemId)
-			) AS select * from Products_MONGODB.product;
+			) AS select * from Products_MONGODB.product
+				UNION
+				select * from Products_FILE.product;
 		]]></metadata>
 	</model>
 
