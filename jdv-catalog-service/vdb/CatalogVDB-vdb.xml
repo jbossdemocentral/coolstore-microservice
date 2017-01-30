@@ -37,14 +37,14 @@
         <metadata type="DDL"><![CDATA[
 
         CREATE VIEW product (
-            itemId string PRIMARY KEY,
+            itemId integer PRIMARY KEY,
 			name varchar(50),
 			description varchar(1024),
             price bigdecimal
         ) AS
           SELECT P.itemId, P.name, P.description, P.price
           FROM (EXEC file.getTextFiles('*.txt')) AS f,
-            TEXTTABLE(f.file COLUMNS itemId string, name string, description string, price bigdecimal HEADER) AS P;
+            TEXTTABLE(f.file COLUMNS itemId integer, name string, description string, price bigdecimal HEADER) AS P;
 
         ]]> </metadata>
 	</model>
