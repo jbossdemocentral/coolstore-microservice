@@ -336,6 +336,7 @@ EOM
 function deploy_jenkins() {
   echo_header "Deploying Jenkins..."
   oc new-app jenkins-persistent -l app=jenkins -p MEMORY_LIMIT=1Gi -n $PRJ_CI
+  oc set resources dc/jenkins --limits=cpu=1,memory=2Gi --requests=cpu=200m,memory=1Gi
 }
 
 # Deploy Coolstore into Coolstore TEST project

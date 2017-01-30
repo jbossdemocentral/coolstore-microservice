@@ -71,7 +71,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              memory: 512Mi
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
           volumeMounts:
           - mountPath: /var/lib/pgsql/data
             name: gogs-postgres-data
@@ -185,6 +189,13 @@ objects:
               periodSeconds: 10
               successThreshold: 1
               failureThreshold: 3
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         securityContext: {}
