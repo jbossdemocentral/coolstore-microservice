@@ -99,7 +99,7 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 300m
+              cpu: 2
               memory: 1Gi
             requests:
               cpu: 200m
@@ -225,7 +225,7 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 300m
+              cpu: 2
               memory: 1Gi
             requests:
               cpu: 200m
@@ -331,11 +331,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 100m
+              cpu: 500m
               memory: 512Mi
             requests:
               cpu: 50m
-              memory: 512Mi
+              memory: 256Mi
         terminationGracePeriodSeconds: 60
         volumes:
         - name: inventory-postgresql-data
