@@ -94,14 +94,12 @@ public class DVCatalogService implements CatalogService {
 	
 		ODataEntitySetIteratorRequest<ClientEntitySet, ClientEntity> request = 
 		oc.getRetrieveRequestFactory().getEntitySetIteratorRequest(absoluteUri);
-	
+	    
 		request.setAccept("application/json;odata.metadata=minimal");
-
 	
 		ODataRetrieveResponse<ClientEntitySetIterator<ClientEntitySet, ClientEntity>> response = request.execute(); 
 		ClientEntitySetIterator<ClientEntitySet, ClientEntity> iterator = response.getBody();
-
-		while (iterator.hasNext()) {
+        while (iterator.hasNext()) {
 		     ClientEntity ce = iterator.next();
              add(toProduct(ce));
 		}		
@@ -115,8 +113,11 @@ public class DVCatalogService implements CatalogService {
     private Product toProduct(ClientEntity ce) {
         Product product =  new Product();
         product.setItemId(ce.getProperty("itemId").getPrimitiveValue().toString());
+        log.info(product.getItemId());
         product.setName(ce.getProperty("name").getPrimitiveValue().toString());
+        log.info(product.getName());
         product.setDesc(ce.getProperty("description").getPrimitiveValue().toString());
+        log.info(product.getDesc());
         product.setPrice(Double.parseDouble(ce.getProperty("price").getPrimitiveValue().toString()));
         return product;
     }
