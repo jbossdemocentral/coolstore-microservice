@@ -49,6 +49,10 @@ public class DVCatalogService implements CatalogService {
     }
 
     public void add(Product product) {
+        if (productCollectionList == null) {
+            productCollectionList = new ArrayList<Product>();
+        }
+
         if (product != null) {
             productCollectionList.add(product);
         }
