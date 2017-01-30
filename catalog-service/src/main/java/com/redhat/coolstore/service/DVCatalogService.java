@@ -49,7 +49,9 @@ public class DVCatalogService implements CatalogService {
     }
 
     public void add(Product product) {
-        productCollection.add(product);
+        if (product != null {
+            productCollection.add(product);
+        }
     }
 
     @PostConstruct
@@ -86,8 +88,6 @@ public class DVCatalogService implements CatalogService {
 
         StringBuilder odataUrl = new StringBuilder();
         odataUrl.append("http://").append(hostName).append(":").append(portNo).append("/odata4/").append(vdbName).append("/").append(schemaName);
-        log.info("OData URL: "+odataUrl.toString());
-        log.info("Username: "+userName+" Password: "+password);
 
         oc.getConfiguration().setHttpClientFactory(new BasicAuthHttpClientFactory(userName,password));
 		URI absoluteUri = oc.newURIBuilder(odataUrl.toString()).appendEntitySetSegment(entitySetName).build();
