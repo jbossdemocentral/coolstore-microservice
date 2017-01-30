@@ -49,7 +49,7 @@ public class DVCatalogService implements CatalogService {
     }
 
     public void add(Product product) {
-        if (product != null {
+        if (product != null) {
             productCollection.add(product);
         }
     }
