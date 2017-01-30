@@ -746,7 +746,7 @@ objects:
   kind: Service
   metadata:
     annotations:
-       service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"},{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'           
+       service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'           
     labels:
       app: catalog-service
     name: catalog-dv

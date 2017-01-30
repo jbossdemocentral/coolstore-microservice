@@ -1,7 +1,7 @@
 itemId,name,description,price
-200700,Textured 1/4-Zip Pullover,Moisture-wicking, textured, 6.2 oz., 100% polyester. Cadet collar. Quarter-zip front with contrasting zipper teeth and tape. Sport-Tek logo neck taping. Set-in sleeves. Open cuffs and bottom hem. Import. Embroidery. Deep Red.,27.2
-201664,Eddie Bauer Softshell Jacket JBoss Middleware, Water-resistant, breathable three-layer fabric combines 96% polyester/4% spandex and membrane inner layer. Zip front, component loops at back of neck and cuffs for securing other jackets, front zip pockets, right chest pocket, adjustable tab cuffs and open bottom hem with drawcord and toggles. Eddie Bauer logo on right chest. Gray Steel. Embroidery.,68.84
-200680,Webcam cover,Durable plastic slider attaches to computers, laptops, smart TVs, game consoles and third party webcams with double-sided tape. Protects against accidentally sharing web meetings; protects lens from scratches. Import. Imprint. Black.,3.45
+200700,"Textured 1/4-Zip Pullover,Moisture-wicking, textured, 6.2 oz., 100% polyester. Cadet collar. Quarter-zip front with contrasting zipper teeth and tape. Sport-Tek logo neck taping. Set-in sleeves. Open cuffs and bottom hem. Import. Embroidery. Deep Red.",27.2
+201664,"Eddie Bauer Softshell Jacket JBoss Middleware, Water-resistant, breathable three-layer fabric combines 96% polyester/4% spandex and membrane inner layer. Zip front, component loops at back of neck and cuffs for securing other jackets, front zip pockets, right chest pocket, adjustable tab cuffs and open bottom hem with drawcord and toggles. Eddie Bauer logo on right chest. Gray Steel. Embroidery.",68.84
+200680,"Webcam cover,Durable plastic slider attaches to computers, laptops, smart TVs, game consoles and third party webcams with double-sided tape. Protects against accidentally sharing web meetings; protects lens from scratches. Import. Imprint. Black.",3.45
 
 
  
