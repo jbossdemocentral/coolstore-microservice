@@ -481,7 +481,7 @@ function set_permissions() {
 
 function verify_deployments() {
   for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI; do
-    for dc in $(oc get pods -n $project | grep Error | cut -d ' ' -f 1 | sed 's/\(.*\)\-[0-9]\+\-deploy/\1/g'); do
+    for dc in $(oc get pods -n $project | grep deploy | grep Error | cut -d ' ' -f 1 | sed 's/\(.*\)\-[0-9]\+\-deploy/\1/g'); do
       echo "WARNING: Deployment $dc in project $project has failed. Starting a new deployment"
       oc rollout latest dc/$dc -n $project
     done
