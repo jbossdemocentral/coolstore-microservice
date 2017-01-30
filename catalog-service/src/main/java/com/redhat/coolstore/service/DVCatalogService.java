@@ -34,23 +34,23 @@ public class DVCatalogService implements CatalogService {
     @Inject
     Logger log;
 
-    private List<Product> productCollection;
+    private List<Product> productCollectionList;
     
 	public DVCatalogService() {
 	}
 
 	public List<Product> getProducts() {
-        if (productCollection.size()==0 || productCollection == null) {
+        if (productCollectionList.size()==0 || productCollectionList == null) {
             log.info("Product collection is empty, reset to default values");
-            productCollection = DEFAULT_PRODUCT_LIST;
+            productCollectionList = DEFAULT_PRODUCT_LIST;
         }
-        return productCollection;
+        return productCollectionList;
 
     }
 
     public void add(Product product) {
         if (product != null) {
-            productCollection.add(product);
+            productCollectionList.add(product);
         }
     }
 
