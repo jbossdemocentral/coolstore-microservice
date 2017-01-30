@@ -113,12 +113,10 @@ public class DVCatalogService implements CatalogService {
     private Product toProduct(ClientEntity ce) {
         Product product =  new Product();
         product.setItemId(ce.getProperty("itemId").getPrimitiveValue().toString());
-        log.info(product.getItemId());
         product.setName(ce.getProperty("name").getPrimitiveValue().toString());
-        log.info(product.getName());
         product.setDesc(ce.getProperty("description").getPrimitiveValue().toString());
-        log.info(product.getDesc());
-        product.setPrice(Double.parseDouble(ce.getProperty("price").getPrimitiveValue().toString()));
+        product.setPrice(0);
+        // product.setPrice(Double.parseDouble(ce.getProperty("price").getPrimitiveValue().toString()));
         return product;
     }
 
