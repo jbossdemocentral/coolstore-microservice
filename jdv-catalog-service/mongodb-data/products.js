@@ -1,4 +1,12 @@
 db = db.getSiblingDB('catalogdb');
+db.dropDatabase();
+db.dropUser("catalogAdmin");
+db.createUser( { user: "catalogAdmin",
+                 pwd: "catalogPW",
+                 roles: [   
+                            "readWrite", "dbAdmin"
+                        ] }
+               );
 db.product.insertMany( [
     { 'itemId' : '329299', 'name' : 'Red Fedora', 'description' : 'Official Red Hat Fedora', 'price' : 34.99 },
     { 'itemId' : '329199', 'name' : 'Forge Laptop Sticker', 'description' : 'JBoss Community Forge Project Sticker', 'price' : 8.50},
