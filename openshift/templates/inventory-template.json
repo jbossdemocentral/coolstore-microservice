@@ -247,10 +247,12 @@
                 ],
                 "resources": {
                     "limits": {
-                        "memory": "600Mi"
+                        "cpu": 2,
+                        "memory": "2Gi"
                     },
                     "requests": {
-                        "memory": "200Mi"
+                        "cpu": "200m",
+                        "memory": "1Gi"
                     }
                 },
                 "livenessProbe": {
