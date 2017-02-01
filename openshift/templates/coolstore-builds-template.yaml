@@ -46,8 +46,8 @@ objects:
     - type: ConfigChange
     resources:
       limits:
-        cpu: "400m"
-        memory: "1Gi"
+        cpu: 1
+        memory: "2Gi"
       requests:
         cpu: "200m"
         memory: "1Gi"
@@ -106,8 +106,8 @@ objects:
       type: ImageChange
     resources:
       limits:
-        cpu: "400m"
-        memory: "1Gi"
+        cpu: 1
+        memory: "2Gi"
       requests:
         cpu: "200m"
         memory: "1Gi"
@@ -151,8 +151,8 @@ objects:
       type: ImageChange
     resources:
       limits:
-        cpu: "400m"
-        memory: "1Gi"
+        cpu: 1
+        memory: "2Gi"
       requests:
         cpu: "200m"
         memory: "1Gi"
@@ -196,8 +196,8 @@ objects:
       type: ImageChange
     resources:
       limits:
-        cpu: "400m"
-        memory: "1Gi"
+        cpu: 1
+        memory: "2Gi"
       requests:
         cpu: "200m"
         memory: "1Gi"
@@ -241,8 +241,8 @@ objects:
       type: ImageChange
     resources:
       limits:
-        cpu: "400m"
-        memory: "1Gi"
+        cpu: 1
+        memory: "2Gi"
       requests:
         cpu: "200m"
         memory: "1Gi"
