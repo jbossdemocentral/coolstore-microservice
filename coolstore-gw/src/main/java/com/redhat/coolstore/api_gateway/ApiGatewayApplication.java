@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+//import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +38,7 @@ import java.io.IOException;
 @SpringBootApplication
 @Configuration
 @ComponentScan
-@EnableSwagger2
+//@EnableSwagger2
 @EnableAutoConfiguration
 @PropertySource("classpath:swagger.properties")
 public class ApiGatewayApplication extends SpringBootServletInitializer {
