@@ -156,5 +156,5 @@
     <name>JBoss Fuse Public</name>
     <url>https://repo.fusesource.com/nexus/content/groups/public/</url>
    </pluginRepository>
-  </pluginRepositories>/	
+  </pluginRepositories>	
 </project>
