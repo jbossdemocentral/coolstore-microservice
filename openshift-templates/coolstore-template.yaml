@@ -1311,7 +1311,7 @@ parameters:
 - description: Maven mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/content/groups/public/)
   displayName: Maven mirror url
   name: MAVEN_MIRROR_URL
-  value: http://127.0.0.1:8081/nexus/content/groups/public/
+  value: 
 - description: NPM mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/repository/npm/)
   displayName: NPM mirror url
   name: NPM_MIRROR
@@ -1473,7 +1473,7 @@ parameters:
   from: '[a-zA-Z]{6}[0-9]{1}!'
   generate: expression
   required: true
-- description: Default CatalogService implementation defaults to MONGODB if empty
+- description: Default CatalogService implementation defaults to MONGODB if empty. Possible values [JDV || MONGODB]
   name: CATALOG_SERVICE_DS_IMPL
-  value: JDV
+  value: MONGODB
   required: false
