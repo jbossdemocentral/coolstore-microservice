@@ -14,8 +14,16 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.redhat.coolstore.service.CatalogService;
+import com.redhat.coolstore.service.DVCatalogService;
+import com.redhat.coolstore.service.MongoCatalogService;
 
 public class Producers {
+
+    public static final String JDV_DATASOURCE_IMPL = "JDV";
+    public static final String MONGO_DATASOURCE_IMPL = "MONGODB";
 
     Logger log = Logger.getLogger(Producers.class.getName());
 
@@ -56,5 +64,18 @@ public class Producers {
             return new MongoClient(dbServer);
         }
 
+    }
+
+    @Produces @Preferred
+    public CatalogService getCatalogService(MongoCatalogService mongodb, DVCatalogService dv) {
+        String dsImplEnv = System.getenv("CATALOG_SERVICE_DS_IMPL");
+        // If the env CATALOG_SERVICE_DS_IMPL is empty the MongoDB should be the default
+        if(StringUtils.isEmpty(dsImplEnv) || dsImplEnv.equals(MONGO_DATASOURCE_IMPL)) {
+            return mongodb;
+        } else if(dsImplEnv.equals(JDV_DATASOURCE_IMPL)) {
+            return dv;
+        } else {
+            throw new UnsupportedOperationException("Unknown data source implementation set in env DATASOURCE_IMPL. A datasource implementation of '" + dsImplEnv + "' is not supported!!");
+        }
     }
 }

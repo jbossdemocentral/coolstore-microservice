@@ -11,11 +11,13 @@ import javax.ws.rs.core.Response;
 
 import com.redhat.coolstore.model.Product;
 import com.redhat.coolstore.service.CatalogService;
+import com.redhat.coolstore.utils.Preferred;
 
 @SessionScoped
 @Path("/products")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+
 public class CatalogEndpoint implements Serializable {
 
     /**
@@ -23,7 +25,7 @@ public class CatalogEndpoint implements Serializable {
      */
     private static final long serialVersionUID = -7227732980791688773L;
 
-    @Inject
+    @Inject @Preferred
     private CatalogService catalogService;
 
     @GET

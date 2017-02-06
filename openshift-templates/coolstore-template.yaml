@@ -576,7 +576,9 @@ objects:
           - name: TEIID_USERNAME
             value: ${TEIID_USERNAME}
           - name: TEIID_PASSWORD
-            value: ${TEIID_PASSWORD}            
+            value: ${TEIID_PASSWORD}     
+          - name: CATALOG_SERVICE_DS_IMPL   
+            value: ${CATALOG_SERVICE_DS_IMPL} 
           image: catalog-service
           imagePullPolicy: Always
           name: catalog-service
@@ -624,7 +626,7 @@ objects:
   metadata:
     annotations:
       description: The catalog service's http port.
-      service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'
+      service.alpha.openshift.io/dependencies: '[{"name":"catalog-dv","namespace":"","kind":"Service"},{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'
     labels:
       app: catalog-service
     name: catalog-service
@@ -745,8 +747,6 @@ objects:
 - apiVersion: v1
   kind: Service
   metadata:
-    annotations:
-       service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'           
     labels:
       app: catalog-service
     name: catalog-dv
@@ -879,7 +879,7 @@ objects:
     template:
       metadata:
         labels:
-          application: catalog-dv
+          application: catalog-service
           deploymentconfig: catalog-dv
       spec:
         containers:
@@ -1311,6 +1311,7 @@ parameters:
 - description: Maven mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/content/groups/public/)
   displayName: Maven mirror url
   name: MAVEN_MIRROR_URL
+  value: http://127.0.0.1:8081/nexus/content/groups/public/
 - description: NPM mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/repository/npm/)
   displayName: NPM mirror url
   name: NPM_MIRROR
@@ -1472,3 +1473,7 @@ parameters:
   from: '[a-zA-Z]{6}[0-9]{1}!'
   generate: expression
   required: true
+- description: Default CatalogService implementation defaults to MONGODB if empty
+  name: CATALOG_SERVICE_DS_IMPL
+  value: JDV
+  required: false

@@ -21,7 +21,7 @@ import org.bson.Document;
 // MongoCatalogService not active, instead DVCatalogService will be used for the CatalogService
 @Alternative
 @ApplicationScoped
-public class MongoCatalogService {
+public class MongoCatalogService implements CatalogService {
 
     @Inject
     private MongoClient mc;
