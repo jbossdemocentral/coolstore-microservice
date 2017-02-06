@@ -19,7 +19,6 @@ import com.redhat.coolstore.model.Product;
 import org.bson.Document;
 
 // MongoCatalogService not active, instead DVCatalogService will be used for the CatalogService
-@Alternative
 @ApplicationScoped
 public class MongoCatalogService implements CatalogService {
 
@@ -58,7 +57,7 @@ public class MongoCatalogService implements CatalogService {
         String dbName = System.getenv("DB_NAME");
         if(dbName==null || dbName.isEmpty()) {
             log.info("Could not get environment variable DB_NAME using the default value of 'CatalogDB'");
-            dbName = "CatalogDB";
+            dbName = "catalogdb";
         }
 
         MongoDatabase db = mc.getDatabase(dbName);
