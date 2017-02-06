@@ -16,6 +16,12 @@
  */
 package com.redhat.coolstore.api_gateway;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.camel.component.servlet.CamelHttpTransportServlet;
 import org.apache.camel.spi.RestConfiguration;
 import org.springframework.boot.SpringApplication;
@@ -28,17 +34,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-//import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import org.apache.camel.component.hystrix.metrics.servlet.HystrixEventStreamServlet;
 
 @SpringBootApplication
 @Configuration
 @ComponentScan
-//@EnableSwagger2
 @EnableAutoConfiguration
 @PropertySource("classpath:swagger.properties")
 public class ApiGatewayApplication extends SpringBootServletInitializer {
@@ -63,7 +64,12 @@ public class ApiGatewayApplication extends SpringBootServletInitializer {
         return registration;
     }
 
-
+    @Bean
+    public ServletRegistrationBean metricsServlet() {
+         ServletRegistrationBean registration = new ServletRegistrationBean(new HystrixEventStreamServlet(), "/hystrix.stream");
+         return registration;
+    }
+    
     private static Class<ApiGatewayApplication> applicationClass = ApiGatewayApplication.class;
 
     private class CORSServlet extends CamelHttpTransportServlet {
