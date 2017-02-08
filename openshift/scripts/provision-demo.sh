@@ -383,34 +383,12 @@ function build_and_tag_images_for_ci() {
   echo "Using build template $_TEMPLATE_BUILDS"
   oc process -f $_TEMPLATE_BUILDS -v GIT_URI=$GITHUB_URI -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
 
-  sleep 10
+  sleep 5
 
-  # wait for builds to finish
-  echo_header "Preparing builds and deployments for CI/CD..."
-  echo "Waiting for builds to finish..."
+  # build images
   for buildconfig in coolstore-gw web-ui inventory cart catalog
   do
-    local x=1
-    while [ -z "$(oc get builds -l buildconfig=$buildconfig -n $PRJ_COOLSTORE_TEST | grep 'Complete')" ]
-    do
-      # if build has failed, let's give it another shot
-      if [ ! -z "$(oc get builds -l buildconfig=$buildconfig -n $PRJ_COOLSTORE_TEST | grep 'Failed')" ] && [ "$(eval echo \$_BUILD_RETRIED_$buildconfig)" == '' ]
-      then
-        oc start-build $buildconfig -n $PRJ_COOLSTORE_TEST
-        eval local _BUILD_RETRIED_$buildconfig=true
-      fi
-
-      echo "."
-      sleep 10
-      x=$(( $x + 1 ))
-      if [ $x -gt 120 ]
-      then
-        echo "Tired of waiting for builds to finish, I give up!"
-        exit 255
-      fi
-    done
-
-    echo "Build $buildconfig completed"
+    oc start-build $buildconfig --wait -n $PRJ_COOLSTORE_TEST
   done
 
   # remove buildconfigs. Jenkins does that!
@@ -423,6 +401,7 @@ function build_and_tag_images_for_ci() {
     oc tag $PRJ_COOLSTORE_TEST/$is:latest -d
   done
 
+  oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_INVENTORY/inventory:latest
   oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_TEST/inventory:test
   oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_PROD/inventory:prod-green
   oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_PROD/inventory:prod-blue
