@@ -54,6 +54,7 @@
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-hystrix-starter</artifactId>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-http4-starter</artifactId>
@@ -70,6 +71,31 @@
 	      <groupId>org.apache.camel</groupId>
 	      <artifactId>camel-swagger-java-starter</artifactId>
 	    </dependency>
+
+		
+
+		<!-- testing -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.arquillian.junit</groupId>
+			<artifactId>arquillian-junit-container</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
@@ -133,28 +159,28 @@
     </plugins>
 	</build>
 
-  <repositories>
-   <repository>
+	<repositories>
+  <repository>
     <id>jboss.ea</id>
     <name>JBoss Early Adopter</name>
     <url>https://maven.repository.redhat.com/earlyaccess/all</url>
-   </repository>
-   <repository>
+  </repository>
+  <repository>
     <id>jboss.fuse</id>
     <name>JBoss Fuse Public</name>
     <url>https://repo.fusesource.com/nexus/content/groups/public/</url>
-   </repository>
+  </repository>
   </repositories>
   <pluginRepositories>
-   <pluginRepository>
+  <pluginRepository>
     <id>jboss.ea</id>
     <name>JBoss Early Adopter</name>
     <url>https://maven.repository.redhat.com/earlyaccess/all</url>
-   </pluginRepository>
-   <pluginRepository>
+  </pluginRepository>
+  <pluginRepository>
     <id>jboss.fuse</id>
     <name>JBoss Fuse Public</name>
     <url>https://repo.fusesource.com/nexus/content/groups/public/</url>
-   </pluginRepository>
-  </pluginRepositories>	
+  </pluginRepository>
+  </pluginRepositories>
 </project>

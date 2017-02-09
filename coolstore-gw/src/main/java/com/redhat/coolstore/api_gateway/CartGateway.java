@@ -16,11 +16,10 @@
  */
 package com.redhat.coolstore.api_gateway;
 
-import java.util.Collections;
-import java.util.List;
+import javax.ws.rs.core.Response;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.LoggingLevel;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.http4.HttpMethods;
 import org.apache.camel.component.jackson.JacksonDataFormat;
@@ -28,22 +27,30 @@ import org.apache.camel.component.jackson.ListJacksonDataFormat;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.apache.camel.model.rest.RestParamType;
-import org.apache.camel.processor.aggregate.AggregationStrategy;
-import org.apache.camel.processor.interceptor.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import com.redhat.coolstore.api_gateway.model.Inventory;
 import com.redhat.coolstore.api_gateway.model.Product;
 import com.redhat.coolstore.api_gateway.model.ShoppingCart;
 
 @Component
-public class ApiGatewayRoute extends RouteBuilder {
-	private static final Logger LOG = LoggerFactory.getLogger(ApiGatewayRoute.class);
+public class CartGateway extends RouteBuilder {
+	private static final Logger LOG = LoggerFactory.getLogger(CartGateway.class);
+	
+	
+	@Value("${hystrix.executionTimeout}")
+	private int hystrixExecutionTimeout;
+	
+	@Value("${hystrix.groupKey}")
+	private String hystrixGroupKey;
+	
+	@Value("${hystrix.circuitBreakerEnabled}")
+	private boolean hystrixCircuitBreakerEnabled;
 	
 	@Autowired
 	private Environment env;
@@ -69,59 +76,6 @@ public class ApiGatewayRoute extends RouteBuilder {
             .apiProperty("api.contact.email", "developers@redhat.com")
             .apiProperty("api.contact.url", "https://developers.redhat.com");
 
-        rest("/products/").description("Product Catalog Service")
-            .produces(MediaType.APPLICATION_JSON_VALUE)
-
-        // Handle CORS Pre-flight requests
-        .options("/")
-            .route().id("productsOptions").end()
-        .endRest()
-
-        .get("/").description("Get product catalog").outType(Product.class)
-            .route().id("productRoute")
-                .setBody(simple("null"))
-                .removeHeaders("CamelHttp*")
-                .setHeader(Exchange.HTTP_METHOD, HttpMethods.GET)
-                .setHeader(Exchange.HTTP_URI, simple("http://{{env:CATALOG_ENDPOINT:catalog:8080}}/api/products"))
-                .hystrix().id("Product Service")
-                    .to("http4://DUMMY")
-                .onFallback()
-                    .to("direct:productFallback")
-                .end()
-                .choice().when(body().isNull()).to("direct:productFallback").end()
-                .unmarshal(productFormatter)
-                .split(body()).parallelProcessing()
-                .enrich("direct:inventory", new InventoryEnricher())
-            .end()
-        .endRest();
-
-        from("direct:productFallback")
-                .id("ProductFallbackRoute")
-                .transform()
-                .constant(Collections.singletonList(new Product("0", "Unavailable Product", "Unavailable Product", 0, null)))
-                .marshal().json(JsonLibrary.Jackson, List.class);
-
-        from("direct:inventory")
-            .id("inventoryRoute")
-            .setHeader("itemId", simple("${body.itemId}"))
-            .setBody(simple("null"))
-            .removeHeaders("CamelHttp*")
-            .setHeader(Exchange.HTTP_METHOD, HttpMethods.GET)
-            .setHeader(Exchange.HTTP_URI, simple("http://{{env:INVENTORY_ENDPOINT:inventory:8080}}/api/availability/${header.itemId}"))
-            .hystrix().id("Inventory Service")
-                .to("http4://DUMMY2")
-            .onFallback()
-                .to("direct:inventoryFallback")
-            .end()
-            .choice().when(body().isNull()).to("direct:inventoryFallback").end()
-            .setHeader("CamelJacksonUnmarshalType", simple(Inventory.class.getName()))
-            .unmarshal().json(JsonLibrary.Jackson, Inventory.class);
-
-        from("direct:inventoryFallback")
-                .id("inventoryFallbackRoute")
-                .transform()
-                .constant(new Inventory("0", 0, "Local Store", "http://redhat.com"))
-                .marshal().json(JsonLibrary.Jackson, Inventory.class);
 
         rest("/cart/").description("Personal Shopping Cart Service")
             .produces(MediaType.APPLICATION_JSON_VALUE)
@@ -147,8 +101,9 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .setHeader(Exchange.HTTP_URI, simple("http://{{env:CART_ENDPOINT:cart:8080}}/api/cart/checkout/${header.cartId}"))
                     .to("http4://DUMMY")
                 .onFallback()
-                    // TODO: improve fallback
-                    .transform().constant(null)
+                    .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
+        			.setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
+        			.to("direct:defaultFallback")
                 .end()
                 .setHeader("CamelJacksonUnmarshalType", simple(ShoppingCart.class.getName()))
                 .unmarshal().json(JsonLibrary.Jackson, ShoppingCart.class)
@@ -165,8 +120,9 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .setHeader(Exchange.HTTP_URI, simple("http://{{env:CART_ENDPOINT:cart:8080}}/api/cart/${header.cartId}"))
                     .to("http4://DUMMY")
                 .onFallback()
-                    // TODO: improve fallback
-                    .transform().constant(null)
+                    .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
+        			.setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
+        			.to("direct:defaultFallback")
                 .end()
                 .setHeader("CamelJacksonUnmarshalType", simple(ShoppingCart.class.getName()))
                 .unmarshal().json(JsonLibrary.Jackson, ShoppingCart.class)
@@ -185,8 +141,9 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .setHeader(Exchange.HTTP_URI, simple("http://{{env:CART_ENDPOINT:cart:8080}}/api/cart/${header.cartId}/${header.itemId}/${header.quantity}"))
                     .to("http4://DUMMY")
                 .onFallback()
-                    // TODO: improve fallback
-                    .transform().constant(null)
+                    .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
+        			.setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
+        			.to("direct:defaultFallback")
                     .end()
                 .setHeader("CamelJacksonUnmarshalType", simple(ShoppingCart.class.getName()))
                 .unmarshal().json(JsonLibrary.Jackson, ShoppingCart.class)
@@ -205,9 +162,10 @@ public class ApiGatewayRoute extends RouteBuilder {
                     .setHeader(Exchange.HTTP_URI, simple("http://{{env:CART_ENDPOINT:cart:8080}}/api/cart/${header.cartId}/${header.itemId}/${header.quantity}"))
                     .to("http4://DUMMY")
                 .onFallback()
-                    // TODO: improve fallback
-                    .transform().constant(null)
-                    .end()
+                    .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
+        			.setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
+        			.to("direct:defaultFallback")
+        		.end()
                 .setHeader("CamelJacksonUnmarshalType", simple(ShoppingCart.class.getName()))
                 .unmarshal().json(JsonLibrary.Jackson, ShoppingCart.class)
             .endRest()
@@ -224,26 +182,27 @@ public class ApiGatewayRoute extends RouteBuilder {
                 .setHeader(Exchange.HTTP_URI, simple("http://{{env:CART_ENDPOINT:cart:8080}}/api/cart/${header.cartId}/${header.tmpId}"))
                 .to("http4://DUMMY")
                 .onFallback()
-                // TODO: improve fallback
-                .transform().constant(null)
+                    .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
+        			.setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
+        			.to("direct:defaultFallback")
                 .end()
                 .setHeader("CamelJacksonUnmarshalType", simple(ShoppingCart.class.getName()))
                 .unmarshal().json(JsonLibrary.Jackson, ShoppingCart.class)
             .endRest();
+        
+        
+        // Provide a response
+        from("direct:defaultFallback").routeId("defaultfallback").description("Default Fall back response response")
+        	.process(new Processor() {
+			@Override
+			public void process(Exchange exchange) throws Exception {				
+				exchange.getIn().setBody(new ShoppingCart());
+			}
+        })
+        .marshal().json(JsonLibrary.Jackson);
+           
 
     }
 
-    private class InventoryEnricher implements AggregationStrategy {
-        @Override
-        public Exchange aggregate(Exchange original, Exchange resource) {
-
-            // Add the discovered availability to the product and set it back
-            Product p = original.getIn().getBody(Product.class);
-            Inventory i = resource.getIn().getBody(Inventory.class);
-            p.setAvailability(i);
-            original.getOut().setBody(p);
-            return original;
-
-        }
-    }
+    
 }
