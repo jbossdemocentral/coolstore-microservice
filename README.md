@@ -50,12 +50,12 @@ on any OpenShift environment:
 
 ```
 $ oc login MASTER-URL
-$ openshift/scripts/provision-demo.sh --master MASTER-URL --user developer
+$ openshift/scripts/provision-demo.sh 
 ```
 
 You can delete the demo projects and containers with:
 ```
-$ openshift/scripts/provision-demo.sh --master MASTER-URL --user developer --delete
+$ openshift/scripts/provision-demo.sh --delete
 ```
 
 ![CI/CD Demo](docs/images/cicd-projects.png?raw=true)

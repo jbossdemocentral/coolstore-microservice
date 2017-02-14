@@ -5,21 +5,21 @@
 function usage() {
     echo
     echo "Usage:"
-    echo " $0 --master <openshift-master> --user <username> [ --maven-mirror-url <value> ] [--project-suffix <value>]"
+    echo " $0 [--user <username>] [--maven-mirror-url <value> ] [--project-suffix <value>]"
     echo " $0 --help "
     echo
     echo "Example:"
-    echo " $0 --master console.preview.openshift.com --user demo --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d"
+    echo " $0 --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d"
     echo
+    echo "If --user is not specified, current logged user will be the project admins"
     echo "If --maven-mirror-url is not specified, a Nexus container will be deployed and used"
-    echo "If --project-suffix is not specified, <username> will be used as the suffix"
+    echo "If --project-suffix is not specified, if <username> specified it will be used as suffix. Default 'demo'"
 }
 
-ARG_USERNAME=demo
+ARG_USERNAME=
 ARG_PROJECT_SUFFIX=
 ARG_MAVEN_MIRROR_URL=
 ARG_DELETE=false
-ARG_OPENSHIFT_MASTER=
 
 while :; do
     case $1 in
@@ -45,15 +45,6 @@ while :; do
                 exit 1
             fi
             ;;
-        --master)
-            if [ -n "$2" ]; then
-                ARG_OPENSHIFT_MASTER=$2
-                shift
-            else
-                printf 'ERROR: "--master" requires a non-empty value.\n' >&2
-                exit 1
-            fi
-            ;;
         --project-suffix)
             if [ -n "$2" ]; then
                 ARG_PROJECT_SUFFIX=$2
@@ -72,6 +63,7 @@ while :; do
             ;;
         -?*)
             printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            shift
             ;;
         *)               # Default case: If no more options then break out of the loop.
             break
@@ -83,10 +75,12 @@ done
 ################################################################################
 # CONFIGURATION                                                                #
 ################################################################################
-OPENSHIFT_MASTER=${ARG_OPENSHIFT_MASTER}
+OPENSHIFT_MASTER=$(oc whoami -c | sed 's#[^/]*/\([^/]*\)/[^/]*#\1#g')
+LOGGEDIN_USER=$(oc whoami)
+OPENSHIFT_USER=${ARG_USERNAME:-$LOGGEDIN_USER}
 
 # project
-PRJ_SUFFIX=${ARG_PROJECT_SUFFIX:-`echo $ARG_USERNAME | sed -e 's/[-@].*//g'`}
+PRJ_SUFFIX=${ARG_PROJECT_SUFFIX:-`echo $OPENSHIFT_USER | sed -e 's/[-@].*//g'`}
 PRJ_LABEL=demo1-$PRJ_SUFFIX
 PRJ_CI=ci-$PRJ_SUFFIX
 PRJ_COOLSTORE_TEST=coolstore-test-$PRJ_SUFFIX
@@ -114,6 +108,8 @@ WEBHOOK_SECRET=UfW7gQ6Jx4
 
 function print_info() {
   echo_header "Configuration"
+  echo "OpenShift master:    $OPENSHIFT_MASTER"
+  echo "Current user         $LOGGEDIN_USER"
   echo "Project suffix:      $PRJ_SUFFIX"
   echo "Project label:       $PRJ_LABEL"
   echo "GitHub repo:         https://github.com/$GITHUB_ACCOUNT/coolstore-microservice"
@@ -132,7 +128,7 @@ function print_info() {
 function set_domain_for_gogs_hack() {
   local _TEMP_PROJECT=prj$(date +%s)-$PRJ_SUFFIX
   oc new-project $_TEMP_PROJECT > /dev/null
-  if [ "$(oc whoami)" == 'system:admin' ] ; then
+  if [ $LOGGEDIN_USER == 'system:admin' ] ; then
     oc annotate --overwrite namespace $_TEMP_PROJECT demo=$PRJ_LABEL > /dev/null
   fi
   oc create route edge testroute --service=testsvc --port=80 -n $_TEMP_PROJECT >/dev/null
@@ -174,9 +170,9 @@ function delete_projects() {
 function create_infra_project() {
   echo_header "Creating CI/CD infra project..."
   oc new-project $PRJ_CI --display-name='CI/CD' --description='CI/CD Components (Jenkins, Gogs, etc)'
-  oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_CI
 
-  if [ "$(oc whoami)" == 'system:admin' ] ; then
+  if [ $LOGGEDIN_USER == 'system:admin' ] ; then
+    oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_CI
     oc annotate --overwrite namespace $PRJ_CI demo=$PRJ_LABEL
   fi
 }
@@ -189,7 +185,7 @@ function create_app_projects() {
   oc new-project $PRJ_INVENTORY --display-name='Inventory TEST' --description='Inventory Test Environment'
   oc new-project $PRJ_DEVELOPER --display-name='Developer Project' --description='Personal Developer Project'
 
-  if [ "$(oc whoami)" == 'system:admin' ] ; then
+  if [ $LOGGEDIN_USER == 'system:admin' ] ; then
     for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_DEVELOPER
     do
       oc annotate --overwrite namespace $project demo=$PRJ_LABEL
@@ -197,7 +193,7 @@ function create_app_projects() {
   fi
 
   # join project networks
-  if [ "$(oc whoami)" == 'system:admin' ] ; then
+  if [ $LOGGEDIN_USER == 'system:admin' ] ; then
     oc adm pod-network join-projects --to=$PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY
   fi
 }
@@ -387,7 +383,7 @@ function build_and_tag_images_for_ci() {
   sleep 5
 
   # build images
-  for buildconfig in coolstore-gw web-ui inventory cart catalog
+  for buildconfig in web-ui inventory cart catalog coolstore-gw
   do
     oc start-build $buildconfig --wait -n $PRJ_COOLSTORE_TEST
   done
@@ -443,7 +439,7 @@ EOM
 }
 
 function set_project_permissions() {
-  if [ "$(oc whoami)" != "$ARG_USERNAME" ] ; then
+  if [ $LOGGEDIN_USER == "system:admin" ] ; then
     oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_COOLSTORE_TEST
     oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_DEVELOPER
     oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_COOLSTORE_PROD
@@ -480,7 +476,7 @@ function deploy_demo_guides() {
 
 # GPTE convention
 function set_default_project() {
-  if [ "$(oc whoami)" == 'system:admin' ] ; then
+  if [ $LOGGEDIN_USER == 'system:admin' ] ; then
     oc project default
   fi
 }
@@ -495,6 +491,12 @@ function echo_header() {
 ################################################################################
 # MAIN: DEPLOY DEMO                                                            #
 ################################################################################
+
+if [ $LOGGEDIN_USER == 'system:admin' ] && [ $ARG_USERNAME == '' ] ; then
+  echo "--user must be provided when running the script as 'system:admin'"
+  echo 0
+fi
+
 if [ "$ARG_DELETE" = true ] ; then
   delete_projects
   exit 0

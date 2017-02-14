@@ -23,14 +23,12 @@ Usage
 ```
 $ provision-demo.sh --user <username>
 
---master               Required     OpenShift master url
-
---project-suffix       Required     Adds a suffix to the project names (e.g. demo-<suffix>) to make them unique.
+--project-suffix       Optional     Adds a suffix to the project names (e.g. demo-<suffix>) to make them unique.
                                     If not present, and --user is provided, username (left hand side of @ or -)
-                                    will be used.
+                                    will be used, otherwise defaulted to the user that is logged in to OpenShift.
 
---user                 Optional     The user to own the demo projects and is used when the user provisioning
-                                    the demo (e.g. 'system:admin') is different from the user owning the projects
+--user                 Optional     The user to be assigned as admin for the demo projects. It is required when the
+                                    user running the provisiong script is 'system:admin'
 
 --maven-mirror-url     Optional     If provided, this Maven repo (e.g. Nexus or Artifactory) would be used for
                                     builds. Otherwise, a Sonatype Nexus container will be created as part of
@@ -44,27 +42,28 @@ Example
 ============
 Provision on OpenShift Online/Dedicated:
 ```
-$ provision-demo.sh --master console.preview.openshift.com --project-suffix mydemo
+$ oc login https://api.preview.openshift.com --token=YOUR-TOKEN
+$ provision-demo.sh 
 ```
 
 Use an existing Sonatype Nexus:
 ```
-$ provision-demo.sh --master console.openshift.mycompany.com --project-suffix mydemo --maven-mirror-url http://nexus.repo.com/content/groups/public/
+$ provision-demo.sh --maven-mirror-url http://nexus.repo.com/content/groups/public/
 ```
 
 Provision demo as ```system:admin``` for user ```john@mycompany.com```:
 ```
 $ oc login -u system:admin
-$ provision-demo.sh --master console.openshift.mycompany.com --user john@mycompany.com
+$ provision-demo.sh --user john@mycompany.com
 ```
 
 Delete on OpenShift Online/Dedicated:
 ```
-$ provision-demo.sh --master console.preview.openshift.com --project-suffix mydemo --delete
+$ provision-demo.sh --project-suffix mydemo --delete
 ```
 
 Delete user ```john@mycompany.com``` demo as ```system:admin```:
 ```
 $ oc login -u system:admin
-$ provision-demo.sh --master console.openshift.mycompany.com --user john@mycompany.com --delete
+$ provision-demo.sh --user john@mycompany.com --delete
 ```
