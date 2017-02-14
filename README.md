@@ -9,12 +9,14 @@ Services
 There are several individual microservices and infrastructure components that make up this app:
 
 1. Catalog Service - Java application running on [JBoss Web Server (Tomcat)](https://access.redhat.com/products/red-hat-jboss-web-server/) and MongoDB, serves products and prices for retail products
-1. Cart Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), manages shopping cart for each customer
+1. Cart Service - Spring Boot application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), manages shopping cart for each customer
 1. Inventory Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/) and PostgreSQL, serves inventory and availability data for retail products
 1. Coolstore Gateway - Java EE + Spring Boot + [Camel](http://camel.apache.org) application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serving as an entry point/router/aggregator to the backend services
 1. Web UI - A frontend based on [AngularJS](https://angularjs.org) and [PatternFly](http://patternfly.org) running in a [Node.js](https://access.redhat.com/documentation/en/openshift-container-platform/3.3/paged/using-images/chapter-2-source-to-image-s2i) container.
 
 ![Architecture Screenshot](docs/images/arch-diagram.png?raw=true "Architecture Diagram")
+
+<img src="docs/images/store.png?raw=true" width="740" />
 
 Prerequisites
 ================
@@ -40,26 +42,26 @@ curl http://inventory:8080/api/availability/329299
 curl http://cart:8080/api/cart/FOO
 ```
 
-Deploy Complete Demo
+Deploy Complete Demo with CI/CD
 ================
-In order to deploy the complete demo infrastructure for demonstrating Microservices, CI/CD, agile integrations and more, use this provisioning script:
+In order to deploy the complete demo infrastructure for demonstrating Microservices, CI/CD, 
+agile integrations and more, either order the demo via RHPDS or use the following script to provision the demo
+on any OpenShift environment:
 
 ```
-$ openshift/scripts/create-demo.sh
+$ oc login MASTER-URL
+$ openshift/scripts/provision-demo.sh --master MASTER-URL --user developer
 ```
 
 You can delete the demo projects and containers with:
 ```
-$ openshift/scripts/delete-demo.sh
+$ openshift/scripts/provision-demo.sh --master MASTER-URL --user developer --delete
 ```
 
-Demo Instructions
-================
-Access the web interface by pointing your browser at the `web-ui` route url.
-![Store Screenshot](docs/images/store.png?raw=true "Store Screenshot")
+![CI/CD Demo](docs/images/cicd-projects.png?raw=true)
+![CI/CD Demo](docs/images/cicd-pipeline.png?raw=true)
 
-Notice the UI pods only expose an HTTP endpoint - when users access the UI service through HTTPS,
-OpenShift handles the TLS termination at the routing layer.
+Read the [script docs](openshift/scripts) for further details on provisiong the demo.
 
 Troubleshooting
 ================
