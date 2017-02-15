@@ -374,7 +374,7 @@ function build_and_tag_images_for_ci() {
   sleep 5
 
   # build images
-  for buildconfig in web-ui inventory cart catalog coolstore-gw
+  for buildconfig in coolstore-gw web-ui inventory cart catalog
   do
     oc start-build $buildconfig -n $PRJ_COOLSTORE_TEST
     wait_while_empty "$buildconfig build" 180 "oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep Running"
@@ -382,14 +382,14 @@ function build_and_tag_images_for_ci() {
   done
 
   # wait for builds
-  for buildconfig in web-ui inventory cart catalog coolstore-gw
+  for buildconfig in coolstore-gw web-ui inventory cart catalog 
   do
     wait_while_empty "$buildconfig image" 600 "oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep -v Running"
     sleep 10
   done
 
   # verify successful builds
-  for buildconfig in web-ui inventory cart catalog coolstore-gw
+  for buildconfig in coolstore-gw web-ui inventory cart catalog 
   do
     if [ -z "$(oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep Complete)" ]; then
       echo "ERROR: Build $buildconfig did not complete successfully"
