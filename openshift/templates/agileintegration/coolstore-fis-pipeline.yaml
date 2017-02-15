@@ -31,7 +31,7 @@ objects:
             stage ('promotionCheck') {
                 def userInput = input( id: 'userInput', message: 'Is this build staging ready?', parameters: [ [$class: 'TextParameterDefinition', defaultValue: 'Good to go', description: 'Comments and notes?', name: 'comments'] ])
                 print 'promotionCheck'
-                openshiftTag(namespace: '${DEV_PROJECT}', sourceStream: 'coolstore-gw-pre',  sourceTag: 'latest', destinationStream: 'coolstore-gw', destinationTag: 'stagingready')
+                openshiftTag(namespace: '${DEV_PROJECT}', sourceStream: 'coolstore-gwgreen',  sourceTag: 'latest', destinationStream: 'coolstore-gw', destinationTag: 'latest')
             }
             stage('stage-blue') {
                 print 'Staging - BLUE Deployment'
