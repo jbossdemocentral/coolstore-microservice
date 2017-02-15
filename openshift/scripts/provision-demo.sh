@@ -123,21 +123,6 @@ function print_info() {
   echo "Maven mirror url:    $MAVEN_MIRROR_URL"
 }
 
-# Hack to extract domain name when it's not determine in
-# advanced e.g. <user>-<project>.4s23.cluster
-function set_domain_for_gogs_hack() {
-  local _TEMP_PROJECT=prj$(date +%s)-$PRJ_SUFFIX
-  oc new-project $_TEMP_PROJECT > /dev/null
-  if [ $LOGGEDIN_USER == 'system:admin' ] ; then
-    oc annotate --overwrite namespace $_TEMP_PROJECT demo=$PRJ_LABEL > /dev/null
-  fi
-  oc create route edge testroute --service=testsvc --port=80 -n $_TEMP_PROJECT >/dev/null
-  DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n $_TEMP_PROJECT | sed "s/testroute-$_TEMP_PROJECT.//g")
-  GOGS_ROUTE="gogs-$PRJ_CI.$DOMAIN"
-  oc delete route testroute -n $_TEMP_PROJECT >/dev/null
-  oc delete project $_TEMP_PROJECT > /dev/null
-}
-
 # waits while the condition is true until it becomes false or it times out
 function wait_while_empty() {
   local _NAME=$1
@@ -161,7 +146,6 @@ function wait_while_empty() {
   echo "$_NAME is ready."
 }
 
-
 function delete_projects() {
   oc delete project $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI
 }
@@ -175,6 +159,13 @@ function create_infra_project() {
     oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_CI
     oc annotate --overwrite namespace $PRJ_CI demo=$PRJ_LABEL
   fi
+
+  # Hack to extract domain name when it's not determine in
+  # advanced e.g. <user>-<project>.4s23.cluster
+  oc create route edge testroute --service=testsvc --port=80 -n $PRJ_CI >/dev/null
+  DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n $PRJ_CI | sed "s/testroute-$PRJ_CI.//g")
+  GOGS_ROUTE="gogs-$PRJ_CI.$DOMAIN"
+  oc delete route testroute -n $PRJ_CI >/dev/null
 }
 
 # Create Application Project
@@ -385,7 +376,25 @@ function build_and_tag_images_for_ci() {
   # build images
   for buildconfig in web-ui inventory cart catalog coolstore-gw
   do
-    oc start-build $buildconfig --wait -n $PRJ_COOLSTORE_TEST
+    oc start-build $buildconfig -n $PRJ_COOLSTORE_TEST
+    wait_while_empty "$buildconfig build" 180 "oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep Running"
+    sleep 10
+  done
+
+  # wait for builds
+  for buildconfig in web-ui inventory cart catalog coolstore-gw
+  do
+    wait_while_empty "$buildconfig image" 600 "oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep -v Running"
+    sleep 10
+  done
+
+  # verify successful builds
+  for buildconfig in web-ui inventory cart catalog coolstore-gw
+  do
+    if [ -z "$(oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep Complete)" ]; then
+      echo "ERROR: Build $buildconfig did not complete successfully"
+      exit 255
+    fi
   done
 
   # remove buildconfigs. Jenkins does that!
@@ -506,10 +515,9 @@ START=`date +%s`
 
 echo_header "Mult-product MSA Demo ($(date))"
 
-set_domain_for_gogs_hack
+create_infra_project 
 print_info
 
-create_infra_project
 deploy_gogs
 deploy_nexus
 deploy_jenkins
