@@ -90,7 +90,7 @@ PRJ_DEVELOPER=developer-$PRJ_SUFFIX
 
 # config
 GITHUB_ACCOUNT=${GITHUB_ACCOUNT:-jbossdemocentral}
-GITHUB_REF=${GITHUB_REF:-master}
+GITHUB_REF=${GITHUB_REF:-stable-ocp-3.4}
 GITHUB_URI=https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git
 
 MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.$PRJ_CI.svc.cluster.local:8081/content/groups/public}
