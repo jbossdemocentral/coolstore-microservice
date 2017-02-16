@@ -13,6 +13,8 @@ steps:
 * Configures CI/CD for Inventory service across projects
 * Configures webhook on Gogs repository to trigger the pipeline
 
+[![asciicast](https://asciinema.org/a/103399.png)](https://asciinema.org/a/103399)
+
 Prerequisites
 ============
 * OpenShift environment with a quota of 5 projects and 12 GB memory
