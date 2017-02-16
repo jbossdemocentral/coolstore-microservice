@@ -96,6 +96,7 @@ public class ProductGateway extends RouteBuilder {
                 .onFallback()
                 	.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
                     .to("direct:productFallback")
+                    .stop()
                 .end()
                 .choice()
                 	.when(body().isNull())
