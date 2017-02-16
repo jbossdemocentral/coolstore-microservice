@@ -69,7 +69,7 @@ public class CartGatewayTest {
         JsonNode node = new ObjectMapper(new JsonFactory()).readTree(checkoutResponse.getBody());
         
         assertThat("ID1", equalTo(node.get("shoppingCartItemList").get(0).get("product").get("itemId").asText()));
-        assertThat(40, equalTo(node.get("cartTotal").asInt()));        
+        assertThat(20, equalTo(node.get("cartTotal").asInt()));        
     }
     
     @Test
@@ -117,7 +117,7 @@ public class CartGatewayTest {
         JsonNode node = new ObjectMapper(new JsonFactory()).readTree(checkoutResponse.getBody());
         
         assertThat("ID1", equalTo(node.get("shoppingCartItemList").get(0).get("product").get("itemId").asText()));
-        assertThat(40, equalTo(node.get("cartTotal").asInt()));        
+        assertThat(20, equalTo(node.get("cartTotal").asInt()));        
     }
     
     @Test
@@ -146,6 +146,11 @@ public class CartGatewayTest {
     	List<ShoppingCartItem> items = new ArrayList<ShoppingCartItem>();
     	items.add(item);
     	cart.setShoppingCartItemList(items);
+        cart.setCartItemTotal(20);
+        cart.setCartItemPromoSavings(6);
+        cart.setShippingTotal(0);
+        cart.setShippingPromoSavings(0);
+        cart.setCartTotal(20);
     	
     	String cartResponseStr="";
 		try {
