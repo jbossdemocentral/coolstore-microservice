@@ -5,21 +5,26 @@
 function usage() {
     echo
     echo "Usage:"
-    echo " $0 [--user <username>] [--maven-mirror-url <value> ] [--project-suffix <value>]"
+    echo " $0 [options]"
     echo " $0 --help "
     echo
     echo "Example:"
     echo " $0 --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d"
     echo
-    echo "If --user is not specified, current logged user will be the project admins"
-    echo "If --maven-mirror-url is not specified, a Nexus container will be deployed and used"
-    echo "If --project-suffix is not specified, if <username> specified it will be used as suffix. Default 'demo'"
+    echo "Options:"
+    echo "   --user              The admin user for the demo projects. mandatory if logged in as system:admin"
+    echo "   --maven-mirror-url  Use the given Maven repository for builds. If not specifid, a Nexus container is deployed in the demo"
+    echo "   --project-suffix    Suffix to be added to demo project names e.g. ci-SUFFIX. If empty, user will be used as suffix"
+    echo "   --delete            Clean up and remove demo projects and objects"
+    echo "   --minimal           Deploy a minimal demo setup with lower mem and cpu footprint"
+    echo "   --help              Dispaly help"
 }
 
 ARG_USERNAME=
 ARG_PROJECT_SUFFIX=
 ARG_MAVEN_MIRROR_URL=
 ARG_DELETE=false
+ARG_MINIMAL=false
 
 while :; do
     case $1 in
@@ -53,6 +58,9 @@ while :; do
                 printf 'ERROR: "--project-suffix" requires a non-empty value.\n' >&2
                 exit 1
             fi
+            ;;
+        --minimal)
+            ARG_MINIMAL=true
             ;;
         --delete)
             ARG_DELETE=true
@@ -221,8 +229,8 @@ function wait_for_nexus_to_be_ready() {
 # Deploy Gogs
 function deploy_gogs() {
   echo_header "Deploying Gogs git server..."
-
-  local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/gogs-persistent-template.yaml"
+  
+  local _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/master/openshift/gogs-persistent-template.yaml"
   local _DB_USER=gogs
   local _DB_PASSWORD=gogs
   local _DB_NAME=gogs
@@ -237,42 +245,15 @@ function deploy_gogs() {
   wait_while_empty "Gogs PostgreSQL" 600 "oc get ep gogs-postgresql -o yaml -n $PRJ_CI | grep '\- addresses:'"
   wait_while_empty "Gogs" 600 "oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:'"
 
-  # initialise Gogs
-  _RETURN=$(curl -o /dev/null -sL --post302 -w "%{http_code}" http://$GOGS_ROUTE/install \
-    --form db_type=PostgreSQL \
-    --form db_host=gogs-postgresql:5432 \
-    --form db_user=$_DB_USER \
-    --form db_passwd=$_DB_PASSWORD \
-    --form db_name=$_DB_NAME \
-    --form ssl_mode=disable \
-    --form db_path=data/gogs.db \
-    --form "app_name=Gogs: Go Git Service" \
-    --form repo_root_path=/opt/gogs/data/repositories \
-    --form run_user=gogs \
-    --form log_root_path=/opt/gogs/log \
-    --form domain=localhost \
-    --form ssh_port=22 \
-    --form http_port=3000 \
-    --form app_url=http://$GOGS_ROUTE/ \
-    --form admin_name=$GOGS_ADMIN_USER \
-    --form admin_passwd=$GOGS_ADMIN_PASSWORD \
-    --form admin_confirm_passwd=$GOGS_ADMIN_PASSWORD \
-    --form admin_email=$GOGS_ADMIN_USER@gogs.com)
-
-  if [ $_RETURN != "200" ] ; then
-    echo "WARNING: Failed (http code $_RETURN) to initialise Gogs"
-    exit 255
-  fi
-
   sleep 5
 
-  # disable TLS verification for webhooks
-  echo "Configuring and restarting Gogs"
-  oc rsh $(oc get pod -o name -l deploymentconfig=gogs -n $PRJ_CI) /bin/bash -c "if ! grep TLS /opt/gogs/data/custom/conf/app.ini; then printf '[webhook]\nSKIP_TLS_VERIFY = true\n' >> /opt/gogs/data/custom/conf/app.ini ; fi" -n $PRJ_CI
-  oc delete pod -l deploymentconfig=gogs -n $PRJ_CI >/dev/null
-  wait_while_empty "Gogs" 300 "oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:'"
-
-  sleep 30
+  # add admin user
+  _RETURN=$(curl -o /dev/null -sL --post302 -w "%{http_code}" http://$GOGS_ROUTE/user/sign_up \
+    --form user_name=$GOGS_ADMIN_USER \
+    --form password=$GOGS_ADMIN_PASSWORD \
+    --form retype=$GOGS_ADMIN_PASSWORD \
+    --form email=$GOGS_ADMIN_USER@gogs.com)
+  sleep 5
 
   # import GitHub repo
   read -r -d '' _DATA_JSON << EOM
@@ -334,6 +315,14 @@ function deploy_coolstore_test_env() {
   echo_header "Deploying CoolStore app into $PRJ_COOLSTORE_TEST project..."
   echo "Using deployment template $_TEMPLATE_DEPLOYMENT"
   oc process -f $_TEMPLATE -v APP_VERSION=test -v HOSTNAME_SUFFIX=$PRJ_COOLSTORE_TEST.$DOMAIN -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
+
+  # scale test env to zero if minimal
+  if [ "$ARG_MINIMAL" = true ] ; then
+    for dc in coolstore-gw web-ui inventory cart catalog catalog-mongodb inventory-postgresql
+    do
+      oc scale --replicas=0 dc $dc -n $PRJ_COOLSTORE_TEST
+    done
+  fi  
 }
 
 # Deploy Coolstore into Coolstore PROD project
