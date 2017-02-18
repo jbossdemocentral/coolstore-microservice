@@ -23,25 +23,30 @@ Prerequisites
 Usage
 ============
 ```
-$ provision-demo.sh --user <username>
+provision-demo.sh [options]
+provision-demo.sh --help
 
---project-suffix       Optional     Adds a suffix to the project names (e.g. demo-<suffix>) to make them unique.
-                                    If not present, and --user is provided, username (left hand side of @ or -)
-                                    will be used, otherwise defaulted to the user that is logged in to OpenShift.
+Example:
+ provision-demo.sh --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix demo
 
---user                 Optional     The user to be assigned as admin for the demo projects. It is required when the
-                                    user running the provisiong script is 'system:admin'
-
---maven-mirror-url     Optional     If provided, this Maven repo (e.g. Nexus or Artifactory) would be used for
-                                    builds. Otherwise, a Sonatype Nexus container will be created as part of
-                                    demo provisioning.
-
---delete                            Used in combination with --user or --project-suffix to delete the demo
-                                    components and clean the environment
+Options:
+   --user              The admin user for the demo projects. mandatory if logged in as system:admin
+   --maven-mirror-url  Use the given Maven repository for builds. If not specifid, a Nexus container is deployed in the demo
+   --project-suffix    Suffix to be added to demo project names e.g. ci-SUFFIX. If empty, user will be used as suffix
+   --delete            Clean up and remove demo projects and objects
+   --minimal           Scale all pods except the absolute essential ones to zero to lower memory and cpu footprint
+   --help              Dispaly help
+   --ephemeral         Deploy demo without persistent storage```
 ```
 
 Example
 ============
+Provision a minimal demo on local (e.g. using `oc cluster`) single-node cluster without persistent storage:
+```
+$ oc login 127.0.0.1:8443
+$ provision-demo.sh --minimal --ephemeral
+```
+
 Provision on OpenShift Online/Dedicated:
 ```
 $ oc login https://api.preview.openshift.com --token=YOUR-TOKEN
@@ -59,12 +64,12 @@ $ oc login -u system:admin
 $ provision-demo.sh --user john@mycompany.com
 ```
 
-Delete on OpenShift Online/Dedicated:
+Delete demo:
 ```
-$ provision-demo.sh --project-suffix mydemo --delete
+$ provision-demo.sh --delete
 ```
 
-Delete user ```john@mycompany.com``` demo as ```system:admin```:
+Delete demo for user ```john@mycompany.com``` while logged in as ```system:admin```:
 ```
 $ oc login -u system:admin
 $ provision-demo.sh --user john@mycompany.com --delete
