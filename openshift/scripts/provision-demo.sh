@@ -192,7 +192,7 @@ function create_projects() {
       oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $project
     done
     # join project networks
-    oc adm pod-network join-projects --to=$PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY
+    oc adm pod-network join-projects --to=$PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY 2>/dev/null
   fi
 
   # Hack to extract domain name when it's not determine in
