@@ -407,10 +407,10 @@ function build_images() {
   echo "Using build template $_TEMPLATE_BUILDS"
   oc process -f $_TEMPLATE_BUILDS -v GIT_URI=$GITHUB_URI -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
 
-  sleep 5
+  sleep 10
 
   # build images
-  for buildconfig in coolstore-gw web-ui inventory cart catalog
+  for buildconfig in web-ui inventory cart catalog coolstore-gw
   do
     oc start-build $buildconfig -n $PRJ_COOLSTORE_TEST
     wait_while_empty "$buildconfig build" 180 "oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep Running"
