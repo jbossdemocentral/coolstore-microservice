@@ -178,21 +178,30 @@ function delete_projects() {
 function create_projects() {
   echo_header "Creating project..."
 
-  oc new-project $PRJ_CI --display-name='CI/CD' --description='CI/CD Components (Jenkins, Gogs, etc)' 1>/dev/null
-  oc new-project $PRJ_COOLSTORE_TEST --display-name='CoolStore TEST' --description='CoolStore Test Environment' 1>/dev/null
-  oc new-project $PRJ_COOLSTORE_PROD --display-name='CoolStore PROD' --description='CoolStore Production Environment' 1>/dev/null
-  oc new-project $PRJ_INVENTORY --display-name='Inventory TEST' --description='Inventory Test Environment' 1>/dev/null
-  oc new-project $PRJ_DEVELOPER --display-name='Developer Project' --description='Personal Developer Project' 1>/dev/null
+  echo "Creating project $PRJ_CI"
+  oc new-project $PRJ_CI --display-name='CI/CD' --description='CI/CD Components (Jenkins, Gogs, etc)' >/dev/null
+  echo "Creating project $PRJ_COOLSTORE_TEST"
+  oc new-project $PRJ_COOLSTORE_TEST --display-name='CoolStore TEST' --description='CoolStore Test Environment' >/dev/null
+  echo "Creating project $PRJ_COOLSTORE_PROD"
+  oc new-project $PRJ_COOLSTORE_PROD --display-name='CoolStore PROD' --description='CoolStore Production Environment' >/dev/null
+  echo "Creating project $PRJ_INVENTORY"
+  oc new-project $PRJ_INVENTORY --display-name='Inventory TEST' --description='Inventory Test Environment' >/dev/null
+  echo "Creating project $PRJ_DEVELOPER"
+  oc new-project $PRJ_DEVELOPER --display-name='Developer Project' --description='Personal Developer Project' >/dev/null
+
+  for project in $PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_DEVELOPER
+  do
+    oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $project
+    oc adm policy add-role-to-group admin system:serviceaccounts:$project -n $project
+  done
 
   if [ $LOGGEDIN_USER == 'system:admin' ] ; then
     for project in $PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_DEVELOPER
     do
-      oc annotate --overwrite namespace $project demo=$PRJ_LABEL demogroup=demo-msa-$PRJ_SUFFIX
       oc adm policy add-role-to-user admin $ARG_USERNAME -n $project
-      oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $project
+      oc annotate --overwrite namespace $project demo=$PRJ_LABEL demogroup=demo-msa-$PRJ_SUFFIX
     done
-    # join project networks
-    oc adm pod-network join-projects --to=$PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY 2>/dev/null
+    oc adm pod-network join-projects --to=$PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY >/dev/null 2>&1
   fi
 
   # Hack to extract domain name when it's not determine in
@@ -324,6 +333,7 @@ function deploy_jenkins() {
     oc new-app jenkins-persistent -l app=jenkins -p MEMORY_LIMIT=1Gi -n $PRJ_CI
   fi
 
+  sleep 5
   oc set resources dc/jenkins --limits=cpu=1,memory=2Gi --requests=cpu=200m,memory=1Gi
 }
 
@@ -335,7 +345,7 @@ function remove_coolstore_storage_if_ephemeral() {
   fi
 }
 
-function scale_down_coolstore_deployments() {
+function scale_down_deployments() {
   local _PROJECT=$1
 	shift
 	while test ${#} -gt 0
@@ -357,7 +367,7 @@ function deploy_coolstore_test_env() {
 
   # scale down to zero if minimal
   if [ "$ARG_MINIMAL" = true ] ; then
-    scale_down_coolstore_deployments $PRJ_COOLSTORE_TEST coolstore-gw web-ui inventory cart catalog catalog-mongodb inventory-postgresql
+    scale_down_deployments $PRJ_COOLSTORE_TEST coolstore-gw web-ui inventory cart catalog catalog-mongodb inventory-postgresql
   fi  
 }
 
@@ -384,7 +394,7 @@ function deploy_coolstore_prod_env() {
 
   # scale down most pods to zero if minimal
   if [ "$ARG_MINIMAL" = true ] ; then
-    scale_down_coolstore_deployments $PRJ_COOLSTORE_PROD inventory-blue inventory-green cart inventory-postgresql turbine-server hystrix-dashboard
+    scale_down_deployments $PRJ_COOLSTORE_PROD inventory-blue inventory-green cart inventory-postgresql turbine-server hystrix-dashboard
   fi  
 }
 
@@ -398,7 +408,7 @@ function deploy_inventory_dev_env() {
   sleep 2
   # scale down to zero if minimal
   if [ "$ARG_MINIMAL" = true ] ; then
-    scale_down_coolstore_deployments $PRJ_INVENTORY inventory inventory-postgresql
+    scale_down_deployments $PRJ_INVENTORY inventory inventory-postgresql
   fi  
 }
 
@@ -505,6 +515,10 @@ function deploy_guides() {
   oc start-build guides -n $PRJ_CI
   oc set probe dc/guides -n $PRJ_CI --readiness -- /bin/bash -c /opt/eap/bin/readinessProbe.sh
   oc set probe dc/guides -n $PRJ_CI --liveness -- /bin/bash -c /opt/eap/bin/livenessProbe.sh
+
+  if [ "$ARG_MINIMAL" != true ] ; then
+    scale_down_deployments $PRJ_CI guides
+  fi  
 }
 
 # GPTE convention
