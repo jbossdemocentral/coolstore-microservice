@@ -13,7 +13,8 @@ steps:
 * Configures CI/CD for Inventory service across projects
 * Configures webhook on Gogs repository to trigger the pipeline
 
-[![asciicast](https://asciinema.org/a/103399.png)](https://asciinema.org/a/103399)
+![CI/CD Demo](../../docs/images/cicd-projects.png?raw=true)
+![CI/CD Demo](../../docs/images/cicd-pipeline.png?raw=true)
 
 Prerequisites
 ============
@@ -44,6 +45,8 @@ Options:
    --ephemeral         Deploy demo without persistent storage
    --help              Dispaly help
 ```
+
+[![asciicast](https://asciinema.org/a/103399.png)](https://asciinema.org/a/103399)
 
 Example
 ============
