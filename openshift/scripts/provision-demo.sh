@@ -516,7 +516,7 @@ function deploy_guides() {
   oc set probe dc/guides -n $PRJ_CI --readiness -- /bin/bash -c /opt/eap/bin/readinessProbe.sh
   oc set probe dc/guides -n $PRJ_CI --liveness -- /bin/bash -c /opt/eap/bin/livenessProbe.sh
 
-  if [ "$ARG_MINIMAL" != true ] ; then
+  if [ "$ARG_MINIMAL" == true ] ; then
     scale_down_deployments $PRJ_CI guides
   fi  
 }
