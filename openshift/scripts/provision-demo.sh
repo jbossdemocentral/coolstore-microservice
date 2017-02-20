@@ -346,7 +346,7 @@ function deploy_jenkins() {
     oc new-app jenkins-persistent -l app=jenkins -p MEMORY_LIMIT=1Gi -n $PRJ_CI
   fi
 
-  sleep 5
+  sleep 10
   oc set resources dc/jenkins --limits=cpu=1,memory=2Gi --requests=cpu=200m,memory=1Gi
 }
 
@@ -407,7 +407,7 @@ function deploy_coolstore_prod_env() {
 
   # scale down most pods to zero if minimal
   if [ "$ARG_MINIMAL" = true ] ; then
-    scale_down_deployments $PRJ_COOLSTORE_PROD inventory-blue inventory-green cart inventory-postgresql turbine-server hystrix-dashboard
+    scale_down_deployments $PRJ_COOLSTORE_PROD cart turbine-server hystrix-dashboard
   fi  
 }
 
