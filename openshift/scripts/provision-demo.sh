@@ -346,8 +346,8 @@ function deploy_jenkins() {
     oc new-app jenkins-persistent -l app=jenkins -p MEMORY_LIMIT=1Gi -n $PRJ_CI
   fi
 
-  sleep 10
-  oc set resources dc/jenkins --limits=cpu=1,memory=2Gi --requests=cpu=200m,memory=1Gi
+  sleep 2
+  oc set resources dc/jenkins --limits=cpu=1,memory=2Gi --requests=cpu=200m,memory=1Gi -n $PRJ_CI
 }
 
 function remove_coolstore_storage_if_ephemeral() {
