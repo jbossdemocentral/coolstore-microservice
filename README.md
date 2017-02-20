@@ -61,7 +61,7 @@ $ openshift/scripts/provision-demo.sh --delete
 ![CI/CD Demo](docs/images/cicd-projects.png?raw=true)
 ![CI/CD Demo](docs/images/cicd-pipeline.png?raw=true)
 
-Read the [script docs](openshift/scripts) for further details on provisiong the demo.
+Read the [script docs](openshift/scripts) for further details and how to run the demo on a local cluster with `oc cluster`.
 
 Troubleshooting
 ================

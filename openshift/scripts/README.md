@@ -17,8 +17,14 @@ steps:
 
 Prerequisites
 ============
-* OpenShift environment with a quota of 5 projects and 12 GB memory
-* `oc` client authenticated against the OpenShift environment
+* An OpenShift cluster with sufficient quota and resources
+* `oc` client authenticated against the OpenShift cluster
+
+| Demo Size | Min Memory | Min CPU | Projects |
+|-----------|------------|---------|----------|
+| Minimal   | 8 GB       | 2 cores | 5        |
+| Full      | 16 GB      | 8 cores | 5        |
+
 
 Usage
 ============
@@ -35,16 +41,17 @@ Options:
    --project-suffix    Suffix to be added to demo project names e.g. ci-SUFFIX. If empty, user will be used as suffix
    --delete            Clean up and remove demo projects and objects
    --minimal           Scale all pods except the absolute essential ones to zero to lower memory and cpu footprint
+   --ephemeral         Deploy demo without persistent storage
    --help              Dispaly help
-   --ephemeral         Deploy demo without persistent storage```
 ```
 
 Example
 ============
-Provision a minimal demo on local (e.g. using `oc cluster`) single-node cluster without persistent storage:
+Provision a minimal demo on a local cluster without persistent storage:
 ```
-$ oc login 127.0.0.1:8443
-$ provision-demo.sh --minimal --ephemeral
+$ oc cluster up 
+$ oc create -f https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json -n openshift
+$ provision-demo.sh --user developer --minimal --ephemeral
 ```
 
 Provision on OpenShift Online/Dedicated:

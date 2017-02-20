@@ -17,8 +17,8 @@ function usage() {
     echo "   --project-suffix    Suffix to be added to demo project names e.g. ci-SUFFIX. If empty, user will be used as suffix"
     echo "   --delete            Clean up and remove demo projects and objects"
     echo "   --minimal           Scale all pods except the absolute essential ones to zero to lower memory and cpu footprint"
-    echo "   --help              Dispaly help"
     echo "   --ephemeral         Deploy demo without persistent storage"
+    echo "   --help              Dispaly help"
 }
 
 ARG_USERNAME=
@@ -106,7 +106,12 @@ GITHUB_ACCOUNT=${GITHUB_ACCOUNT:-jbossdemocentral}
 GITHUB_REF=${GITHUB_REF:-stable-ocp-3.4}
 GITHUB_URI=https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git
 
-MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.$PRJ_CI.svc.cluster.local:8081/content/groups/public}
+# maven 
+if [ "$ARG_MINIMAL" = true ] ; then
+  MAVEN_MIRROR_URL=
+else
+  MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.$PRJ_CI.svc.cluster.local:8081/content/groups/public}
+fi  
 
 GOGS_USER=developer
 GOGS_PASSWORD=developer
@@ -223,6 +228,10 @@ function add_inventory_template_to_projects() {
 
 # Deploy Nexus
 function deploy_nexus() {
+  if [ "$ARG_MINIMAL" = true ] ; then
+    return
+  fi
+  
   if [ -z "$ARG_MAVEN_MIRROR_URL" ] ; then # no maven mirror specified
     local _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/nexus/master/nexus2-persistent-template.yaml"
     if [ "$ARG_EPHEMERAL" = true ] ; then
@@ -239,6 +248,10 @@ function deploy_nexus() {
 
 # Wait till Nexus is ready
 function wait_for_nexus_to_be_ready() {
+  if [ "$ARG_MINIMAL" = true ] ; then
+    return
+  fi
+
   if [ -z "$ARG_MAVEN_MIRROR_URL" ] ; then # no maven mirror specified
     wait_while_empty "Nexus" 600 "oc get ep nexus -o yaml -n $PRJ_CI | grep '\- addresses:'"
   fi
@@ -366,7 +379,7 @@ function deploy_coolstore_test_env() {
   remove_coolstore_storage_if_ephemeral $PRJ_COOLSTORE_TEST
 
   # scale down to zero if minimal
-  if [ "$ARG_MINIMAL" = true ] ; then
+  if [ "$ARG_MINIMAL" == true ] ; then
     scale_down_deployments $PRJ_COOLSTORE_TEST coolstore-gw web-ui inventory cart catalog catalog-mongodb inventory-postgresql
   fi  
 }
@@ -516,7 +529,7 @@ function deploy_guides() {
   oc set probe dc/guides -n $PRJ_CI --readiness -- /bin/bash -c /opt/eap/bin/readinessProbe.sh
   oc set probe dc/guides -n $PRJ_CI --liveness -- /bin/bash -c /opt/eap/bin/livenessProbe.sh
 
-  if [ "$ARG_MINIMAL" == true ] ; then
+  if [ "$ARG_MINIMAL" = true ] ; then
     scale_down_deployments $PRJ_CI guides
   fi  
 }
