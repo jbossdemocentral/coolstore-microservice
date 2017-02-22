@@ -22,7 +22,7 @@ Prerequisites
 ================
 In order to deploy the CoolStore microservices application, you need an OpenShift environment with
 * min 4 GB memory quota if deploying CoolStore
-* min 12 GB memory quota if deploying complete demo infrastructure
+* min 16 GB memory quota if deploying complete demo infrastructure
 * RHEL and JBoss imagestreams installed (check _Troubleshooting_ section for details)
 * Persistent volumes in your OpenShift environment
 
