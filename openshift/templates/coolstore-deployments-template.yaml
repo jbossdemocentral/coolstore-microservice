@@ -79,7 +79,6 @@ objects:
             requests:
               cpu: 50m
               memory: 128Mi
-          resources: {}
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always

@@ -157,7 +157,7 @@ objects:
     labels:
       application: coolstore-gw
   spec:
-    dockerImageRepository: registry.access.redhat.com/jboss-fuse-6-tech-preview/fis-java-openshift
+    dockerImageRepository: registry.access.redhat.com/jboss-fuse-6/fis-java-openshift
     tags:
     - name: "2.0"
       annotations:
