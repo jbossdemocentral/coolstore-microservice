@@ -13,7 +13,7 @@ objects:
       build: ${PIPELINE_NAME}
     name: ${PIPELINE_NAME}
     annotations:
-      pipeline.alpha.openshift.io/uses: '[{"name": "inventory", "namespace": "${DEV_PROJECT}", "kind": "BuildConfig"},{"name": "inventory", "namespace": "${TEST_PROJECT}", "kind": "DeploymentConfig"},,{"name": "inventory", "namespace": "${PROD_PROJECT}", "kind": "DeploymentConfig"}]'
+      pipeline.alpha.openshift.io/uses: '[{"name": "inventory", "namespace": "${DEV_PROJECT}", "kind": "BuildConfig"},{"name": "inventory", "namespace": "${TEST_PROJECT}", "kind": "DeploymentConfig"},{"name": "inventory-green", "namespace": "${PROD_PROJECT}", "kind": "DeploymentConfig"},{"name": "inventory-blue", "namespace": "${PROD_PROJECT}", "kind": "DeploymentConfig"}]'
   spec:
     runPolicy: Serial
     strategy:

@@ -45,14 +45,10 @@ objects:
           name: nodejs:4
           namespace: openshift
       type: Source
-    triggers:
-    - imageChange: {}
-      type: ImageChange
-    - type: ConfigChange
     resources:
       limits:
-        cpu: "400m"
-        memory: "1Gi"
+        cpu: 1
+        memory: "2Gi"
       requests:
         cpu: "200m"
         memory: "1Gi"
@@ -105,14 +101,10 @@ objects:
           kind: ImageStreamTag
           name: fis-java-openshift:2.0
       type: Source
-    triggers:
-    - type: ConfigChange
-    - imageChange: {}
-      type: ImageChange
     resources:
       limits:
-        cpu: "400m"
-        memory: "1Gi"
+        cpu: 1
+        memory: "2Gi"
       requests:
         cpu: "200m"
         memory: "1Gi"
@@ -150,14 +142,10 @@ objects:
           name: jboss-eap70-openshift:1.4
           namespace: openshift
       type: Source
-    triggers:
-    - type: ConfigChange
-    - imageChange: {}
-      type: ImageChange
     resources:
       limits:
-        cpu: "400m"
-        memory: "1Gi"
+        cpu: 1
+        memory: "2Gi"
       requests:
         cpu: "200m"
         memory: "1Gi"
@@ -195,14 +183,10 @@ objects:
           name: jboss-webserver30-tomcat8-openshift:1.2
           namespace: openshift
       type: Source
-    triggers:
-    - type: ConfigChange
-    - imageChange: {}
-      type: ImageChange
     resources:
       limits:
-        cpu: "400m"
-        memory: "1Gi"
+        cpu: 1
+        memory: "2Gi"
       requests:
         cpu: "200m"
         memory: "1Gi"
@@ -240,14 +224,10 @@ objects:
           name: jboss-eap70-openshift:1.4
           namespace: openshift
       type: Source
-    triggers:
-    - type: ConfigChange
-    - imageChange: {}
-      type: ImageChange
     resources:
       limits:
-        cpu: "400m"
-        memory: "1Gi"
+        cpu: 1
+        memory: "2Gi"
       requests:
         cpu: "200m"
         memory: "1Gi"

@@ -5,21 +5,28 @@
 function usage() {
     echo
     echo "Usage:"
-    echo " $0 --master <openshift-master> --user <username> [ --maven-mirror-url <value> ] [--project-suffix <value>]"
+    echo " $0 [options]"
     echo " $0 --help "
     echo
     echo "Example:"
-    echo " $0 --master console.preview.openshift.com --user demo --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d"
+    echo " $0 --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d"
     echo
-    echo "If --maven-mirror-url is not specified, a Nexus container will be deployed and used"
-    echo "If --project-suffix is not specified, <username> will be used as the suffix"
+    echo "Options:"
+    echo "   --user              The admin user for the demo projects. mandatory if logged in as system:admin"
+    echo "   --maven-mirror-url  Use the given Maven repository for builds. If not specifid, a Nexus container is deployed in the demo"
+    echo "   --project-suffix    Suffix to be added to demo project names e.g. ci-SUFFIX. If empty, user will be used as suffix"
+    echo "   --delete            Clean up and remove demo projects and objects"
+    echo "   --minimal           Scale all pods except the absolute essential ones to zero to lower memory and cpu footprint"
+    echo "   --ephemeral         Deploy demo without persistent storage"
+    echo "   --help              Dispaly help"
 }
 
-ARG_USERNAME=demo
+ARG_USERNAME=
 ARG_PROJECT_SUFFIX=
 ARG_MAVEN_MIRROR_URL=
 ARG_DELETE=false
-ARG_OPENSHIFT_MASTER=
+ARG_MINIMAL=false
+ARG_EPHEMERAL=false
 
 while :; do
     case $1 in
@@ -45,15 +52,6 @@ while :; do
                 exit 1
             fi
             ;;
-        --master)
-            if [ -n "$2" ]; then
-                ARG_OPENSHIFT_MASTER=$2
-                shift
-            else
-                printf 'ERROR: "--master" requires a non-empty value.\n' >&2
-                exit 1
-            fi
-            ;;
         --project-suffix)
             if [ -n "$2" ]; then
                 ARG_PROJECT_SUFFIX=$2
@@ -62,6 +60,12 @@ while :; do
                 printf 'ERROR: "--project-suffix" requires a non-empty value.\n' >&2
                 exit 1
             fi
+            ;;
+        --minimal)
+            ARG_MINIMAL=true
+            ;;
+        --ephemeral)
+            ARG_EPHEMERAL=true
             ;;
         --delete)
             ARG_DELETE=true
@@ -72,6 +76,7 @@ while :; do
             ;;
         -?*)
             printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            shift
             ;;
         *)               # Default case: If no more options then break out of the loop.
             break
@@ -83,10 +88,12 @@ done
 ################################################################################
 # CONFIGURATION                                                                #
 ################################################################################
-OPENSHIFT_MASTER=${ARG_OPENSHIFT_MASTER}
+OPENSHIFT_MASTER=$(oc whoami -c | sed 's#[^/]*/\([^/]*\)/[^/]*#\1#g')
+LOGGEDIN_USER=$(oc whoami)
+OPENSHIFT_USER=${ARG_USERNAME:-$LOGGEDIN_USER}
 
 # project
-PRJ_SUFFIX=${ARG_PROJECT_SUFFIX:-`echo $ARG_USERNAME | sed -e 's/[-@].*//g'`}
+PRJ_SUFFIX=${ARG_PROJECT_SUFFIX:-`echo $OPENSHIFT_USER | sed -e 's/[-@].*//g'`}
 PRJ_LABEL=demo1-$PRJ_SUFFIX
 PRJ_CI=ci-$PRJ_SUFFIX
 PRJ_COOLSTORE_TEST=coolstore-test-$PRJ_SUFFIX
@@ -99,14 +106,18 @@ GITHUB_ACCOUNT=${GITHUB_ACCOUNT:-jbossdemocentral}
 GITHUB_REF=${GITHUB_REF:-master}
 GITHUB_URI=https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git
 
-MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.$PRJ_CI.svc.cluster.local:8081/content/groups/public}
+# maven 
+if [ "$ARG_MINIMAL" = true ] ; then
+  MAVEN_MIRROR_URL=
+else
+  MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.$PRJ_CI.svc.cluster.local:8081/content/groups/public}
+fi  
 
 GOGS_USER=developer
 GOGS_PASSWORD=developer
 GOGS_ADMIN_USER=team
 GOGS_ADMIN_PASSWORD=team
 
-JENKINS_PASSWORD=openshift
 WEBHOOK_SECRET=UfW7gQ6Jx4
 
 ################################################################################
@@ -115,6 +126,10 @@ WEBHOOK_SECRET=UfW7gQ6Jx4
 
 function print_info() {
   echo_header "Configuration"
+  echo "OpenShift master:    $OPENSHIFT_MASTER"
+  echo "Current user:        $LOGGEDIN_USER"
+  echo "Minimal setup:       $ARG_MINIMAL"
+  echo "Ephemeral:           $ARG_EPHEMERAL"
   echo "Project suffix:      $PRJ_SUFFIX"
   echo "Project label:       $PRJ_LABEL"
   echo "GitHub repo:         https://github.com/$GITHUB_ACCOUNT/coolstore-microservice"
@@ -125,24 +140,7 @@ function print_info() {
   echo "Gogs user:           $GOGS_USER"
   echo "Gogs pwd:            $GOGS_PASSWORD"
   echo "Gogs webhook secret: $WEBHOOK_SECRET"
-  echo "Jenkins admin user:  admin"
-  echo "Jenkins admin pwd:   $JENKINS_PASSWORD"
   echo "Maven mirror url:    $MAVEN_MIRROR_URL"
-}
-
-# Hack to extract domain name when it's not determine in
-# advanced e.g. <user>-<project>.4s23.cluster
-function set_domain_for_gogs_hack() {
-  local _TEMP_PROJECT=prj$(date +%s)-$PRJ_SUFFIX
-  oc new-project $_TEMP_PROJECT > /dev/null
-  if [ "$(oc whoami)" == 'system:admin' ] ; then
-    oc annotate --overwrite namespace $_TEMP_PROJECT demo=$PRJ_LABEL > /dev/null
-  fi
-  oc create route edge testroute --service=testsvc --port=80 -n $_TEMP_PROJECT >/dev/null
-  DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n $_TEMP_PROJECT | sed "s/testroute-$_TEMP_PROJECT.//g")
-  GOGS_ROUTE="gogs-$PRJ_CI.$DOMAIN"
-  oc delete route testroute -n $_TEMP_PROJECT >/dev/null
-  oc delete project $_TEMP_PROJECT > /dev/null
 }
 
 # waits while the condition is true until it becomes false or it times out
@@ -168,40 +166,55 @@ function wait_while_empty() {
   echo "$_NAME is ready."
 }
 
+function remove_storage_claim() {
+  local _DC=$1
+  local _VOLUME_NAME=$2
+  local _CLAIM_NAME=$3
+  local _PROJECT=$4
+  oc volumes dc/$_DC --name=$_VOLUME_NAME --add -t emptyDir --overwrite -n $_PROJECT
+  oc delete pvc $_CLAIM_NAME -n $_PROJECT
+}
 
 function delete_projects() {
   oc delete project $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI
 }
 
 # Create Infra Project
-function create_infra_project() {
-  echo_header "Creating infra project..."
-  oc new-project $PRJ_CI --display-name='CI/CD' --description='CI/CD Components (Jenkins, Gogs, etc)'
+function create_projects() {
+  echo_header "Creating project..."
 
-  if [ "$(oc whoami)" == 'system:admin' ] ; then
-    oc annotate --overwrite namespace $PRJ_CI demo=$PRJ_LABEL
-  fi
-}
+  echo "Creating project $PRJ_CI"
+  oc new-project $PRJ_CI --display-name='CI/CD' --description='CI/CD Components (Jenkins, Gogs, etc)' >/dev/null
+  echo "Creating project $PRJ_COOLSTORE_TEST"
+  oc new-project $PRJ_COOLSTORE_TEST --display-name='CoolStore TEST' --description='CoolStore Test Environment' >/dev/null
+  echo "Creating project $PRJ_COOLSTORE_PROD"
+  oc new-project $PRJ_COOLSTORE_PROD --display-name='CoolStore PROD' --description='CoolStore Production Environment' >/dev/null
+  echo "Creating project $PRJ_INVENTORY"
+  oc new-project $PRJ_INVENTORY --display-name='Inventory TEST' --description='Inventory Test Environment' >/dev/null
+  echo "Creating project $PRJ_DEVELOPER"
+  oc new-project $PRJ_DEVELOPER --display-name='Developer Project' --description='Personal Developer Project' >/dev/null
 
-# Create Application Project
-function create_app_projects() {
-  echo_header "Creating application projects..."
-  oc new-project $PRJ_COOLSTORE_TEST --display-name='CoolStore TEST' --description='CoolStore Test Environment'
-  oc new-project $PRJ_COOLSTORE_PROD --display-name='CoolStore PROD' --description='CoolStore Production Environment'
-  oc new-project $PRJ_INVENTORY --display-name='Inventory TEST' --description='Inventory Test Environment'
-  oc new-project $PRJ_DEVELOPER --display-name='Developer Project' --description='Personal Developer Project'
+  for project in $PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_DEVELOPER
+  do
+    oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $project
+    oc adm policy add-role-to-group admin system:serviceaccounts:$project -n $project
+  done
 
-  if [ "$(oc whoami)" == 'system:admin' ] ; then
-    for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_DEVELOPER
+  if [ $LOGGEDIN_USER == 'system:admin' ] ; then
+    for project in $PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_DEVELOPER
     do
-      oc annotate --overwrite namespace $project demo=$PRJ_LABEL
+      oc adm policy add-role-to-user admin $ARG_USERNAME -n $project
+      oc annotate --overwrite namespace $project demo=$PRJ_LABEL demogroup=demo-msa-$PRJ_SUFFIX
     done
+    oc adm pod-network join-projects --to=$PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY >/dev/null 2>&1
   fi
 
-  # join project networks
-  if [ "$(oc whoami)" == 'system:admin' ] ; then
-    oc adm pod-network join-projects --to=$PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY
-  fi
+  # Hack to extract domain name when it's not determine in
+  # advanced e.g. <user>-<project>.4s23.cluster
+  oc create route edge testroute --service=testsvc --port=80 -n $PRJ_CI >/dev/null
+  DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n $PRJ_CI | sed "s/testroute-$PRJ_CI.//g")
+  GOGS_ROUTE="gogs-$PRJ_CI.$DOMAIN"
+  oc delete route testroute -n $PRJ_CI >/dev/null
 }
 
 # Add Inventory Service Template
@@ -215,8 +228,15 @@ function add_inventory_template_to_projects() {
 
 # Deploy Nexus
 function deploy_nexus() {
+  if [ "$ARG_MINIMAL" = true ] ; then
+    return
+  fi
+  
   if [ -z "$ARG_MAVEN_MIRROR_URL" ] ; then # no maven mirror specified
     local _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/nexus/master/nexus2-persistent-template.yaml"
+    if [ "$ARG_EPHEMERAL" = true ] ; then
+      _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/nexus/master/nexus2-template.yaml"
+    fi
 
     echo_header "Deploying Sonatype Nexus repository manager..."
     echo "Using template $_TEMPLATE"
@@ -228,6 +248,10 @@ function deploy_nexus() {
 
 # Wait till Nexus is ready
 function wait_for_nexus_to_be_ready() {
+  if [ "$ARG_MINIMAL" = true ] ; then
+    return
+  fi
+
   if [ -z "$ARG_MAVEN_MIRROR_URL" ] ; then # no maven mirror specified
     wait_while_empty "Nexus" 600 "oc get ep nexus -o yaml -n $PRJ_CI | grep '\- addresses:'"
   fi
@@ -236,8 +260,12 @@ function wait_for_nexus_to_be_ready() {
 # Deploy Gogs
 function deploy_gogs() {
   echo_header "Deploying Gogs git server..."
+  
+  local _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/master/openshift/gogs-persistent-template.yaml"
+  if [ "$ARG_EPHEMERAL" = true ] ; then
+    _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/master/openshift/gogs-template.yaml"
+  fi
 
-  local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/gogs-persistent-template.yaml"
   local _DB_USER=gogs
   local _DB_PASSWORD=gogs
   local _DB_NAME=gogs
@@ -246,48 +274,21 @@ function deploy_gogs() {
   echo "Using template $_TEMPLATE"
   oc process -f $_TEMPLATE -v HOSTNAME=$GOGS_ROUTE -v GOGS_VERSION=0.9.113 -v DATABASE_USER=$_DB_USER -v DATABASE_PASSWORD=$_DB_PASSWORD -v DATABASE_NAME=$_DB_NAME -n $PRJ_CI | oc create -f - -n $PRJ_CI
 
+  sleep 5
+
   # wait for Gogs to be ready
   wait_while_empty "Gogs PostgreSQL" 600 "oc get ep gogs-postgresql -o yaml -n $PRJ_CI | grep '\- addresses:'"
   wait_while_empty "Gogs" 600 "oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:'"
 
+  sleep 20
+
+  # add admin user
+  _RETURN=$(curl -o /dev/null -sL --post302 -w "%{http_code}" http://$GOGS_ROUTE/user/sign_up \
+    --form user_name=$GOGS_ADMIN_USER \
+    --form password=$GOGS_ADMIN_PASSWORD \
+    --form retype=$GOGS_ADMIN_PASSWORD \
+    --form email=$GOGS_ADMIN_USER@gogs.com)
   sleep 5
-
-  # initialise Gogs
-  _RETURN=$(curl -o /dev/null -sL --post302 -w "%{http_code}" http://$GOGS_ROUTE/install \
-    --form db_type=PostgreSQL \
-    --form db_host=gogs-postgresql:5432 \
-    --form db_user=$_DB_USER \
-    --form db_passwd=$_DB_PASSWORD \
-    --form db_name=$_DB_NAME \
-    --form ssl_mode=disable \
-    --form db_path=data/gogs.db \
-    --form "app_name=Gogs: Go Git Service" \
-    --form repo_root_path=/opt/gogs/data/repositories \
-    --form run_user=gogs \
-    --form log_root_path=/opt/gogs/log \
-    --form domain=localhost \
-    --form ssh_port=22 \
-    --form http_port=3000 \
-    --form app_url=http://$GOGS_ROUTE/ \
-    --form admin_name=$GOGS_ADMIN_USER \
-    --form admin_passwd=$GOGS_ADMIN_PASSWORD \
-    --form admin_confirm_passwd=$GOGS_ADMIN_PASSWORD \
-    --form admin_email=$GOGS_ADMIN_USER@gogs.com)
-
-  if [ $_RETURN != "200" ] ; then
-    echo "WARNING: Failed (http code $_RETURN) to initialise Gogs"
-    exit 255
-  fi
-
-  sleep 5
-
-  # disable TLS verification for webhooks
-  echo "Configuring and restarting Gogs"
-  oc rsh $(oc get pod -o name -l deploymentconfig=gogs -n $PRJ_CI) /bin/bash -c "if ! grep TLS /opt/gogs/data/custom/conf/app.ini; then printf '[webhook]\nSKIP_TLS_VERIFY = true\n' >> /opt/gogs/data/custom/conf/app.ini ; fi" -n $PRJ_CI
-  oc delete pod -l deploymentconfig=gogs -n $PRJ_CI >/dev/null
-  wait_while_empty "Gogs" 300 "oc get ep gogs -o yaml -n $PRJ_CI | grep '\- addresses:'"
-
-  sleep 10
 
   # import GitHub repo
   read -r -d '' _DATA_JSON << EOM
@@ -304,8 +305,6 @@ EOM
   else
     echo "CoolStore GitHub repo imported to Gogs"
   fi
-
-  sleep 2
 
   # create user
   read -r -d '' _DATA_JSON << EOM
@@ -340,9 +339,33 @@ EOM
 # Deploy Jenkins
 function deploy_jenkins() {
   echo_header "Deploying Jenkins..."
-  # TODO: remove extra steps when Jenkins 2 becomes default in OpenShift
-  oc import-image jenkins:2 --from=registry.access.redhat.com/openshift3/jenkins-2-rhel7:latest --confirm -n $PRJ_CI
-  oc new-app jenkins-persistent -l app=jenkins -p JENKINS_PASSWORD=$JENKINS_PASSWORD -p NAMESPACE=$PRJ_CI -p JENKINS_IMAGE_STREAM_TAG=jenkins:2 -p MEMORY_LIMIT=1Gi -n $PRJ_CI
+  
+  if [ "$ARG_EPHEMERAL" = true ] ; then
+    oc new-app jenkins-ephemeral -l app=jenkins -p MEMORY_LIMIT=1Gi -n $PRJ_CI
+  else
+    oc new-app jenkins-persistent -l app=jenkins -p MEMORY_LIMIT=1Gi -n $PRJ_CI
+  fi
+
+  sleep 2
+  oc set resources dc/jenkins --limits=cpu=1,memory=2Gi --requests=cpu=200m,memory=1Gi -n $PRJ_CI
+}
+
+function remove_coolstore_storage_if_ephemeral() {
+  local _PROJECT=$1
+  if [ "$ARG_EPHEMERAL" = true ] ; then
+    remove_storage_claim inventory-postgresql inventory-postgresql-data inventory-postgresql-pv $_PROJECT
+    remove_storage_claim catalog-mongodb mongodb-data mongodb-data-pv $_PROJECT
+  fi
+}
+
+function scale_down_deployments() {
+  local _PROJECT=$1
+	shift
+	while test ${#} -gt 0
+	do
+	  oc scale --replicas=0 dc $1 -n $_PROJECT
+	  shift
+	done
 }
 
 # Deploy Coolstore into Coolstore TEST project
@@ -352,6 +375,13 @@ function deploy_coolstore_test_env() {
   echo_header "Deploying CoolStore app into $PRJ_COOLSTORE_TEST project..."
   echo "Using deployment template $_TEMPLATE_DEPLOYMENT"
   oc process -f $_TEMPLATE -v APP_VERSION=test -v HOSTNAME_SUFFIX=$PRJ_COOLSTORE_TEST.$DOMAIN -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
+  sleep 2
+  remove_coolstore_storage_if_ephemeral $PRJ_COOLSTORE_TEST
+
+  # scale down to zero if minimal
+  if [ "$ARG_MINIMAL" == true ] ; then
+    scale_down_deployments $PRJ_COOLSTORE_TEST coolstore-gw web-ui inventory cart catalog catalog-mongodb inventory-postgresql pricing
+  fi  
 }
 
 # Deploy Coolstore into Coolstore PROD project
@@ -367,11 +397,18 @@ function deploy_coolstore_prod_env() {
 
   oc process -f $_TEMPLATE_DEPLOYMENT -v APP_VERSION=prod -v HOSTNAME_SUFFIX=$PRJ_COOLSTORE_PROD.$DOMAIN -n $PRJ_COOLSTORE_PROD | oc create -f - -n $PRJ_COOLSTORE_PROD
   sleep 2
-  oc delete all,pvc -l application=inventory --now -n $PRJ_COOLSTORE_PROD
+  oc delete all,pvc -l application=inventory --now --ignore-not-found -n $PRJ_COOLSTORE_PROD
   sleep 2
   oc process -f $_TEMPLATE_BLUEGREEN -v APP_VERSION_BLUE=prod-blue -v APP_VERSION_GREEN=prod-green -v HOSTNAME_SUFFIX=$PRJ_COOLSTORE_PROD.$DOMAIN -n $PRJ_COOLSTORE_PROD | oc create -f - -n $PRJ_COOLSTORE_PROD
   sleep 2
   oc create -f $_TEMPLATE_NETFLIX -n $PRJ_COOLSTORE_PROD
+  sleep 2
+  remove_coolstore_storage_if_ephemeral $PRJ_COOLSTORE_PROD
+
+  # scale down most pods to zero if minimal
+  if [ "$ARG_MINIMAL" = true ] ; then
+    scale_down_deployments $PRJ_COOLSTORE_PROD cart turbine-server hystrix-dashboard pricing
+  fi  
 }
 
 # Deploy Inventory service into Inventory DEV project
@@ -381,61 +418,64 @@ function deploy_inventory_dev_env() {
   echo_header "Deploying Inventory service into $PRJ_INVENTORY project..."
   echo "Using template $_TEMPLATE"
   oc process -f $_TEMPLATE -v GIT_URI=http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_INVENTORY | oc create -f - -n $PRJ_INVENTORY
+  sleep 2
+  # scale down to zero if minimal
+  if [ "$ARG_MINIMAL" = true ] ; then
+    scale_down_deployments $PRJ_INVENTORY inventory inventory-postgresql
+  fi  
 }
 
-# Prepare the BuildConfigs and Deployment for CI/CD
-function build_and_tag_images_for_ci() {
+function build_images() {
   local _TEMPLATE_BUILDS="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-builds-template.yaml"
   echo "Using build template $_TEMPLATE_BUILDS"
   oc process -f $_TEMPLATE_BUILDS -v GIT_URI=$GITHUB_URI -v GIT_REF=$GITHUB_REF -v MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
 
   sleep 10
 
-  # wait for builds to finish
-  echo_header "Preparing builds and deployments for CI/CD..."
-  echo "Waiting for builds to finish..."
-  for buildconfig in coolstore-gw web-ui inventory cart catalog
+  # build images
+  for buildconfig in web-ui inventory cart catalog coolstore-gw pricing
   do
-    local x=1
-    while [ -z "$(oc get builds -l buildconfig=$buildconfig -n $PRJ_COOLSTORE_TEST | grep 'Complete')" ]
-    do
-      # if build has failed, let's give it another shot
-      if [ ! -z "$(oc get builds -l buildconfig=$buildconfig -n $PRJ_COOLSTORE_TEST | grep 'Failed')" ] && [ "$(eval echo \$_BUILD_RETRIED_$buildconfig)" == '' ]
-      then
-        oc start-build $buildconfig -n $PRJ_COOLSTORE_TEST
-        eval local _BUILD_RETRIED_$buildconfig=true
-      fi
+    oc start-build $buildconfig -n $PRJ_COOLSTORE_TEST
+    wait_while_empty "$buildconfig build" 180 "oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep Running"
+    sleep 10
+  done
+}
 
-      echo "."
-      sleep 10
-      x=$(( $x + 1 ))
-      if [ $x -gt 120 ]
-      then
-        echo "Tired of waiting for builds to finish, I give up!"
-        exit 255
-      fi
-    done
+function promote_images() {
+  # wait for builds
+  for buildconfig in coolstore-gw web-ui inventory cart catalog pricing
+  do
+    wait_while_empty "$buildconfig image" 600 "oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep -v Running"
+    sleep 10
+  done
 
-    echo "Build $buildconfig completed"
+  # verify successful builds
+  for buildconfig in coolstore-gw web-ui inventory cart catalog pricing
+  do
+    if [ -z "$(oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep Complete)" ]; then
+      echo "ERROR: Build $buildconfig did not complete successfully"
+      exit 255
+    fi
   done
 
   # remove buildconfigs. Jenkins does that!
   oc delete bc --all -n $PRJ_COOLSTORE_TEST
 
-  for is in coolstore-gw web-ui cart catalog
+  for is in coolstore-gw web-ui cart catalog pricing
   do
     oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_TEST/$is:test
     oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_PROD/$is:prod
     oc tag $PRJ_COOLSTORE_TEST/$is:latest -d
   done
 
+  oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_INVENTORY/inventory:latest
   oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_TEST/inventory:test
   oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_PROD/inventory:prod-green
   oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_PROD/inventory:prod-blue
   oc tag $PRJ_COOLSTORE_TEST/inventory:latest -d
 
   # remove fis image
-  oc delete is fis-java-openshift -n $PRJ_COOLSTORE_TEST
+  oc delete is fis-java-openshift -n $PRJ_COOLSTORE_TEST --ignore-not-found
 }
 
 function deploy_pipeline() {
@@ -468,51 +508,35 @@ EOM
   fi
 }
 
-function set_permissions() {
-  if [ "$(oc whoami)" != "$ARG_USERNAME" ] ; then
-    oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_COOLSTORE_TEST
-    oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_DEVELOPER
-    oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_COOLSTORE_PROD
-    oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_INVENTORY
-    oc adm policy add-role-to-user admin $ARG_USERNAME -n $PRJ_CI
-  fi
-
-  oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $PRJ_COOLSTORE_TEST
-  oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $PRJ_DEVELOPER
-  oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $PRJ_COOLSTORE_PROD
-  oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $PRJ_INVENTORY
-
-  oc policy add-role-to-group admin system:serviceaccounts:ci-ssadeghi -n developer-ssadeghi
-}
-
 function verify_deployments() {
   for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI; do
-    for dc in $(oc get pods -n $project | grep Error | cut -d ' ' -f 1 | sed 's/\(.*\)\-[0-9]\+\-deploy/\1/g'); do
+    for dc in $(oc get pods -n $project | grep deploy | grep Error | cut -d ' ' -f 1 | sed 's/\(.*\)\-[0-9]\+\-deploy/\1/g'); do
       echo "WARNING: Deployment $dc in project $project has failed. Starting a new deployment"
-      oc deploy $dc -n $project --latest
+      oc rollout latest dc/$dc -n $project
     done
   done
 }
 
-function deploy_demo_guides() {
+function deploy_guides() {
   echo_header "Deploying Demo Guides"
-
-  local _DEMO_REPO="https://raw.githubusercontent.com/osevg/workshopper-content/stable/demos"
-  local _DEMOS="$_DEMO_REPO/_demo-msa.yml,$_DEMO_REPO/_demo-agile-integration.yml"
-
-  oc new-app --name=guides jboss-eap70-openshift~https://github.com/osevg/workshopper.git -n $PRJ_CI
+  local _DEMO_CONTENT_URL="https://raw.githubusercontent.com/osevg/workshopper-content/stable"
+  local _DEMOS="$_DEMO_CONTENT_URL/demos/_demo-all.yml,$_DEMO_CONTENT_URL/demos/_demo-msa.yml,$_DEMO_CONTENT_URL/demos/_demo-agile-integration.yml,$_DEMO_CONTENT_URL/demos/_demo-cicd-eap.yml"
+  oc new-app --name=guides jboss-eap70-openshift~https://github.com/osevg/workshopper.git#stable -n $PRJ_CI -e WORKSHOPS_URLS=$_DEMOS -e CONTENT_URL_PREFIX=$_DEMO_CONTENT_URL -e PROJECT_SUFFIX=$PRJ_SUFFIX -e GOGS_URL=http://$GOGS_ROUTE -e GOGS_DEV_REPO_URL_PREFIX=http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice -e JENKINS_URL=http://jenkins-$PRJ_CI.$DOMAIN -e COOLSTORE_WEB_PROD_URL=http://web-ui-$PRJ_COOLSTORE_PROD.$DOMAIN -e HYSTRIX_PROD_URL=http://hystrix-dashboard-$PRJ_COOLSTORE_PROD.$DOMAIN -e GOGS_DEV_USER=$GOGS_USER -e GOGS_DEV_PASSWORD=$GOGS_PASSWORD -e GOGS_REVIEWER_USER=$GOGS_ADMIN_USER -e GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD -e OCP_VERSION=3.4 -n $PRJ_CI
   oc expose svc/guides -n $PRJ_CI
   oc cancel-build bc/guides -n $PRJ_CI
   oc set env bc/guides MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_CI
-  oc set env dc/guides WORKSHOPS_URLS=$_DEMOS GOGS_URL=http://$GOGS_ROUTE GOGS_DEV_REPO_URL=http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git JENKINS_URL=http://jenkins-$PRJ_CI.$DOMAIN COOLSTORE_WEB_PROD_URL=http://web-ui-$PRJ_COOLSTORE_PROD.$DOMAIN HYSTRIX_PROD_URL=http://hystrix-dashboard-$PRJ_COOLSTORE_PROD.$DOMAIN GOGS_DEV_USER=$GOGS_USER GOGS_DEV_PASSWORD=$GOGS_PASSWORD GOGS_REVIEWER_USER=$GOGS_ADMIN_USER GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD
   oc start-build guides -n $PRJ_CI
   oc set probe dc/guides -n $PRJ_CI --readiness -- /bin/bash -c /opt/eap/bin/readinessProbe.sh
   oc set probe dc/guides -n $PRJ_CI --liveness -- /bin/bash -c /opt/eap/bin/livenessProbe.sh
+
+  if [ "$ARG_MINIMAL" = true ] ; then
+    scale_down_deployments $PRJ_CI guides
+  fi  
 }
 
 # GPTE convention
 function set_default_project() {
-  if [ "$(oc whoami)" == 'system:admin' ] ; then
+  if [ $LOGGEDIN_USER == 'system:admin' ] ; then
     oc project default
   fi
 }
@@ -527,6 +551,12 @@ function echo_header() {
 ################################################################################
 # MAIN: DEPLOY DEMO                                                            #
 ################################################################################
+
+if [ $LOGGEDIN_USER == 'system:admin' ] && [ $ARG_USERNAME == '' ] ; then
+  echo "--user must be provided when running the script as 'system:admin'"
+  echo 0
+fi
+
 if [ "$ARG_DELETE" = true ] ; then
   delete_projects
   exit 0
@@ -536,27 +566,26 @@ START=`date +%s`
 
 echo_header "Multi-product MSA Demo ($(date))"
 
-set_domain_for_gogs_hack
+create_projects 
 print_info
 
-create_infra_project
-deploy_gogs
 deploy_nexus
-deploy_jenkins
-deploy_demo_guides
-create_app_projects
-add_inventory_template_to_projects
 wait_for_nexus_to_be_ready
+build_images
+deploy_guides
+deploy_gogs
+deploy_jenkins
+add_inventory_template_to_projects
 deploy_coolstore_test_env
 deploy_coolstore_prod_env
 deploy_inventory_dev_env
-build_and_tag_images_for_ci
+promote_images
 deploy_pipeline
-sleep 10
+sleep 30
 verify_deployments
 
 set_default_project
-set_permissions
+
 
 END=`date +%s`
 echo

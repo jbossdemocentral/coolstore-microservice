@@ -1,6 +1,6 @@
 Red Hat Cool Store Microservice Demo [![Build Status](https://travis-ci.org/jbossdemocentral/coolstore-microservice.svg?branch=demo-1)](https://travis-ci.org/jbossdemocentral/coolstore-microservice)
 ====================================
-This is an example demo showing a retail store consisting of several of microservices based on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/) and [Node.js](https://access.redhat.com/documentation/en/openshift-enterprise/3.2/paged/using-images/chapter-1-source-to-image-s2i), deployed to [OpenShift](https://access.redhat.com/products/openshift-enterprise-red-hat/).
+This is an example demo showing a retail store consisting of several of microservices based on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/) and [Node.js](https://access.redhat.com/documentation/en-us/openshift_container_platform/3.4/html/using_images/source-to-image-s2i), deployed to [OpenShift](https://access.redhat.com/documentation/en/openshift-container-platform//).
 
 It demonstrates how to wire up small microservices into a larger application using microservice architectural principals.
 
@@ -13,16 +13,18 @@ There are several individual microservices and infrastructure components that ma
 1. Inventory Service - Java EE application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/) and PostgreSQL, serves inventory and availability data for retail products
 1. Coolstore Gateway - Java EE + Spring Boot + [Camel](http://camel.apache.org) application running on [JBoss EAP 7](https://access.redhat.com/products/red-hat-jboss-enterprise-application-platform/), serving as an entry point/router/aggregator to the backend services
 1. Web UI - A frontend based on [AngularJS](https://angularjs.org) and [PatternFly](http://patternfly.org) running in a [Node.js](https://access.redhat.com/documentation/en/openshift-container-platform/3.3/paged/using-images/chapter-2-source-to-image-s2i) container.
+1. Pricing - Business rules application for product pricing on [JBoss BRMS](https://www.redhat.com/en/technologies/jboss-middleware/business-rules)
 
 ![Architecture Screenshot](docs/images/arch-diagram.png?raw=true "Architecture Diagram")
+
+<img src="docs/images/store.png?raw=true" width="740" />
 
 Prerequisites
 ================
 In order to deploy the CoolStore microservices application, you need an OpenShift environment with
 * min 4 GB memory quota if deploying CoolStore
-* min 12 GB memory quota if deploying complete demo infrastructure
+* min 16 GB memory quota if deploying complete demo infrastructure
 * RHEL and JBoss imagestreams installed (check _Troubleshooting_ section for details)
-* Persistent volumes in your OpenShift environment
 
 Deploy CoolStore Microservices Application
 ================
@@ -41,26 +43,26 @@ curl http://inventory:8080/api/availability/329299
 curl http://cart:8080/api/cart/FOO
 ```
 
-Deploy Complete Demo
+Deploy Complete Demo with CI/CD
 ================
-In order to deploy the complete demo infrastructure for demonstrating Microservices, CI/CD, agile integrations and more, use this provisioning script:
+In order to deploy the complete demo infrastructure for demonstrating Microservices, CI/CD, 
+agile integrations and more, either order the demo via RHPDS or use the following script to provision the demo
+on any OpenShift environment:
 
 ```
-$ openshift/scripts/create-demo.sh
+$ oc login MASTER-URL
+$ openshift/scripts/provision-demo.sh 
 ```
 
 You can delete the demo projects and containers with:
 ```
-$ openshift/scripts/delete-demo.sh
+$ openshift/scripts/provision-demo.sh --delete
 ```
 
-Demo Instructions
-================
-Access the web interface by pointing your browser at the `web-ui` route url.
-![Store Screenshot](docs/images/store.png?raw=true "Store Screenshot")
+![CI/CD Demo](docs/images/cicd-projects.png?raw=true)
+![CI/CD Demo](docs/images/cicd-pipeline.png?raw=true)
 
-Notice the UI pods only expose an HTTP endpoint - when users access the UI service through HTTPS,
-OpenShift handles the TLS termination at the routing layer.
+Read the [script docs](openshift/scripts) for further details and how to run the demo on a local cluster with `oc cluster`.
 
 Troubleshooting
 ================

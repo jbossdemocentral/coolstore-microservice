@@ -74,12 +74,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 500m
+              memory: 1Gi
             requests:
               cpu: 50m
               memory: 128Mi
-          resources: {}
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
@@ -171,10 +170,10 @@ objects:
             initialDelaySeconds: 10
           resources:
             limits:
-              cpu: 200
-              memory: 1Gi
+              cpu: 1
+              memory: 2Gi
             requests:
-              cpu: 100
+              cpu: 100m
               memory: 512Mi
     triggers:
     - imageChangeParams:
@@ -299,11 +298,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 200m
+              cpu: 1
               memory: 1Gi
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 50m
+              memory: 512Mi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
@@ -399,11 +398,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 100m
+              cpu: 500m
               memory: 512Mi
             requests:
               cpu: 50m
-              memory: 512Mi
+              memory: 256Mi
         terminationGracePeriodSeconds: 60
         volumes:
         - name: inventory-postgresql-data
@@ -443,7 +442,7 @@ objects:
     - ReadWriteOnce
     resources:
       requests:
-        storage: 512Mi
+        storage: 1Gi
 # Catalog Service
 - apiVersion: v1
   kind: DeploymentConfig
@@ -503,11 +502,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 200m
-              memory: 768Mi
+              cpu: 1
+              memory: 1Gi
             requests:
               cpu: 100m
-              memory: 512Mi
+              memory: 256Mi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
@@ -632,11 +631,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 100m
-              memory: 512Mi
+              cpu: 500m
+              memory: 1Gi
             requests:
-              cpu: 50m
-              memory: 512Mi
+              cpu: 100m
+              memory: 256Mi
           securityContext:
             capabilities: {}
             privileged: false
@@ -757,11 +756,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 200m
+              cpu: 1
               memory: 1Gi
             requests:
               cpu: 100m
-              memory: 512Mi
+              memory: 256Mi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
@@ -899,7 +898,7 @@ objects:
         - pricing
         from:
           kind: ImageStreamTag
-          name: pricing:latest
+          name: pricing:${APP_VERSION}
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1

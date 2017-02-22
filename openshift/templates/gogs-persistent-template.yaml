@@ -71,7 +71,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              memory: 512Mi
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
           volumeMounts:
           - mountPath: /var/lib/pgsql/data
             name: gogs-postgres-data
