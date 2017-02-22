@@ -107,11 +107,7 @@ GITHUB_REF=${GITHUB_REF:-master}
 GITHUB_URI=https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git
 
 # maven 
-if [ "$ARG_MINIMAL" = true ] ; then
-  MAVEN_MIRROR_URL=
-else
-  MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.$PRJ_CI.svc.cluster.local:8081/content/groups/public}
-fi  
+MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.$PRJ_CI.svc.cluster.local:8081/content/groups/public}
 
 GOGS_USER=developer
 GOGS_PASSWORD=developer
@@ -228,10 +224,6 @@ function add_inventory_template_to_projects() {
 
 # Deploy Nexus
 function deploy_nexus() {
-  if [ "$ARG_MINIMAL" = true ] ; then
-    return
-  fi
-  
   if [ -z "$ARG_MAVEN_MIRROR_URL" ] ; then # no maven mirror specified
     local _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/nexus/master/nexus2-persistent-template.yaml"
     if [ "$ARG_EPHEMERAL" = true ] ; then
