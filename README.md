@@ -21,10 +21,10 @@ There are several individual microservices and infrastructure components that ma
 Prerequisites
 ================
 In order to deploy the CoolStore microservices application, you need an OpenShift environment with
-* min 4 GB memory quota if deploying CoolStore
-* min 16 GB memory quota if deploying complete demo infrastructure
+* 4+ GB memory quota if deploying CoolStore
+* 16+ GB memory quota if deploying the [complete demo](openshift/scripts)
 * RHEL and JBoss imagestreams installed (check _Troubleshooting_ section for details)
-* Persistent volumes in your OpenShift environment
+* Nexus Repository (or other maven repository managers) with [proxy repositories](https://books.sonatype.com/nexus-book/reference/confignx-sect-manage-repo.html) defined for [JBoss Enterprise Maven Repository](https://access.redhat.com/maven-repository)
 
 Deploy CoolStore Microservices Application
 ================
