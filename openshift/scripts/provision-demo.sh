@@ -502,9 +502,14 @@ EOM
 
 function verify_deployments() {
   for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI; do
-    for dc in $(oc get pods -n $project | grep deploy | grep Error | cut -d ' ' -f 1 | sed 's/\(.*\)\-[0-9]\+\-deploy/\1/g'); do
-      echo "WARNING: Deployment $dc in project $project has failed. Starting a new deployment"
-      oc rollout latest dc/$dc -n $project
+    local _DC=
+    for dc in $(oc get dc -n $project -o=custom-columns=:.metadata.name,:.status.replicas); do
+      if [ $dc = 0 ]; then
+        echo "WARNING: Deployment $_DC in project $project has failed. Redeploying..."
+        oc rollout latest dc/$_DC -n $project
+        sleep 10
+      fi
+      _DC=$dc
     done
   done
 }
@@ -573,9 +578,14 @@ deploy_coolstore_prod_env
 deploy_inventory_dev_env
 promote_images
 deploy_pipeline
+<<<<<<< HEAD
 sleep 30
 verify_deployments
+=======
+>>>>>>> 549e91c... added back deployment verification
 
+sleep 30
+verify_deployments
 set_default_project
 
 
