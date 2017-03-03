@@ -88,7 +88,6 @@ done
 ################################################################################
 # CONFIGURATION                                                                #
 ################################################################################
-OPENSHIFT_MASTER=$(oc whoami -c | sed 's#[^/]*/\([^/]*\)/[^/]*#\1#g')
 LOGGEDIN_USER=$(oc whoami)
 OPENSHIFT_USER=${ARG_USERNAME:-$LOGGEDIN_USER}
 
@@ -122,6 +121,9 @@ WEBHOOK_SECRET=UfW7gQ6Jx4
 
 function print_info() {
   echo_header "Configuration"
+
+  OPENSHIFT_MASTER=$(oc status | head -1 | sed 's#.*\(https://[^ ]*\)#\1#g') # must run after projects are created
+
   echo "OpenShift master:    $OPENSHIFT_MASTER"
   echo "Current user:        $LOGGEDIN_USER"
   echo "Minimal setup:       $ARG_MINIMAL"
