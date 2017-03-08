@@ -582,12 +582,6 @@ deploy_coolstore_prod_env
 deploy_inventory_dev_env
 promote_images
 deploy_pipeline
-<<<<<<< HEAD
-sleep 30
-verify_deployments
-=======
->>>>>>> 549e91c... added back deployment verification
-
 sleep 30
 verify_deployments
 set_default_project
