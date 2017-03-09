@@ -586,9 +586,6 @@ promote_images
 deploy_pipeline
 sleep 30
 verify_deployments
-
-sleep 30
-verify_deployments
 set_default_project
 
 
