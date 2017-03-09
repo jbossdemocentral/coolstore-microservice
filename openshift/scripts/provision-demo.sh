@@ -235,6 +235,8 @@ function deploy_nexus() {
     echo_header "Deploying Sonatype Nexus repository manager..."
     echo "Using template $_TEMPLATE"
     oc process -f $_TEMPLATE -n $PRJ_CI | oc create -f - -n $PRJ_CI
+    sleep 5
+    oc set resources dc/nexus --limits=cpu=1,memory=2Gi --requests=cpu=200m,memory=1Gi -n $PRJ_CI
   else
     echo_header "Using existng Maven mirror: $ARG_MAVEN_MIRROR_URL"
   fi
