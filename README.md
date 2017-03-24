@@ -33,7 +33,7 @@ Deploy the CoolStore microservices application using this template `openshift/co
 ```
 oc login -u developer
 oc new-project coolstore
-oc process -f coolstore-template.yaml | oc create -f -
+oc process -f openshift/coolstore-template.yaml | oc create -f -
 ```
 
 When all pods are deployed, verify all services are functioning:
