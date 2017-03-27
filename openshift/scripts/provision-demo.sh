@@ -555,9 +555,9 @@ function echo_header() {
 # MAIN: DEPLOY DEMO                                                            #
 ################################################################################
 
-if [ $LOGGEDIN_USER == 'system:admin' ] && [ $ARG_USERNAME == '' ] ; then
+if [ "$LOGGEDIN_USER" == 'system:admin' ] && [ "$ARG_USERNAME" == '' ] ; then
   echo "--user must be provided when running the script as 'system:admin'"
-  echo 0
+  exit 255
 fi
 
 if [ "$ARG_DELETE" = true ] ; then
