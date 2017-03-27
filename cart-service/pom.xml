@@ -4,11 +4,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.redhat.coolstore</groupId>
-	<artifactId>cart-spring</artifactId>
+	<artifactId>cart</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
-
-	<name>cart-service-spring</name>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
