@@ -47,7 +47,7 @@ objects:
       type: Source
     resources:
       limits:
-        cpu: 1
+        cpu: 500m
         memory: "2Gi"
       requests:
         cpu: "200m"
@@ -103,7 +103,7 @@ objects:
       type: Source
     resources:
       limits:
-        cpu: 1
+        cpu: 500m
         memory: "2Gi"
       requests:
         cpu: "200m"
@@ -185,7 +185,7 @@ objects:
       type: Source
     resources:
       limits:
-        cpu: 1
+        cpu: 500m
         memory: "2Gi"
       requests:
         cpu: "200m"
@@ -226,7 +226,7 @@ objects:
       type: Source
     resources:
       limits:
-        cpu: 1
+        cpu: 500m
         memory: "2Gi"
       requests:
         cpu: "200m"
