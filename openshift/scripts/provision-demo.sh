@@ -551,14 +551,14 @@ function echo_header() {
 # MAIN: DEPLOY DEMO                                                            #
 ################################################################################
 
-if [ "$LOGGEDIN_USER" == 'system:admin' ] && [ "$ARG_USERNAME" == '' ] ; then
-  echo "--user must be provided when running the script as 'system:admin'"
-  exit 255
-fi
-
 if [ "$ARG_DELETE" = true ] ; then
   delete_projects
   exit 0
+fi
+
+if [ "$LOGGEDIN_USER" == 'system:admin' ] && [ "$ARG_USERNAME" == '' ] ; then
+  echo "--user must be provided when running the script as 'system:admin'"
+  exit 255
 fi
 
 START=`date +%s`
