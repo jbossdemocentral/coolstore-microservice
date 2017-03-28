@@ -170,7 +170,7 @@ objects:
             initialDelaySeconds: 10
           resources:
             limits:
-              cpu: 1
+              cpu: 700m
               memory: 2Gi
             requests:
               cpu: 100m
@@ -502,7 +502,7 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 1
+              cpu: 500m
               memory: 1Gi
             requests:
               cpu: 100m
@@ -735,7 +735,7 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: 1
+              cpu: 700m
               memory: 1Gi
             requests:
               cpu: 100m
