@@ -93,7 +93,6 @@ OPENSHIFT_USER=${ARG_USERNAME:-$LOGGEDIN_USER}
 
 # project
 PRJ_SUFFIX=${ARG_PROJECT_SUFFIX:-`echo $OPENSHIFT_USER | sed -e 's/[-@].*//g'`}
-PRJ_LABEL=demo1-$PRJ_SUFFIX
 PRJ_CI=ci-$PRJ_SUFFIX
 PRJ_COOLSTORE_TEST=coolstore-test-$PRJ_SUFFIX
 PRJ_COOLSTORE_PROD=coolstore-prod-$PRJ_SUFFIX
@@ -129,7 +128,6 @@ function print_info() {
   echo "Minimal setup:       $ARG_MINIMAL"
   echo "Ephemeral:           $ARG_EPHEMERAL"
   echo "Project suffix:      $PRJ_SUFFIX"
-  echo "Project label:       $PRJ_LABEL"
   echo "GitHub repo:         https://github.com/$GITHUB_ACCOUNT/coolstore-microservice"
   echo "GitHub branch/tag:   $GITHUB_REF"
   echo "Gogs url:            http://$GOGS_ROUTE"
@@ -202,7 +200,7 @@ function create_projects() {
     for project in $PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_DEVELOPER
     do
       oc adm policy add-role-to-user admin $ARG_USERNAME -n $project
-      oc annotate --overwrite namespace $project demo=$PRJ_LABEL demogroup=demo-msa-$PRJ_SUFFIX
+      oc annotate --overwrite namespace $project demo=demo1-$PRJ_SUFFIX demo=demo-modern-arch-$PRJ_SUFFIX
     done
     oc adm pod-network join-projects --to=$PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY >/dev/null 2>&1
   fi
