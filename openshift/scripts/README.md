@@ -30,20 +30,26 @@ Prerequisites
 Usage
 ============
 ```
-provision-demo.sh [options]
+provision-demo.sh --deploy [options]
+provision-demo.sh --delete [options]
+provision-demo.sh --verify [options]
 provision-demo.sh --help
 
 Example:
- provision-demo.sh --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix demo
+ provision-demo.sh --deploy --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix demo
+
+Commands:
+   --deploy            Set up the demo projects and deploy demo apps
+   --delete            Clean up and remove demo projects and objects
+   --verify            Verify the demo is deployed correctly
 
 Options:
    --user              The admin user for the demo projects. mandatory if logged in as system:admin
    --maven-mirror-url  Use the given Maven repository for builds. If not specifid, a Nexus container is deployed in the demo
    --project-suffix    Suffix to be added to demo project names e.g. ci-SUFFIX. If empty, user will be used as suffix
-   --delete            Clean up and remove demo projects and objects
    --minimal           Scale all pods except the absolute essential ones to zero to lower memory and cpu footprint
    --ephemeral         Deploy demo without persistent storage
-   --help              Dispaly help
+   --run-verify        Run verify after provisioning
 ```
 
 [![asciicast](https://asciinema.org/a/103399.png)](https://asciinema.org/a/103399)
@@ -54,24 +60,24 @@ Provision a minimal demo on a local cluster without persistent storage:
 ```
 $ oc cluster up 
 $ oc create -f https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json -n openshift
-$ provision-demo.sh --user developer --minimal --ephemeral
+$ provision-demo.sh --deploy --user developer --minimal --ephemeral
 ```
 
-Provision on OpenShift Online/Dedicated:
+Provision on OpenShift Online/Dedicated and verify afterwards:
 ```
 $ oc login https://api.preview.openshift.com --token=YOUR-TOKEN
-$ provision-demo.sh 
+$ provision-demo.sh --deploy --run-verify
 ```
 
 Use an existing Sonatype Nexus:
 ```
-$ provision-demo.sh --maven-mirror-url http://nexus.repo.com/content/groups/public/
+$ provision-demo.sh --deploy --maven-mirror-url http://nexus.repo.com/content/groups/public/
 ```
 
 Provision demo as ```system:admin``` for user ```john@mycompany.com```:
 ```
 $ oc login -u system:admin
-$ provision-demo.sh --user john@mycompany.com
+$ provision-demo.sh --deploy --user john@mycompany.com
 ```
 
 Delete demo:
@@ -82,5 +88,10 @@ $ provision-demo.sh --delete
 Delete demo for user ```john@mycompany.com``` while logged in as ```system:admin```:
 ```
 $ oc login -u system:admin
-$ provision-demo.sh --user john@mycompany.com --delete
+$ provision-demo.sh --deploy --user john@mycompany.com
+```
+
+Verify demo is deployed correctly:
+```
+$ provision-demo.sh --verify
 ```

@@ -5,34 +5,46 @@
 function usage() {
     echo
     echo "Usage:"
-    echo " $0 [options]"
-    echo " $0 --help "
+    echo " $0 --deploy [options]"
+    echo " $0 --delete [options]"
+    echo " $0 --verify [options]"
+    echo " $0 --help"
     echo
     echo "Example:"
-    echo " $0 --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d"
+    echo " $0 --deploy --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d"
     echo
+    echo "Commands:"
+    echo "   --deploy            Set up the demo projects and deploy demo apps"
+    echo "   --delete            Clean up and remove demo projects and objects"
+    echo "   --verify            Verify the demo is deployed correctly"
+    echo 
     echo "Options:"
     echo "   --user              The admin user for the demo projects. mandatory if logged in as system:admin"
     echo "   --maven-mirror-url  Use the given Maven repository for builds. If not specifid, a Nexus container is deployed in the demo"
     echo "   --project-suffix    Suffix to be added to demo project names e.g. ci-SUFFIX. If empty, user will be used as suffix"
-    echo "   --delete            Clean up and remove demo projects and objects"
     echo "   --minimal           Scale all pods except the absolute essential ones to zero to lower memory and cpu footprint"
     echo "   --ephemeral         Deploy demo without persistent storage"
-    echo "   --help              Dispaly help"
+    echo "   --run-verify        Run verify after provisioning"
 }
 
 ARG_USERNAME=
 ARG_PROJECT_SUFFIX=
 ARG_MAVEN_MIRROR_URL=
-ARG_DELETE=false
 ARG_MINIMAL=false
 ARG_EPHEMERAL=false
+ARG_COMMAND=deploy
+ARG_RUN_VERIFY=false
 
 while :; do
     case $1 in
-        -h|--help)
-            usage
-            exit
+        --deploy)
+            ARG_COMMAND=deploy
+            ;;
+        --delete)
+            ARG_COMMAND=delete
+            ;;
+        --verify)
+            ARG_COMMAND=verify
             ;;
         --user)
             if [ -n "$2" ]; then
@@ -67,8 +79,12 @@ while :; do
         --ephemeral)
             ARG_EPHEMERAL=true
             ;;
-        --delete)
-            ARG_DELETE=true
+        --run-verify)
+            ARG_RUN_VERIFY=true
+            ;;
+        -h|--help)
+            usage
+            exit
             ;;
         --)
             shift
@@ -215,6 +231,7 @@ function create_projects() {
 
 # Add Inventory Service Template
 function add_inventory_template_to_projects() {
+  echo_header "Adding inventory template to $PRJ_DEVELOPER project"
   local _TEMPLATE=https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-template.json
   curl -sL $_TEMPLATE | tr -d '\n' | tr -s '[:space:]' \
     | sed "s|\"MAVEN_MIRROR_URL\", \"value\": \"\"|\"MAVEN_MIRROR_URL\", \"value\": \"$MAVEN_MIRROR_URL\"|g" \
@@ -502,14 +519,35 @@ EOM
   fi
 }
 
-function verify_deployments() {
-  for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI; do
+function verify_build_and_deployments() {
+  echo_header "Verifying build and deployments"
+  # verify builds
+  local _BUILDS_FAILED=false
+  for buildconfig in coolstore-gw web-ui inventory cart catalog 
+  do
+    if [ -n "$(oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep Failed)" ] && [ -z "$(oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep Complete)" ]; then
+      _BUILDS_FAILED=true
+      echo "WARNING: Build $project/$buildconfig has failed. Starging a new build..."
+      oc start-build $buildconfig -n $PRJ_COOLSTORE_TEST --wait
+    fi
+  done
+
+  # promote images if builds had failed
+  if [ "$_BUILDS_FAILED" = true ]; then
+    promote_images
+    deploy_pipeline
+  fi
+
+  # verify deployments
+  for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_CI $PRJ_INVENTORY
+  do
     local _DC=
     for dc in $(oc get dc -n $project -o=custom-columns=:.metadata.name,:.status.replicas); do
-      if [ $dc = 0 ]; then
-        echo "WARNING: Deployment $_DC in project $project has failed. Redeploying..."
-        oc rollout latest dc/$_DC -n $project
-        sleep 10
+      if [ $dc = 0 ] && [ -z "$(oc get pods -n $project | grep "$dc-[0-9]\+-deploy" | grep Running)" ] ; then
+        echo "WARNING: Deployment $project/$_DC in project $project is not complete. Starting a new deployment..."
+        oc deploy $_DC --cancel -n $project >/dev/null
+        sleep 5
+        oc deploy $_DC --latest --follow -n $project
       fi
       _DC=$dc
     done
@@ -538,7 +576,7 @@ function deploy_guides() {
 # GPTE convention
 function set_default_project() {
   if [ $LOGGEDIN_USER == 'system:admin' ] ; then
-    oc project default
+    oc project default >/dev/null
   fi
 }
 
@@ -553,39 +591,59 @@ function echo_header() {
 # MAIN: DEPLOY DEMO                                                            #
 ################################################################################
 
-if [ "$ARG_DELETE" = true ] ; then
-  delete_projects
-  exit 0
-fi
-
-if [ "$LOGGEDIN_USER" == 'system:admin' ] && [ "$ARG_USERNAME" == '' ] ; then
-  echo "--user must be provided when running the script as 'system:admin'"
-  exit 255
+if [ "$LOGGEDIN_USER" == 'system:admin' ] && [ -z "$ARG_USERNAME" ] ; then
+  # for verify and delete, --project-suffix is enough
+  if [ "$ARG_COMMAND" == "delete" ] || [ "$ARG_COMMAND" == "verify" ] && [ -z "$ARG_PROJECT_SUFFIX" ]; then
+    echo "--user or --project-suffix must be provided when running $ARG_COMMAND as 'system:admin'"
+    exit 255
+  # deploy command
+  elif [ "$ARG_COMMAND" != "delete" ] && [ "$ARG_COMMAND" != "verify" ] ; then
+    echo "--user must be provided when running $ARG_COMMAND as 'system:admin'"
+    exit 255
+  fi
 fi
 
 START=`date +%s`
-
 echo_header "Mult-product MSA Demo ($(date))"
 
-create_projects 
-print_info
+case "$ARG_COMMAND" in
+    delete)
+        echo "Delete MSA demo..."
+        delete_projects
+        exit 0
+        ;;
+      
+    verify)
+        echo "Verifying MSA demo..."
+        print_info
+        verify_build_and_deployments
+        ;;
 
-deploy_nexus
-wait_for_nexus_to_be_ready
-build_images
-deploy_guides
-deploy_gogs
-deploy_jenkins
-add_inventory_template_to_projects
-deploy_coolstore_test_env
-deploy_coolstore_prod_env
-deploy_inventory_dev_env
-promote_images
-deploy_pipeline
-sleep 30
-verify_deployments
+    *)
+        echo "Deploying MSA demo..."
+        create_projects 
+        print_info
+        deploy_nexus
+        wait_for_nexus_to_be_ready
+        build_images
+        deploy_guides
+        deploy_gogs
+        deploy_jenkins
+        add_inventory_template_to_projects
+        deploy_coolstore_test_env
+        deploy_coolstore_prod_env
+        deploy_inventory_dev_env
+        promote_images
+        deploy_pipeline
+
+        if [ "$ARG_RUN_VERIFY" = true ] ; then
+          echo "Waiting for deployments to finish..."
+          sleep 30
+          verify_build_and_deployments
+        fi
+esac
+
 set_default_project
-
 
 END=`date +%s`
 echo
