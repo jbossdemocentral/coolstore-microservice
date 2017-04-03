@@ -645,7 +645,7 @@ case "$ARG_COMMAND" in
 esac
 
 set_default_project
-popd ~
+popd
 
 END=`date +%s`
 echo
