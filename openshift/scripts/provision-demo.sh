@@ -599,6 +599,7 @@ if [ "$LOGGEDIN_USER" == 'system:admin' ] && [ -z "$ARG_USERNAME" ] ; then
   fi
 fi
 
+pushd ~
 START=`date +%s`
 echo_header "Mult-product MSA Demo ($(date))"
 
@@ -640,6 +641,7 @@ case "$ARG_COMMAND" in
 esac
 
 set_default_project
+popd ~
 
 END=`date +%s`
 echo
