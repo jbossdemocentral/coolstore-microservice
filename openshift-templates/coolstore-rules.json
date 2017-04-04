@@ -1,0 +1,429 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "coolstore-rules",
+        "creationTimestamp": null
+    },
+    "parameters": [
+      {
+        "description": "A local Maven Mirror, e.g.: http://nexus.ci.svc.cluster.local:8081/content/groups/public/",
+        "name": "MAVEN_MIRROR_URL",
+        "value": ""
+      }
+    ],
+    "objects": [
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "coolstore-rules",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "decisionserver63-basic-s2i",
+                    "application": "coolstore-rules",
+                    "template": "decisionserver63-basic-s2i",
+                    "xpaas": "1.3.3"
+                },
+                "annotations": {
+                    "openshift.io/generated-by": "OpenShiftNewApp"
+                }
+            },
+            "spec": {
+                "triggers": [
+                    {
+                        "type": "GitHub",
+                        "github": {
+                            "secret": "bGlpqUeu"
+                        }
+                    },
+                    {
+                        "type": "Generic",
+                        "generic": {
+                            "secret": "xwiUeeJn"
+                        }
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChange": {}
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "runPolicy": "Serial",
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "https://github.com/jbossdemocentral/brms-coolstore-repo.git",
+                        "ref": "master"
+                    },
+                    "contextDir": "coolstore"
+                },
+                "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "namespace": "openshift",
+                            "name": "jboss-decisionserver63-openshift:1.3"
+                        },
+                        "env": [
+                            {
+                                "name": "KIE_CONTAINER_DEPLOYMENT",
+                                "value": "CoolStoreRulesContainer=com.redhat:coolstore:2.0.0"
+                            },
+                            {
+                              "name": "MAVEN_MIRROR_URL",
+                              "value": "${MAVEN_MIRROR_URL}"
+                            }
+                        ],
+                        "forcePull": true
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "coolstore-rules:latest"
+                    }
+                },
+                "resources": {},
+                "postCommit": {}
+            },
+            "status": {
+                "lastVersion": 0
+            }
+        },
+        {
+            "kind": "Build",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "coolstore-rules-1",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "decisionserver63-basic-s2i",
+                    "application": "coolstore-rules",
+                    "buildconfig": "coolstore-rules",
+                    "openshift.io/build-config.name": "coolstore-rules",
+                    "openshift.io/build.start-policy": "Serial",
+                    "template": "decisionserver63-basic-s2i",
+                    "xpaas": "1.3.3"
+                },
+                "annotations": {
+                    "openshift.io/build-config.name": "coolstore-rules",
+                    "openshift.io/build.number": "1",
+                    "openshift.io/build.pod-name": "coolstore-rules-1-build"
+                }
+            },
+            "spec": {
+                "serviceAccount": "builder",
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "https://github.com/jbossdemocentral/brms-coolstore-repo.git",
+                        "ref": "master"
+                    },
+                    "contextDir": "coolstore"
+                },
+                "revision": {
+                    "type": "Git",
+                    "git": {
+                        "commit": "cd8f1ad2e1d4840f39c910503a3e5736a666239a",
+                        "author": {
+                            "name": "Duncan Doyle",
+                            "email": "Duncan.Doyle@gmail.com"
+                        },
+                        "committer": {
+                            "name": "GitHub",
+                            "email": "noreply@github.com"
+                        },
+                        "message": "Merge pull request #4 from DuncanDoyle/feature/issue-3"
+                    }
+                },
+                "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "DockerImage",
+                            "name": "registry.access.redhat.com/jboss-decisionserver-6/decisionserver63-openshift@sha256:93b25d820cb8557c14dc1d45efe7f8357260075212c73bd071d017e9d8610f60"
+                        },
+                        "env": [
+                            {
+                                "name": "KIE_CONTAINER_DEPLOYMENT",
+                                "value": "CoolStoreRulesContainer=com.redhat:coolstore:2.0.0"
+                            }
+                        ],
+                        "forcePull": true
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "coolstore-rules:latest"
+                    },
+                    "pushSecret": {
+                        "name": "builder-dockercfg-j1hw1"
+                    }
+                },
+                "resources": {},
+                "postCommit": {},
+                "triggeredBy": [
+                    {
+                        "message": "Build configuration change"
+                    }
+                ]
+            },
+            "status": {
+                "phase": "New",
+                "outputDockerImageReference": "172.30.64.250:5000/coolstore/coolstore-rules:latest",
+                "config": {
+                    "name": "coolstore-rules"
+                }
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "coolstore-rules",
+                "generation": 1,
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "decisionserver63-basic-s2i",
+                    "application": "coolstore-rules",
+                    "template": "decisionserver63-basic-s2i",
+                    "xpaas": "1.3.3"
+                },
+                "annotations": {
+                    "openshift.io/generated-by": "OpenShiftNewApp"
+                }
+            },
+            "spec": {},
+            "status": {
+                "dockerImageRepository": ""
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "coolstore-rules",
+                "generation": 1,
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "decisionserver63-basic-s2i",
+                    "application": "coolstore-rules",
+                    "template": "decisionserver63-basic-s2i",
+                    "xpaas": "1.3.3"
+                },
+                "annotations": {
+                    "openshift.io/generated-by": "OpenShiftNewApp"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Recreate",
+                    "recreateParams": {
+                        "timeoutSeconds": 600
+                    },
+                    "resources": {}
+                },
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "coolstore-rules"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "namespace": "coolstore",
+                                "name": "coolstore-rules:latest"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "test": false,
+                "selector": {
+                    "deploymentConfig": "coolstore-rules"
+                },
+                "template": {
+                    "metadata": {
+                        "name": "coolstore-rules",
+                        "creationTimestamp": null,
+                        "labels": {
+                            "app": "decisionserver63-basic-s2i",
+                            "application": "coolstore-rules",
+                            "deploymentConfig": "coolstore-rules"
+                        },
+                        "annotations": {
+                            "openshift.io/generated-by": "OpenShiftNewApp"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "coolstore-rules",
+                                "image": "coolstore-rules",
+                                "ports": [
+                                    {
+                                        "name": "jolokia",
+                                        "containerPort": 8778,
+                                        "protocol": "TCP"
+                                    },
+                                    {
+                                        "name": "http",
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "KIE_CONTAINER_DEPLOYMENT",
+                                        "value": "CoolStoreRulesContainer=com.redhat:coolstore:2.0.0"
+                                    },
+                                    {
+                                        "name": "KIE_SERVER_USER",
+                                        "value": "brmsAdmin"
+                                    },
+                                    {
+                                        "name": "KIE_SERVER_PASSWORD",
+                                        "value": "jbossbrms@01"
+                                    },
+                                    {
+                                        "name": "HORNETQ_CLUSTER_PASSWORD",
+                                        "value": "vOo7cQfB"
+                                    },
+                                    {
+                                        "name": "HORNETQ_QUEUES"
+                                    },
+                                    {
+                                        "name": "HORNETQ_TOPICS"
+                                    }
+                                ],
+                                "resources": {},
+                                "livenessProbe": {
+                                    "exec": {
+                                        "command": [
+                                            "/bin/bash",
+                                            "-c",
+                                            "/opt/eap/bin/livenessProbe.sh"
+                                        ]
+                                    },
+                                    "timeoutSeconds": 1,
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "failureThreshold": 3
+                                },
+                                "readinessProbe": {
+                                    "exec": {
+                                        "command": [
+                                            "/bin/bash",
+                                            "-c",
+                                            "/opt/eap/bin/readinessProbe.sh"
+                                        ]
+                                    },
+                                    "timeoutSeconds": 1,
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "failureThreshold": 3
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "imagePullPolicy": "Always"
+                            }
+                        ],
+                        "restartPolicy": "Always",
+                        "terminationGracePeriodSeconds": 60,
+                        "dnsPolicy": "ClusterFirst",
+                        "securityContext": {}
+                    }
+                }
+            },
+            "status": {
+                "observedGeneration": 1
+            }
+        },
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "coolstore-rules",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "decisionserver63-basic-s2i",
+                    "application": "coolstore-rules",
+                    "template": "decisionserver63-basic-s2i",
+                    "xpaas": "1.3.3"
+                },
+                "annotations": {
+                    "description": "Route for application's http service.",
+                    "openshift.io/generated-by": "OpenShiftNewApp",
+                    "openshift.io/host.generated": "true"
+                }
+            },
+            "spec": {
+                "host": "coolstore-rules-coolstore.127.0.0.1.xip.io",
+                "to": {
+                    "kind": "Service",
+                    "name": "coolstore-rules",
+                    "weight": 100
+                }
+            },
+            "status": {
+                "ingress": [
+                    {
+                        "host": "coolstore-rules-coolstore.127.0.0.1.xip.io",
+                        "routerName": "router",
+                        "conditions": [
+                            {
+                                "type": "Admitted",
+                                "status": "True",
+                                "lastTransitionTime": "2016-12-01T09:44:14Z"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "coolstore-rules",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "decisionserver63-basic-s2i",
+                    "application": "coolstore-rules",
+                    "template": "decisionserver63-basic-s2i",
+                    "xpaas": "1.3.3"
+                },
+                "annotations": {
+                    "description": "The web server's http port.",
+                    "openshift.io/generated-by": "OpenShiftNewApp"
+                }
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "protocol": "TCP",
+                        "port": 8080,
+                        "targetPort": 8080
+                    }
+                ],
+                "selector": {
+                    "deploymentConfig": "coolstore-rules"
+                },
+                "type": "ClusterIP",
+                "sessionAffinity": "None"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        }
+    ]
+}
