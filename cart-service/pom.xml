@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.redhat.coolstore</groupId>
-	<artifactId>cart-spring</artifactId>
+	<artifactId>cart</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>cart-service-spring</name>
+	<name>cart-service</name>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -32,6 +32,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
+		<netflix.feign.version>8.15.1</netflix.feign.version>
+		<version.org.kie>6.4.0.Final-redhat-10</version.org.kie>
 	</properties>
 
 	<dependencies>
@@ -60,11 +62,24 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.netflix.feign</groupId>
+			<artifactId>feign-jackson</artifactId>
+			<version>${netflix.feign.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.kie.server</groupId>
+			<artifactId>kie-server-client</artifactId>
+			<version>${version.org.kie}</version>
+			<scope>compile</scope>
 		</dependency>
 
 		<!-- Test -->

@@ -8,8 +8,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
 
 import org.kie.api.KieServices;
 import org.kie.api.command.BatchExecutionCommand;
@@ -25,8 +23,10 @@ import org.kie.server.client.KieServicesFactory;
 import org.kie.server.client.RuleServicesClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import com.redhat.coolstore.PromoEvent;
+import com.redhat.coolstore.model.kie.PromoEvent;
 import com.redhat.coolstore.model.Product;
 import com.redhat.coolstore.model.Promotion;
 import com.redhat.coolstore.model.ShoppingCart;
@@ -35,7 +35,7 @@ import com.redhat.coolstore.model.ShoppingCartItem;
 import feign.Feign;
 import feign.jackson.JacksonDecoder;
 
-@Stateless
+@Component
 public class ShoppingCartServiceImplDecisionServer implements ShoppingCartService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ShoppingCartServiceImplDecisionServer.class);
@@ -56,7 +56,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	private KieServicesClient kieServicesClient;
 	private RuleServicesClient rulesClient;
 
-	@Inject
+	@Autowired
 	private PromoService ps;
 
 	private Map<String, ShoppingCart> cartDB = new HashMap<>();
@@ -99,7 +99,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 
 			if (executeResponse.getType() == ResponseType.SUCCESS) {
 				ExecutionResults results = executeResponse.getResult();
-				com.redhat.coolstore.ShoppingCart resultSc = (com.redhat.coolstore.ShoppingCart) results.getValue("shoppingcart");
+				com.redhat.coolstore.model.kie.ShoppingCart resultSc = (com.redhat.coolstore.model.kie.ShoppingCart) results.getValue("shoppingcart");
 				mapShoppingCartPricingResults(resultSc, sc);
 			} else {
 				// TODO: Some proper, micro-service type error handling here.
@@ -148,7 +148,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 		/*
 		 * Build the ShoppingCart fact from the given ShoppingCart.
 		 */
-		com.redhat.coolstore.ShoppingCart factSc = buildShoppingCartFact(sc);
+		com.redhat.coolstore.model.kie.ShoppingCart factSc = buildShoppingCartFact(sc);
 
 		commands.add(commandsFactory.newInsert(factSc, "shoppingcart", true, "DEFAULT"));
 
@@ -156,7 +156,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 		List<ShoppingCartItem> scItems = sc.getShoppingCartItemList();
 		for (ShoppingCartItem nextSci : scItems) {
 			// Build the ShoppingCartItem fact from the given ShoppingCartItem.
-			com.redhat.coolstore.ShoppingCartItem factSci = buildShoppingCartItem(nextSci);
+			com.redhat.coolstore.model.kie.ShoppingCartItem factSci = buildShoppingCartItem(nextSci);
 			factSci.setShoppingCart(factSc);
 			commands.add(commandsFactory.newInsert(factSci));
 		}
@@ -200,8 +200,8 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	 *            the {@link ShoppingCart} from which to build the fact.
 	 * @return the {@link com.redhat.coolstore.ShoppingCart} fact
 	 */
-	private com.redhat.coolstore.ShoppingCart buildShoppingCartFact(ShoppingCart sc) {
-		com.redhat.coolstore.ShoppingCart factSc = new com.redhat.coolstore.ShoppingCart();
+	private com.redhat.coolstore.model.kie.ShoppingCart buildShoppingCartFact(ShoppingCart sc) {
+		com.redhat.coolstore.model.kie.ShoppingCart factSc = new com.redhat.coolstore.model.kie.ShoppingCart();
 		factSc.setCartItemPromoSavings(sc.getCartItemPromoSavings());
 		factSc.setCartItemTotal(sc.getCartItemTotal());
 		factSc.setCartTotal(sc.getCartTotal());
@@ -217,8 +217,8 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	 *            the {@link ShoppingCartItem} from which to build the fact.
 	 * @return the {@link com.redhat.coolstore.ShoppingCartItem} fact.
 	 */
-	private com.redhat.coolstore.ShoppingCartItem buildShoppingCartItem(ShoppingCartItem sci) {
-		com.redhat.coolstore.ShoppingCartItem factSci = new com.redhat.coolstore.ShoppingCartItem();
+	private com.redhat.coolstore.model.kie.ShoppingCartItem buildShoppingCartItem(ShoppingCartItem sci) {
+		com.redhat.coolstore.model.kie.ShoppingCartItem factSci = new com.redhat.coolstore.model.kie.ShoppingCartItem();
 		factSci.setItemId(sci.getProduct().getItemId());
 		factSci.setName(sci.getProduct().getName());
 		factSci.setPrice(sci.getProduct().getPrice());
@@ -234,7 +234,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	 * @param sc
 	 *            the {@link ShoppingCart} onto which we need to map the results.
 	 */
-	private void mapShoppingCartPricingResults(com.redhat.coolstore.ShoppingCart resultSc, ShoppingCart sc) {
+	private void mapShoppingCartPricingResults(com.redhat.coolstore.model.kie.ShoppingCart resultSc, ShoppingCart sc) {
 		sc.setCartItemPromoSavings(resultSc.getCartItemPromoSavings());
 		sc.setCartItemTotal(resultSc.getCartItemTotal());
 		sc.setShippingPromoSavings(resultSc.getShippingPromoSavings());
