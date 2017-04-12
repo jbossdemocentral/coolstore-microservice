@@ -30,9 +30,7 @@ Prerequisites
 Usage
 ============
 ```
-provision-demo.sh --deploy [options]
-provision-demo.sh --delete [options]
-provision-demo.sh --verify [options]
+provision-demo.sh [command] [options]
 provision-demo.sh --help
 
 Example:
@@ -42,6 +40,7 @@ Commands:
    --deploy            Set up the demo projects and deploy demo apps
    --delete            Clean up and remove demo projects and objects
    --verify            Verify the demo is deployed correctly
+   --idle              Make all demo servies idle
 
 Options:
    --user              The admin user for the demo projects. mandatory if logged in as system:admin
@@ -94,4 +93,9 @@ $ provision-demo.sh --deploy --user john@mycompany.com
 Verify demo is deployed correctly:
 ```
 $ provision-demo.sh --verify
+```
+
+Make all demo services idle
+```
+$ provision-demo.sh --idle
 ```

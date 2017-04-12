@@ -5,9 +5,7 @@
 function usage() {
     echo
     echo "Usage:"
-    echo " $0 --deploy [options]"
-    echo " $0 --delete [options]"
-    echo " $0 --verify [options]"
+    echo " $0 [command] [options]"
     echo " $0 --help"
     echo
     echo "Example:"
@@ -17,6 +15,7 @@ function usage() {
     echo "   --deploy            Set up the demo projects and deploy demo apps"
     echo "   --delete            Clean up and remove demo projects and objects"
     echo "   --verify            Verify the demo is deployed correctly"
+    echo "   --idle              Make all demo servies idle"
     echo 
     echo "Options:"
     echo "   --user              The admin user for the demo projects. mandatory if logged in as system:admin"
@@ -45,6 +44,9 @@ while :; do
             ;;
         --verify)
             ARG_COMMAND=verify
+            ;;
+        --idle)
+            ARG_COMMAND=idle
             ;;
         --user)
             if [ -n "$2" ]; then
@@ -569,6 +571,15 @@ function deploy_guides() {
   fi  
 }
 
+function make_idle() {
+  echo_header "Idling Services"
+  oc idle -n $PRJ_CI --all
+  oc idle -n $PRJ_COOLSTORE_TEST --all
+  oc idle -n $PRJ_COOLSTORE_PROD --all
+  oc idle -n $PRJ_INVENTORY --all
+  oc idle -n $PRJ_DEVELOPER --all
+}
+
 # GPTE convention
 function set_default_project() {
   if [ $LOGGEDIN_USER == 'system:admin' ] ; then
@@ -614,6 +625,12 @@ case "$ARG_COMMAND" in
         echo "Verifying MSA demo..."
         print_info
         verify_build_and_deployments
+        ;;
+
+    idle)
+        echo "Idling MSA demo..."
+        print_info
+        make_idle
         ;;
 
     *)
