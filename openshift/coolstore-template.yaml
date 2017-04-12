@@ -849,6 +849,14 @@ objects:
         - env:
           - name: CATALOG_ENDPOINT
             value: "http://catalog:8080"
+          - name: PRICING_ENDPOINT
+            value: "http://pricing:8080"
+          - name: KIE_CONTAINER_DEPLOYMENT
+            value: ${KIE_CONTAINER_DEPLOYMENT}
+          - name: KIE_SERVER_USER
+            value: ${KIE_SERVER_USER}
+          - name: KIE_SERVER_PASSWORD
+            value: ${KIE_SERVER_PASSWORD}
           image: cart
           imagePullPolicy: Always
           livenessProbe:
@@ -857,7 +865,7 @@ objects:
               path: /health
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 15
+            initialDelaySeconds: 30
             periodSeconds: 5
             successThreshold: 1
             timeoutSeconds: 1
@@ -878,7 +886,7 @@ objects:
               path: /health
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 15
+            initialDelaySeconds: 30
             periodSeconds: 5
             successThreshold: 1
             timeoutSeconds: 1
