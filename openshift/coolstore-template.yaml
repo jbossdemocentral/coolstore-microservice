@@ -208,6 +208,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: fis-java-openshift:2.0
+          namespace: openshift
       type: Source
     triggers:
     - type: ConfigChange
@@ -820,6 +821,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: redhat-openjdk18-openshift:1.0
+          namespace: openshift
       type: Source
     triggers:
     - type: ConfigChange

@@ -99,6 +99,7 @@ objects:
         forcePull: false
         from:
           kind: ImageStreamTag
+          namespace: openshift
           name: fis-java-openshift:2.0
       type: Source
     resources:
@@ -239,6 +240,7 @@ objects:
           value: ${MAVEN_MIRROR_URL}
         from:
           kind: ImageStreamTag
+          namespace: openshift
           name: redhat-openjdk18-openshift:1.0
       type: Source
     triggers:
