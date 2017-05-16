@@ -19,36 +19,44 @@ steps:
 Prerequisites
 ============
 * An OpenShift cluster with sufficient quota and resources
-* `oc` client authenticated against the OpenShift cluster
 
-| Demo Size | Min Memory | Min CPU | Projects |
-|-----------|------------|---------|----------|
-| Minimal   | 8 GB       | 2 cores | 5        |
-| Full      | 16 GB      | 8 cores | 5        |
+| Demo Name        | Description                        | Min Memory | Min CPU | Projects |
+|------------------|------------------------------------|------------|---------|----------|
+| msa-min          | MSA Minimal                        | 4 GB       | 2 cores | 2        |
+| msa              | MSA                                | 8 GB       | 4 cores | 2        |
+| msa-cicd-eap-min | MSA with CI/CD Minimal (Dev-Prod)  | 10 GB      | 6 cores | 3        |
+| msa-cicd-eap     | MSA with CI/CD (Dev-Test-Prod)     | 16 GB      | 8 cores | 5        |
 
+* `oc` client authenticated against an OpenShift cluster
 
 Usage
 ============
 ```
-provision-demo.sh [command] [options]
-provision-demo.sh --help
+Usage:
+ provision-demo.sh [command] [demo-name] [options]
+ provision-demo.sh --help
 
 Example:
- provision-demo.sh --deploy --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix demo
+ provision-demo.sh deploy --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix mydemo
 
-Commands:
-   --deploy            Set up the demo projects and deploy demo apps
-   --delete            Clean up and remove demo projects and objects
-   --verify            Verify the demo is deployed correctly
-   --idle              Make all demo servies idle
+COMMANDS:
+   deploy                   Set up the demo projects and deploy demo apps
+   delete                   Clean up and remove demo projects and objects
+   verify                   Verify the demo is deployed correctly
+   idle                     Make all demo servies idle
 
-Options:
-   --user              The admin user for the demo projects. mandatory if logged in as system:admin
-   --maven-mirror-url  Use the given Maven repository for builds. If not specifid, a Nexus container is deployed in the demo
-   --project-suffix    Suffix to be added to demo project names e.g. ci-SUFFIX. If empty, user will be used as suffix
-   --minimal           Scale all pods except the absolute essential ones to zero to lower memory and cpu footprint
-   --ephemeral         Deploy demo without persistent storage
-   --run-verify        Run verify after provisioning
+DEMOS:
+   msa                      Microservices app with all services"
+   msa-min                  Microservices app with minimum services
+   msa-cicd-eap             CI/CD and microservices with JBoss EAP (dev-test-prod)
+   msa-cicd-eap-min         CI/CD and microservices with JBoss EAP with minimum services (dev-prod)
+
+OPTIONS:
+   --user [username]         The admin user for the demo projects. mandatory if logged in as system:admin
+   --maven-mirror-url [url]  Use the given Maven repository for builds. If not specifid, a Nexus container is deployed in the demo
+   --project-suffix [suffix] Suffix to be added to demo project names e.g. ci-SUFFIX. If empty, user will be used as suffix
+   --ephemeral               Deploy demo without persistent storage
+   --run-verify              Run verify after provisioning
 ```
 
 [![asciicast](https://asciinema.org/a/103399.png)](https://asciinema.org/a/103399)
@@ -59,43 +67,43 @@ Provision a minimal demo on a local cluster without persistent storage:
 ```
 $ oc cluster up 
 $ oc create -f https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json -n openshift
-$ provision-demo.sh --deploy --user developer --minimal --ephemeral
+$ provision-demo.sh deploy msa-min --user developer --ephemeral
 ```
 
 Provision on OpenShift Online/Dedicated and verify afterwards:
 ```
 $ oc login https://api.preview.openshift.com --token=YOUR-TOKEN
-$ provision-demo.sh --deploy --run-verify
+$ provision-demo.sh deploy msa-cicd-eap --run-verify
 ```
 
 Use an existing Sonatype Nexus:
 ```
-$ provision-demo.sh --deploy --maven-mirror-url http://nexus.repo.com/content/groups/public/
+$ provision-demo.sh deploy msa --maven-mirror-url http://nexus.repo.com/content/groups/public/
 ```
 
 Provision demo as ```system:admin``` for user ```john@mycompany.com```:
 ```
 $ oc login -u system:admin
-$ provision-demo.sh --deploy --user john@mycompany.com
+$ provision-demo.sh deploy msa-cicd-eap --user john@mycompany.com
 ```
 
 Delete demo:
 ```
-$ provision-demo.sh --delete
+$ provision-demo.sh delete msa-cicd-eap
 ```
 
 Delete demo for user ```john@mycompany.com``` while logged in as ```system:admin```:
 ```
 $ oc login -u system:admin
-$ provision-demo.sh --deploy --user john@mycompany.com
+$ provision-demo.sh delete msa-cicd-eap --user john@mycompany.com
 ```
 
 Verify demo is deployed correctly:
 ```
-$ provision-demo.sh --verify
+$ provision-demo.sh verify msa-cicd-eap
 ```
 
 Make all demo services idle
 ```
-$ provision-demo.sh --idle
+$ provision-demo.sh idle msa-cicd-eap
 ```

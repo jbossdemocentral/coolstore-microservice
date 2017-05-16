@@ -699,9 +699,9 @@ objects:
         containers:
         - env:
           - name: CATALOG_ENDPOINT
-            value: "http://catalog-${HOSTNAME_SUFFIX}:8080"
+            value: "http://catalog:8080"
           - name: PRICING_ENDPOINT
-            value: "http://pricing-${HOSTNAME_SUFFIX}:8080"
+            value: "http://pricing:8080"
           - name: KIE_CONTAINER_DEPLOYMENT
             value: ${KIE_CONTAINER_DEPLOYMENT}
           - name: KIE_SERVER_USER
