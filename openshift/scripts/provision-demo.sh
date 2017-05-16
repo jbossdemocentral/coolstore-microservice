@@ -5,48 +5,70 @@
 function usage() {
     echo
     echo "Usage:"
-    echo " $0 [command] [options]"
+    echo " $0 [command] [demo-name] [options]"
     echo " $0 --help"
     echo
     echo "Example:"
-    echo " $0 --deploy --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix s40d"
+    echo " $0 deploy --maven-mirror-url http://nexus.repo.com/content/groups/public/ --project-suffix mydemo"
     echo
-    echo "Commands:"
-    echo "   --deploy            Set up the demo projects and deploy demo apps"
-    echo "   --delete            Clean up and remove demo projects and objects"
-    echo "   --verify            Verify the demo is deployed correctly"
-    echo "   --idle              Make all demo servies idle"
+    echo "COMMANDS:"
+    echo "   deploy                   Set up the demo projects and deploy demo apps"
+    echo "   delete                   Clean up and remove demo projects and objects"
+    echo "   verify                   Verify the demo is deployed correctly"
+    echo "   idle                     Make all demo servies idle"
     echo 
-    echo "Options:"
-    echo "   --user              The admin user for the demo projects. mandatory if logged in as system:admin"
-    echo "   --maven-mirror-url  Use the given Maven repository for builds. If not specifid, a Nexus container is deployed in the demo"
-    echo "   --project-suffix    Suffix to be added to demo project names e.g. ci-SUFFIX. If empty, user will be used as suffix"
-    echo "   --minimal           Scale all pods except the absolute essential ones to zero to lower memory and cpu footprint"
-    echo "   --ephemeral         Deploy demo without persistent storage"
-    echo "   --run-verify        Run verify after provisioning"
+    echo "DEMOS:"
+    echo "   msa                      Microservices app with all services" 
+    echo "   msa-min                  Microservices app with minimum services" 
+    echo "   msa-cicd-eap             CI/CD and microservices with JBoss EAP (dev-test-prod)"
+    echo "   msa-cicd-eap-min         CI/CD and microservices with JBoss EAP with minimum services (dev-prod)"
+    echo
+    echo "OPTIONS:"
+    echo "   --user [username]         The admin user for the demo projects. mandatory if logged in as system:admin"
+    echo "   --maven-mirror-url [url]  Use the given Maven repository for builds. If not specifid, a Nexus container is deployed in the demo"
+    echo "   --project-suffix [suffix] Suffix to be added to demo project names e.g. ci-SUFFIX. If empty, user will be used as suffix"
+    echo "   --ephemeral               Deploy demo without persistent storage"
+    echo "   --run-verify              Run verify after provisioning"
+    echo
 }
 
 ARG_USERNAME=
 ARG_PROJECT_SUFFIX=
 ARG_MAVEN_MIRROR_URL=
-ARG_MINIMAL=false
 ARG_EPHEMERAL=false
-ARG_COMMAND=deploy
+ARG_COMMAND=
 ARG_RUN_VERIFY=false
+ARG_DEMO=
 
 while :; do
     case $1 in
-        --deploy)
+        deploy)
             ARG_COMMAND=deploy
+            if [ -n "$2" ]; then
+                ARG_DEMO=$2
+                shift
+            fi
             ;;
-        --delete)
+        delete)
             ARG_COMMAND=delete
+            if [ -n "$2" ]; then
+                ARG_DEMO=$2
+                shift
+            fi
             ;;
-        --verify)
+        verify)
             ARG_COMMAND=verify
+            if [ -n "$2" ]; then
+                ARG_DEMO=$2
+                shift
+            fi
             ;;
-        --idle)
+        idle)
             ARG_COMMAND=idle
+            if [ -n "$2" ]; then
+                ARG_DEMO=$2
+                shift
+            fi
             ;;
         --user)
             if [ -n "$2" ]; then
@@ -54,7 +76,8 @@ while :; do
                 shift
             else
                 printf 'ERROR: "--user" requires a non-empty value.\n' >&2
-                exit 1
+                usage
+                exit 255
             fi
             ;;
         --maven-mirror-url)
@@ -63,7 +86,8 @@ while :; do
                 shift
             else
                 printf 'ERROR: "--maven-mirror-url" requires a non-empty value.\n' >&2
-                exit 1
+                usage
+                exit 255
             fi
             ;;
         --project-suffix)
@@ -72,11 +96,14 @@ while :; do
                 shift
             else
                 printf 'ERROR: "--project-suffix" requires a non-empty value.\n' >&2
-                exit 1
+                usage
+                exit 255
             fi
             ;;
         --minimal)
-            ARG_MINIMAL=true
+            printf 'WARNING: --minimal is deprecated. Specify the demo name to deploy a subset of pods.\n' >&2
+            usage
+            exit 255
             ;;
         --ephemeral)
             ARG_EPHEMERAL=true
@@ -86,7 +113,7 @@ while :; do
             ;;
         -h|--help)
             usage
-            exit
+            exit 0
             ;;
         --)
             shift
@@ -96,7 +123,7 @@ while :; do
             printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
             shift
             ;;
-        *)               # Default case: If no more options then break out of the loop.
+        *) # Default case: If no more options then break out of the loop.
             break
     esac
 
@@ -133,6 +160,39 @@ GOGS_ADMIN_PASSWORD=team
 WEBHOOK_SECRET=UfW7gQ6Jx4
 
 ################################################################################
+# DEMO MATRIX                                                                  #
+################################################################################
+ENABLE_CI_CD=false
+ENABLE_TEST_ENV=true
+SCALE_DOWN_PROD=false
+WORKSHOP_YAML=demo-all.yml
+
+case $ARG_DEMO in
+    msa)
+        WORKSHOP_YAML=demo-msa.yml
+        ;;
+    msa-min)
+        SCALE_DOWN_PROD=true
+        WORKSHOP_YAML=demo-msa-min.yml
+        ;;
+    msa-cicd-eap)
+        ENABLE_CI_CD=true
+        WORKSHOP_YAML=demo-cicd-eap.yml
+        ;;
+    msa-cicd-eap-min)
+        ENABLE_CI_CD=true
+        ENABLE_TEST_ENV=false
+        SCALE_DOWN_PROD=true
+        WORKSHOP_YAML=demo-cicd-eap-min.yml
+        ;;
+    *)
+        echo "ERROR: Invalid demo name: \"$ARG_DEMO\""
+        usage
+        exit 255
+        ;;
+esac
+
+################################################################################
 # FUNCTIONS                                                                    #
 ################################################################################
 
@@ -141,9 +201,9 @@ function print_info() {
 
   OPENSHIFT_MASTER=$(oc status | head -1 | sed 's#.*\(https://[^ ]*\)#\1#g') # must run after projects are created
 
+  echo "Demo name:           $ARG_DEMO"
   echo "OpenShift master:    $OPENSHIFT_MASTER"
   echo "Current user:        $LOGGEDIN_USER"
-  echo "Minimal setup:       $ARG_MINIMAL"
   echo "Ephemeral:           $ARG_EPHEMERAL"
   echo "Project suffix:      $PRJ_SUFFIX"
   echo "GitHub repo:         https://github.com/$GITHUB_ACCOUNT/coolstore-microservice"
@@ -186,41 +246,24 @@ function remove_storage_claim() {
   local _CLAIM_NAME=$3
   local _PROJECT=$4
   oc volumes dc/$_DC --name=$_VOLUME_NAME --add -t emptyDir --overwrite -n $_PROJECT
-  oc delete pvc $_CLAIM_NAME -n $_PROJECT
+  oc delete pvc $_CLAIM_NAME -n $_PROJECT >/dev/null 2>&1
 }
 
-function delete_projects() {
-  oc delete project $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_CI
-}
-
-# Create Infra Project
-function create_projects() {
-  echo_header "Creating project..."
-
-  echo "Creating project $PRJ_CI"
-  oc new-project $PRJ_CI --display-name='CI/CD' --description='CI/CD Components (Jenkins, Gogs, etc)' >/dev/null
-  echo "Creating project $PRJ_COOLSTORE_TEST"
-  oc new-project $PRJ_COOLSTORE_TEST --display-name='CoolStore TEST' --description='CoolStore Test Environment' >/dev/null
-  echo "Creating project $PRJ_COOLSTORE_PROD"
-  oc new-project $PRJ_COOLSTORE_PROD --display-name='CoolStore PROD' --description='CoolStore Production Environment' >/dev/null
-  echo "Creating project $PRJ_INVENTORY"
-  oc new-project $PRJ_INVENTORY --display-name='Inventory TEST' --description='Inventory Test Environment' >/dev/null
-  echo "Creating project $PRJ_DEVELOPER"
-  oc new-project $PRJ_DEVELOPER --display-name='Developer Project' --description='Personal Developer Project' >/dev/null
-
-  for project in $PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_DEVELOPER
+function configure_project_permissions() {
+  _PROJECTS=$@
+  for project in $_PROJECTS
   do
-    oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $project
-    oc adm policy add-role-to-group admin system:serviceaccounts:$project -n $project
+    oc adm policy add-role-to-group admin system:serviceaccounts:$PRJ_CI -n $project >/dev/null 2>&1
+    oc adm policy add-role-to-group admin system:serviceaccounts:$project -n $project >/dev/null 2>&1
   done
 
   if [ $LOGGEDIN_USER == 'system:admin' ] ; then
-    for project in $PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_DEVELOPER
+    for project in $_PROJECTS
     do
-      oc adm policy add-role-to-user admin $ARG_USERNAME -n $project
-      oc annotate --overwrite namespace $project demo=demo1-$PRJ_SUFFIX demo=demo-modern-arch-$PRJ_SUFFIX
+      oc adm policy add-role-to-user admin $ARG_USERNAME -n $project >/dev/null 2>&1
+      oc annotate --overwrite namespace $project demo=demo1-$PRJ_SUFFIX demo=demo-modern-arch-$PRJ_SUFFIX >/dev/null 2>&1
     done
-    oc adm pod-network join-projects --to=$PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER $PRJ_COOLSTORE_PROD $PRJ_INVENTORY >/dev/null 2>&1
+    oc adm pod-network join-projects --to=$PRJ_CI $_PROJECTS >/dev/null 2>&1
   fi
 
   # Hack to extract domain name when it's not determine in
@@ -229,6 +272,40 @@ function create_projects() {
   DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n $PRJ_CI | sed "s/testroute-$PRJ_CI.//g")
   GOGS_ROUTE="gogs-$PRJ_CI.$DOMAIN"
   oc delete route testroute -n $PRJ_CI >/dev/null
+}
+
+# Create Infra Project for CI/CD
+function create_cicd_projects() {
+  echo_header "Creating project..."
+
+  echo "Creating project $PRJ_CI"
+  oc new-project $PRJ_CI --display-name='CI/CD' --description='CI/CD Components (Jenkins, Gogs, etc)' >/dev/null
+  echo "Creating project $PRJ_COOLSTORE_PROD"
+  oc new-project $PRJ_COOLSTORE_PROD --display-name='CoolStore PROD' --description='CoolStore Production Environment' >/dev/null
+  echo "Creating project $PRJ_INVENTORY"
+  oc new-project $PRJ_INVENTORY --display-name='Inventory DEV' --description='Inventory DEV Environment' >/dev/null
+
+  if [ "$ENABLE_TEST_ENV" = true ] ; then
+    echo "Creating project $PRJ_COOLSTORE_TEST"
+    oc new-project $PRJ_COOLSTORE_TEST --display-name='CoolStore TEST' --description='CoolStore Test Environment' >/dev/null
+    echo "Creating project $PRJ_DEVELOPER"
+    oc new-project $PRJ_DEVELOPER --display-name='Developer Project' --description='Personal Developer Project' >/dev/null
+  fi
+
+  configure_project_permissions $PRJ_CI $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY $PRJ_DEVELOPER
+}
+
+# Create Project
+function create_projects() {
+  echo_header "Creating project..."
+
+  echo "Creating project $PRJ_CI"
+  oc new-project $PRJ_CI --display-name='CI/CD' --description='CI/CD Components (Jenkins, Gogs, etc)' >/dev/null
+
+  echo "Creating project $PRJ_COOLSTORE_PROD"
+  oc new-project $PRJ_COOLSTORE_PROD --display-name='CoolStore PROD' --description='CoolStore Production Environment' >/dev/null
+
+  configure_project_permissions $PRJ_CI $PRJ_COOLSTORE_PROD
 }
 
 # Add Inventory Service Template
@@ -261,10 +338,6 @@ function deploy_nexus() {
 
 # Wait till Nexus is ready
 function wait_for_nexus_to_be_ready() {
-  if [ "$ARG_MINIMAL" = true ] ; then
-    return
-  fi
-
   if [ -z "$ARG_MAVEN_MIRROR_URL" ] ; then # no maven mirror specified
     wait_while_empty "Nexus" 600 "oc get ep nexus -o yaml -n $PRJ_CI | grep '\- addresses:'"
   fi
@@ -390,38 +463,45 @@ function deploy_coolstore_test_env() {
   oc process -f $_TEMPLATE --param=APP_VERSION=test --param=HOSTNAME_SUFFIX=$PRJ_COOLSTORE_TEST.$DOMAIN -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
   sleep 2
   remove_coolstore_storage_if_ephemeral $PRJ_COOLSTORE_TEST
+}
 
-  # scale down to zero if minimal
-  if [ "$ARG_MINIMAL" == true ] ; then
-    scale_down_deployments $PRJ_COOLSTORE_TEST coolstore-gw web-ui inventory cart catalog catalog-mongodb inventory-postgresql
-  fi  
+# Configure Blue-Green Deployment for Inventory in PROD project
+function configure_bluegreen_in_prod() {
+  local _TEMPLATE_BLUEGREEN="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-bluegreen-template.yaml"
+
+  echo_header "Configuring blue/green deployments in $PRJ_COOLSTORE_PROD project..."
+  echo "Using bluegreen template $_TEMPLATE_BLUEGREEN"
+
+  oc delete all,pvc -l application=inventory --now --ignore-not-found -n $PRJ_COOLSTORE_PROD
+  oc process -f $_TEMPLATE_BLUEGREEN --param=APP_VERSION_BLUE=prod-blue --param=APP_VERSION_GREEN=prod-green --param=HOSTNAME_SUFFIX=$PRJ_COOLSTORE_PROD.$DOMAIN -n $PRJ_COOLSTORE_PROD | oc create -f - -n $PRJ_COOLSTORE_PROD
+  sleep 2
+  remove_coolstore_storage_if_ephemeral $PRJ_COOLSTORE_PROD
 }
 
 # Deploy Coolstore into Coolstore PROD project
 function deploy_coolstore_prod_env() {
-  local _TEMPLATE_DEPLOYMENT="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-deployments-template.yaml"
-  local _TEMPLATE_BLUEGREEN="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-bluegreen-template.yaml"
-  local _TEMPLATE_NETFLIX="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/netflix-oss-list.yaml"
+  local _TEMPLATE_PREFIX="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates"
+  local _TEMPLATE_DEPLOYMENT="$_TEMPLATE_PREFIX/coolstore-deployments-template.yaml"
+  local _TEMPLATE_NETFLIX="$_TEMPLATE_PREFIX/netflix-oss-list.yaml"
 
   echo_header "Deploying CoolStore app into $PRJ_COOLSTORE_PROD project..."
   echo "Using deployment template $_TEMPLATE_DEPLOYMENT"
-  echo "Using bluegreen template $_TEMPLATE_BLUEGREEN"
   echo "Using Netflix OSS template $_TEMPLATE_NETFLIX"
 
-  oc process -f $_TEMPLATE_DEPLOYMENT --param=APP_VERSION=prod --param=HOSTNAME_SUFFIX=$PRJ_COOLSTORE_PROD.$DOMAIN -n $PRJ_COOLSTORE_PROD | oc create -f - -n $PRJ_COOLSTORE_PROD
-  sleep 2
-  oc delete all,pvc -l application=inventory --now --ignore-not-found -n $PRJ_COOLSTORE_PROD
-  sleep 2
-  oc process -f $_TEMPLATE_BLUEGREEN --param=APP_VERSION_BLUE=prod-blue --param=APP_VERSION_GREEN=prod-green --param=HOSTNAME_SUFFIX=$PRJ_COOLSTORE_PROD.$DOMAIN -n $PRJ_COOLSTORE_PROD | oc create -f - -n $PRJ_COOLSTORE_PROD
-  sleep 2
+  local _APP_VERSION=latest
+  if [ "$ENABLE_CI_CD" = true ] ; then
+     _APP_VERSION=prod
+  fi
+
+  oc process -f $_TEMPLATE_DEPLOYMENT --param=APP_VERSION=$_APP_VERSION --param=HOSTNAME_SUFFIX=$PRJ_COOLSTORE_PROD.$DOMAIN -n $PRJ_COOLSTORE_PROD | oc create -f - -n $PRJ_COOLSTORE_PROD
   oc create -f $_TEMPLATE_NETFLIX -n $PRJ_COOLSTORE_PROD
-  sleep 2
+  
   remove_coolstore_storage_if_ephemeral $PRJ_COOLSTORE_PROD
 
-  # scale down most pods to zero if minimal
-  if [ "$ARG_MINIMAL" = true ] ; then
-    scale_down_deployments $PRJ_COOLSTORE_PROD cart turbine-server hystrix-dashboard
-  fi  
+  # driven by the demo type
+  if [ "$SCALE_DOWN_PROD" = true ] ; then
+    scale_down_deployments $PRJ_COOLSTORE_PROD cart turbine-server hystrix-dashboard pricing inventory inventory-postgresql
+   fi  
 }
 
 # Deploy Inventory service into Inventory DEV project
@@ -432,72 +512,84 @@ function deploy_inventory_dev_env() {
   echo "Using template $_TEMPLATE"
   oc process -f $_TEMPLATE --param=GIT_URI=http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git --param=MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_INVENTORY | oc create -f - -n $PRJ_INVENTORY
   sleep 2
-  # scale down to zero if minimal
-  if [ "$ARG_MINIMAL" = true ] ; then
-    scale_down_deployments $PRJ_INVENTORY inventory inventory-postgresql
-  fi  
 }
 
 function build_images() {
   local _TEMPLATE_BUILDS="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-builds-template.yaml"
   echo "Using build template $_TEMPLATE_BUILDS"
-  oc process -f $_TEMPLATE_BUILDS --param=GIT_URI=$GITHUB_URI --param=GIT_REF=$GITHUB_REF --param=MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_COOLSTORE_TEST | oc create -f - -n $PRJ_COOLSTORE_TEST
+  oc process -f $_TEMPLATE_BUILDS --param=GIT_URI=$GITHUB_URI --param=GIT_REF=$GITHUB_REF --param=MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_COOLSTORE_PROD | oc create -f - -n $PRJ_COOLSTORE_PROD
 
   sleep 10
 
   # build images
   for buildconfig in web-ui inventory cart catalog coolstore-gw
   do
-    oc start-build $buildconfig -n $PRJ_COOLSTORE_TEST
-    wait_while_empty "$buildconfig build" 180 "oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep Running"
+    oc start-build $buildconfig -n $PRJ_COOLSTORE_PROD
+    wait_while_empty "$buildconfig build" 180 "oc get builds -n $PRJ_COOLSTORE_PROD | grep $buildconfig | grep Running"
     sleep 10
   done
 }
 
-function promote_images() {
+function wait_for_builds_to_complete() {
   # wait for builds
   for buildconfig in coolstore-gw web-ui inventory cart catalog 
   do
-    wait_while_empty "$buildconfig image" 600 "oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep -v Running"
+    wait_while_empty "$buildconfig image" 600 "oc get builds -n $PRJ_COOLSTORE_PROD | grep $buildconfig | grep -v Running"
     sleep 10
   done
 
   # verify successful builds
   for buildconfig in coolstore-gw web-ui inventory cart catalog 
   do
-    if [ -z "$(oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep Complete)" ]; then
+    if [ -z "$(oc get builds -n $PRJ_COOLSTORE_PROD | grep $buildconfig | grep Complete)" ]; then
       echo "ERROR: Build $buildconfig did not complete successfully"
       exit 255
     fi
   done
+}
+
+function promote_images() {
+  echo_header "Promoting Images..."
+
+  wait_for_builds_to_complete
 
   # remove buildconfigs. Jenkins does that!
-  oc delete bc --all -n $PRJ_COOLSTORE_TEST
+  oc delete bc --all -n $PRJ_COOLSTORE_PROD
 
   for is in coolstore-gw web-ui cart catalog
   do
-    oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_TEST/$is:test
-    oc tag $PRJ_COOLSTORE_TEST/$is:latest $PRJ_COOLSTORE_PROD/$is:prod
-    oc tag $PRJ_COOLSTORE_TEST/$is:latest -d
+    
+    if [ "$ENABLE_TEST_ENV" = true ] ; then
+      oc tag $PRJ_COOLSTORE_PROD/$is:latest $PRJ_COOLSTORE_TEST/$is:test
+    fi
+    oc tag $PRJ_COOLSTORE_PROD/$is:latest $PRJ_COOLSTORE_PROD/$is:prod
+    oc tag $PRJ_COOLSTORE_PROD/$is:latest -d
   done
 
-  oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_INVENTORY/inventory:latest
-  oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_TEST/inventory:test
-  oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_PROD/inventory:prod-green
-  oc tag $PRJ_COOLSTORE_TEST/inventory:latest $PRJ_COOLSTORE_PROD/inventory:prod-blue
-  oc tag $PRJ_COOLSTORE_TEST/inventory:latest -d
+  oc tag $PRJ_COOLSTORE_PROD/inventory:latest $PRJ_INVENTORY/inventory:latest
 
-  # remove fis image
-  oc delete is fis-java-openshift -n $PRJ_COOLSTORE_TEST --ignore-not-found
+  if [ "$ENABLE_TEST_ENV" = true ] ; then
+    oc tag $PRJ_COOLSTORE_PROD/inventory:latest $PRJ_COOLSTORE_TEST/inventory:test
+  fi
+
+  oc tag $PRJ_COOLSTORE_PROD/inventory:latest $PRJ_COOLSTORE_PROD/inventory:prod-green
+  oc tag $PRJ_COOLSTORE_PROD/inventory:latest $PRJ_COOLSTORE_PROD/inventory:prod-blue
+  oc tag $PRJ_COOLSTORE_PROD/inventory:latest -d
 }
 
 function deploy_pipeline() {
   echo_header "Configuring CI/CD..."
 
   local _PIPELINE_NAME=inventory-pipeline
-  local _TEMPLATE=https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-pipeline-template.yaml
+  
 
-  oc process -f $_TEMPLATE --param=PIPELINE_NAME=$_PIPELINE_NAME --param=DEV_PROJECT=$PRJ_INVENTORY --param=TEST_PROJECT=$PRJ_COOLSTORE_TEST --param=PROD_PROJECT=$PRJ_COOLSTORE_PROD --param=GENERIC_WEBHOOK_SECRET=$WEBHOOK_SECRET -n $PRJ_CI | oc create -f - -n $PRJ_CI
+  if [ "$ENABLE_TEST_ENV" = true ] ; then
+    local _TEMPLATE=https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-pipeline-template.yaml
+    oc process -f $_TEMPLATE --param=PIPELINE_NAME=$_PIPELINE_NAME --param=DEV_PROJECT=$PRJ_INVENTORY --param=TEST_PROJECT=$PRJ_COOLSTORE_TEST --param=PROD_PROJECT=$PRJ_COOLSTORE_PROD --param=GENERIC_WEBHOOK_SECRET=$WEBHOOK_SECRET -n $PRJ_CI | oc create -f - -n $PRJ_CI
+  else
+    local _TEMPLATE=https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-pipeline-template-simple.yaml
+    oc process -f $_TEMPLATE --param=PIPELINE_NAME=$_PIPELINE_NAME --param=DEV_PROJECT=$PRJ_INVENTORY --param=PROD_PROJECT=$PRJ_COOLSTORE_PROD --param=GENERIC_WEBHOOK_SECRET=$WEBHOOK_SECRET -n $PRJ_CI | oc create -f - -n $PRJ_CI
+  fi
 
   # configure webhook to trigger pipeline
   read -r -d '' _DATA_JSON << EOM
@@ -525,17 +617,17 @@ function verify_build_and_deployments() {
   echo_header "Verifying build and deployments"
   # verify builds
   local _BUILDS_FAILED=false
-  for buildconfig in coolstore-gw web-ui inventory cart catalog 
+  for buildconfig in coolstore-gw web-ui inventory cart catalog pricing
   do
-    if [ -n "$(oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep Failed)" ] && [ -z "$(oc get builds -n $PRJ_COOLSTORE_TEST | grep $buildconfig | grep Complete)" ]; then
+    if [ -n "$(oc get builds -n $PRJ_COOLSTORE_PROD | grep $buildconfig | grep Failed)" ] && [ -z "$(oc get builds -n $PRJ_COOLSTORE_PROD | grep $buildconfig | grep Complete)" ]; then
       _BUILDS_FAILED=true
       echo "WARNING: Build $project/$buildconfig has failed. Starging a new build..."
-      oc start-build $buildconfig -n $PRJ_COOLSTORE_TEST --wait
+      oc start-build $buildconfig -n $PRJ_COOLSTORE_PROD --wait
     fi
   done
 
   # promote images if builds had failed
-  if [ "$_BUILDS_FAILED" = true ]; then
+  if [ "$_BUILDS_FAILED" = true ] && [ "$ENABLE_CI_CD" = true ] ; then
     promote_images
     deploy_pipeline
   fi
@@ -559,13 +651,13 @@ function verify_build_and_deployments() {
 
 function deploy_guides() {
   echo_header "Deploying Demo Guides"
-  
-  local _DEMO_CONTENT_URL="https://raw.githubusercontent.com/osevg/workshopper-content/stable"
-  local _DEMOS="$_DEMO_CONTENT_URL/_workshops/demo-cicd-eap.yml"
+
+  local _DEMO_CONTENT_URL_PREFIX="https://raw.githubusercontent.com/osevg/workshopper-content/master"
+  local _DEMO_URLS="$_DEMO_CONTENT_URL_PREFIX/_workshops/$WORKSHOP_YAML"
 
   oc new-app --name=guides --docker-image=osevg/workshopper:latest -n $PRJ_CI \
-      -e WORKSHOPS_URLS=$_DEMOS \
-      -e CONTENT_URL_PREFIX=$_DEMO_CONTENT_URL \
+      -e WORKSHOPS_URLS=$_DEMO_URLS \
+      -e CONTENT_URL_PREFIX=$_DEMO_CONTENT_URL_PREFIX \
       -e PROJECT_SUFFIX=$PRJ_SUFFIX \
       -e GOGS_URL=http://$GOGS_ROUTE \
       -e GOGS_DEV_REPO_URL_PREFIX=http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice \
@@ -575,15 +667,10 @@ function deploy_guides() {
       -e GOGS_DEV_USER=$GOGS_USER -e GOGS_DEV_PASSWORD=$GOGS_PASSWORD \
       -e GOGS_REVIEWER_USER=$GOGS_ADMIN_USER \
       -e GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD \
-      -e OCP_VERSION=3.4 -n $PRJ_CI
-
+      -e OCP_VERSION=3.5 -n $PRJ_CI
   oc expose svc/guides -n $PRJ_CI
   oc set probe dc/guides -n $PRJ_CI --readiness --liveness --get-url=http://:8080/ --failure-threshold=5 --initial-delay-seconds=30
   oc set resources dc/guides --limits=cpu=500m,memory=1Gi --requests=cpu=100m,memory=512Mi -n $PRJ_CI
-
-  if [ "$ARG_MINIMAL" = true ] ; then
-    scale_down_deployments $PRJ_CI guides
-  fi  
 }
 
 function make_idle() {
@@ -625,55 +712,76 @@ if [ "$LOGGEDIN_USER" == 'system:admin' ] && [ -z "$ARG_USERNAME" ] ; then
   fi
 fi
 
-pushd ~
+pushd ~ >/dev/null
 START=`date +%s`
 echo_header "Mult-product MSA Demo ($(date))"
 
 case "$ARG_COMMAND" in
     delete)
-        echo "Delete MSA demo..."
-        delete_projects
-        exit 0
+        echo "Delete MSA demo ($ARG_DEMO)..."
+        oc delete project $PRJ_CI $PRJ_COOLSTORE_PROD
+        [ "$ENABLE_CI_CD" = true ] && oc delete project $PRJ_INVENTORY
+        [ "$ENABLE_TEST_ENV" = true ] && oc delete project $PRJ_COOLSTORE_TEST $PRJ_DEVELOPER
         ;;
       
     verify)
-        echo "Verifying MSA demo..."
+        echo "Verifying MSA demo ($ARG_DEMO)..."
         print_info
         verify_build_and_deployments
         ;;
 
     idle)
-        echo "Idling MSA demo..."
+        echo "Idling MSA demo ($ARG_DEMO)..."
         print_info
         make_idle
         ;;
 
-    *)
-        echo "Deploying MSA demo..."
-        create_projects 
+    deploy)
+        echo "Deploying MSA demo ($ARG_DEMO)..."
+
+        if [ "$ENABLE_CI_CD" = true ] ; then
+          create_cicd_projects
+        else
+          create_projects
+        fi
+
         print_info
         deploy_nexus
         wait_for_nexus_to_be_ready
         build_images
         deploy_guides
-        deploy_gogs
-        deploy_jenkins
-        add_inventory_template_to_projects
-        deploy_coolstore_test_env
         deploy_coolstore_prod_env
-        deploy_inventory_dev_env
-        promote_images
-        deploy_pipeline
+
+        if [ "$ENABLE_CI_CD" = true ] ; then
+          configure_bluegreen_in_prod
+          deploy_gogs
+          deploy_jenkins
+          deploy_pipeline
+
+          if [ "$ENABLE_TEST_ENV" = true ] ; then
+            add_inventory_template_to_projects
+            deploy_coolstore_test_env
+          fi
+
+          deploy_inventory_dev_env
+          promote_images
+        fi
 
         if [ "$ARG_RUN_VERIFY" = true ] ; then
           echo "Waiting for deployments to finish..."
           sleep 30
           verify_build_and_deployments
         fi
+        ;;
+        
+    *)
+        echo "Invalid command specified: '$ARG_COMMAND'"
+        usage
+        ;;
 esac
 
 set_default_project
-popd
+popd >/dev/null
 
 END=`date +%s`
 echo

@@ -42,7 +42,7 @@ curl http://inventory:8080/api/availability/329299
 curl http://cart:8080/api/cart/FOO
 ```
 
-Deploy Complete Demo with CI/CD
+Deploy CoolStore Microservices with CI/CD
 ================
 In order to deploy the complete demo infrastructure for demonstrating Microservices, CI/CD, 
 agile integrations and more, either order the demo via RHPDS or use the following script to provision the demo
@@ -50,12 +50,12 @@ on any OpenShift environment:
 
 ```
 $ oc login MASTER-URL
-$ openshift/scripts/provision-demo.sh 
+$ openshift/scripts/provision-demo.sh deploy msa-cicd-eap
 ```
 
 You can delete the demo projects and containers with:
 ```
-$ openshift/scripts/provision-demo.sh --delete
+$ openshift/scripts/provision-demo.sh delete msa-cicd-eap
 ```
 
 ![CI/CD Demo](docs/images/cicd-projects.png?raw=true)
