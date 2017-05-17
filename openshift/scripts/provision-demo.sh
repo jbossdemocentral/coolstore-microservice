@@ -561,7 +561,7 @@ function deploy_guides() {
   echo_header "Deploying Demo Guides"
   
   local _DEMO_CONTENT_URL="https://raw.githubusercontent.com/osevg/workshopper-content/stable"
-  local _DEMOS="$_DEMO_CONTENT_URL/demos/_demo-all.yml,$_DEMO_CONTENT_URL/demos/_demo-msa.yml,$_DEMO_CONTENT_URL/demos/_demo-agile-integration.yml,$_DEMO_CONTENT_URL/demos/_demo-cicd-eap.yml"
+  local _DEMOS="$_DEMO_CONTENT_URL/_workshops/demo-cicd-eap.yml"
 
   oc new-app --name=guides --docker-image=osevg/workshopper:latest -n $PRJ_CI \
       -e WORKSHOPS_URLS=$_DEMOS \
