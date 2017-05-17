@@ -13,7 +13,7 @@ objects:
       build: ${PIPELINE_NAME}
     name: ${PIPELINE_NAME}
     annotations:
-      pipeline.alpha.openshift.io/uses: '[{"name": "inventory", "namespace": "${DEV_PROJECT}", "kind": "BuildConfig"},{"name": "inventory", "namespace": "${TEST_PROJECT}", "kind": "DeploymentConfig"},{"name": "inventory-green", "namespace": "${PROD_PROJECT}", "kind": "DeploymentConfig"},{"name": "inventory-blue", "namespace": "${PROD_PROJECT}", "kind": "DeploymentConfig"}]'
+      pipeline.alpha.openshift.io/uses: '[{"name": "inventory", "namespace": "${DEV_PROJECT}", "kind": "BuildConfig"},{"name": "inventory-green", "namespace": "${PROD_PROJECT}", "kind": "DeploymentConfig"},{"name": "inventory-blue", "namespace": "${PROD_PROJECT}", "kind": "DeploymentConfig"}]'
   spec:
     runPolicy: Serial
     strategy:
@@ -26,13 +26,6 @@ objects:
 
             stage 'Run Tests in DEV'
             sleep 10
-
-            stage 'Deploy to TEST'
-            openshiftTag(sourceStream: 'inventory', sourceTag: 'latest', namespace: '${DEV_PROJECT}', destinationStream: 'inventory', destinationTag: 'test', destinationNamespace: '${TEST_PROJECT}')
-            sleep 10
-
-            stage 'Run Tests in TEST'
-            sleep 30
           }
 
           def tag="blue"
@@ -46,7 +39,8 @@ objects:
               tag = "green"
               altTag = "blue"
             }
-            openshiftTag(sourceStream: 'inventory', sourceTag: 'test', namespace: '${TEST_PROJECT}', destinationStream: 'inventory', destinationTag: "prod-${tag}", destinationNamespace: '${PROD_PROJECT}')
+
+            openshiftTag(sourceStream: 'inventory', sourceTag: 'latest', namespace: '${DEV_PROJECT}', destinationStream: 'inventory', destinationTag: "prod-${tag}", destinationNamespace: '${PROD_PROJECT}')
             sleep 10
             openshiftVerifyDeployment(deploymentConfig: "inventory-${tag}", replicaCount: 1, verifyReplicaCount: true, namespace: '${PROD_PROJECT}')
 
@@ -83,10 +77,6 @@ parameters:
 - description: DEV project name containting the buildconfigs
   displayName: DEV Project Name
   name: DEV_PROJECT
-  required: true
-- description: TEST project name containting the buildconfigs
-  displayName: TEST Project Name
-  name: TEST_PROJECT
   required: true
 - description: PROD project name containting the buildconfigs
   displayName: PROD Project Name
