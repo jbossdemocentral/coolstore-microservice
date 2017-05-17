@@ -20,12 +20,12 @@ Prerequisites
 ============
 * An OpenShift cluster with sufficient quota and resources
 
-| Demo Name        | Description                        | Min Memory | Min CPU | Projects |
-|------------------|------------------------------------|------------|---------|----------|
-| msa-min          | MSA Minimal                        | 4 GB       | 2 cores | 2        |
-| msa              | MSA                                | 8 GB       | 4 cores | 2        |
-| msa-cicd-eap-min | MSA with CI/CD Minimal (Dev-Prod)  | 10 GB      | 6 cores | 3        |
-| msa-cicd-eap     | MSA with CI/CD (Dev-Test-Prod)     | 16 GB      | 8 cores | 5        |
+| Demo Name        | Description                                  | Min Memory | Min CPU | Projects |
+|------------------|----------------------------------------------|------------|---------|----------|
+| msa-min          | Microservices Minimal                        | 4 GB       | 2 cores | 2        |
+| msa              | Microservices                                | 8 GB       | 4 cores | 2        |
+| msa-cicd-eap-min | Microservices with CI/CD Minimal (Dev-Prod)  | 10 GB      | 6 cores | 3        |
+| msa-cicd-eap     | Microservices with CI/CD (Dev-Test-Prod)     | 16 GB      | 8 cores | 5        |
 
 * `oc` client authenticated against an OpenShift cluster
 
