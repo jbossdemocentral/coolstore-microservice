@@ -59,8 +59,6 @@ OPTIONS:
    --run-verify              Run verify after provisioning
 ```
 
-[![asciicast](https://asciinema.org/a/103399.png)](https://asciinema.org/a/103399)
-
 Example
 ============
 Provision a minimal demo on a local cluster without persistent storage:
