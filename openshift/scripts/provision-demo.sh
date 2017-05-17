@@ -578,8 +578,7 @@ function deploy_guides() {
       -e OCP_VERSION=3.4 -n $PRJ_CI
 
   oc expose svc/guides -n $PRJ_CI
-  oc set probe dc/guides -n $PRJ_CI --readiness -- /bin/bash -c /opt/eap/bin/readinessProbe.sh
-  oc set probe dc/guides -n $PRJ_CI --liveness -- /bin/bash -c /opt/eap/bin/livenessProbe.sh
+  oc set probe dc/guides -n $PRJ_CI --readiness --liveness --get-url=http://:8080/ --failure-threshold=5 --initial-delay-seconds=30
   oc set resources dc/guides --limits=cpu=500m,memory=1Gi --requests=cpu=100m,memory=512Mi -n $PRJ_CI
 
   if [ "$ARG_MINIMAL" = true ] ; then
