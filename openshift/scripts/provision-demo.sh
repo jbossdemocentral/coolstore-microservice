@@ -500,7 +500,7 @@ function deploy_coolstore_prod_env() {
 
   # driven by the demo type
   if [ "$SCALE_DOWN_PROD" = true ] ; then
-    scale_down_deployments $PRJ_COOLSTORE_PROD cart turbine-server hystrix-dashboard pricing inventory inventory-postgresql
+    scale_down_deployments $PRJ_COOLSTORE_PROD cart turbine-server hystrix-dashboard inventory inventory-postgresql
    fi  
 }
 
@@ -617,7 +617,7 @@ function verify_build_and_deployments() {
   echo_header "Verifying build and deployments"
   # verify builds
   local _BUILDS_FAILED=false
-  for buildconfig in coolstore-gw web-ui inventory cart catalog pricing
+  for buildconfig in coolstore-gw web-ui inventory cart catalog
   do
     if [ -n "$(oc get builds -n $PRJ_COOLSTORE_PROD | grep $buildconfig | grep Failed)" ] && [ -z "$(oc get builds -n $PRJ_COOLSTORE_PROD | grep $buildconfig | grep Complete)" ]; then
       _BUILDS_FAILED=true
