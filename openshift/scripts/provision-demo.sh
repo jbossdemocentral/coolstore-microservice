@@ -163,7 +163,7 @@ WEBHOOK_SECRET=UfW7gQ6Jx4
 # DEMO MATRIX                                                                  #
 ################################################################################
 ENABLE_CI_CD=false
-ENABLE_TEST_ENV=true
+ENABLE_TEST_ENV=false
 SCALE_DOWN_PROD=false
 WORKSHOP_YAML=demo-all.yml
 
@@ -177,11 +177,11 @@ case $ARG_DEMO in
         ;;
     msa-cicd-eap)
         ENABLE_CI_CD=true
+        ENABLE_TEST_ENV=true
         WORKSHOP_YAML=demo-cicd-eap.yml
         ;;
     msa-cicd-eap-min)
         ENABLE_CI_CD=true
-        ENABLE_TEST_ENV=false
         SCALE_DOWN_PROD=true
         WORKSHOP_YAML=demo-cicd-eap-min.yml
         ;;
