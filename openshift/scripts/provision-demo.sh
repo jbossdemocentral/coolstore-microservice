@@ -204,17 +204,18 @@ function print_info() {
   echo "Demo name:           $ARG_DEMO"
   echo "OpenShift master:    $OPENSHIFT_MASTER"
   echo "Current user:        $LOGGEDIN_USER"
-  echo "Ephemeral:           $ARG_EPHEMERAL"
   echo "Project suffix:      $PRJ_SUFFIX"
   echo "GitHub repo:         https://github.com/$GITHUB_ACCOUNT/coolstore-microservice"
   echo "GitHub branch/tag:   $GITHUB_REF"
-  echo "Gogs url:            http://$GOGS_ROUTE"
-  echo "Gogs admin user:     $GOGS_ADMIN_USER"
-  echo "Gogs admin pwd:      $GOGS_ADMIN_PASSWORD"
-  echo "Gogs user:           $GOGS_USER"
-  echo "Gogs pwd:            $GOGS_PASSWORD"
-  echo "Gogs webhook secret: $WEBHOOK_SECRET"
   echo "Maven mirror url:    $MAVEN_MIRROR_URL"
+
+  if [ "$ENABLE_CI_CD" = true ] ; then
+    echo "Gogs url:            http://$GOGS_ROUTE"
+    echo "Gogs admin user:     $GOGS_ADMIN_USER"
+    echo "Gogs admin pwd:      $GOGS_ADMIN_PASSWORD"
+    echo "Gogs user:           $GOGS_USER"
+    echo "Gogs pwd:            $GOGS_PASSWORD"
+  fi
 }
 
 # waits while the condition is true until it becomes false or it times out
