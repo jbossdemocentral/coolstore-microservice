@@ -199,7 +199,7 @@ esac
 function print_info() {
   echo_header "Configuration"
 
-  OPENSHIFT_MASTER=$(oc status | head -1 | sed 's#.*\(https://[^ ]*\)#\1#g') # must run after projects are created
+  OPENSHIFT_MASTER=$(oc whoami --show-server)
 
   echo "Demo name:           $ARG_DEMO"
   echo "OpenShift master:    $OPENSHIFT_MASTER"
