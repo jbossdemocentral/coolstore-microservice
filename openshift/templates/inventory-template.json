@@ -28,7 +28,7 @@
         {
             "displayName": "Git branch/tag",
             "name": "GIT_REF",
-            "value": "stable-ocp-3.5",
+            "value": "1.0.x",
             "required": true
         },
         {
