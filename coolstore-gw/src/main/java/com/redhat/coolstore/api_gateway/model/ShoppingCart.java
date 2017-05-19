@@ -81,18 +81,6 @@ public class ShoppingCart  {
 
 	public void setShoppingCartItemList(List<ShoppingCartItem> shoppingCartItemList) {
 		this.shoppingCartItemList = shoppingCartItemList;
-		
-		for(ShoppingCartItem item:shoppingCartItemList){
-			cartItemTotal++;
-
-		    cartItemPromoSavings+=item.getPromoSavings();
-
-		    shippingTotal+=item.getPrice();
-
-		    shippingPromoSavings+=item.getPromoSavings();
-
-		    cartTotal+=item.getPrice();
-		}
 	}
     
     
