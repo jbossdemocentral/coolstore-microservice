@@ -506,7 +506,7 @@ function deploy_inventory_dev_env() {
 
   echo_header "Deploying Inventory service into $PRJ_INVENTORY project..."
   echo "Using template $_TEMPLATE"
-  oc process -f $_TEMPLATE --param=GIT_URI=http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git --param=MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_INVENTORY | oc create -f - -n $PRJ_INVENTORY
+  oc process -f $_TEMPLATE --param=GIT_URI=http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git --param=GIT_REF=master --param=MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL -n $PRJ_INVENTORY | oc create -f - -n $PRJ_INVENTORY
   sleep 2
 }
 
