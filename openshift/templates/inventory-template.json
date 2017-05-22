@@ -1,421 +1,401 @@
 {
-  "kind": "Template",
-  "apiVersion": "v1",
-  "metadata": {
-    "name": "inventory",
-    "annotations": {
-      "description": "The inventory service",
-      "iconClass": "icon-java",
-      "tags": "microservice,jboss,angularjs"
-    }
-  },
-  "labels": {
-    "application": "inventory",
-    "hystrix.enabled": "true"
-  },
-  "parameters": [
-    {
-      "displayName": "Application name",
-      "name": "APPLICATION_NAME",
-      "value": "inventory"
-    },
-    {
-      "description": "Git source URI for application",
-      "displayName": "Git repository",
-      "name": "GIT_URI",
-      "value": "https://github.com/jbossdemocentral/coolstore-microservice",
-      "required": true
-    },
-    {
-      "displayName": "Git branch/tag",
-      "name": "GIT_REF",
-      "value": "master",
-      "required": true
-    },
-    {
-      "description": "Maven mirror repository, e.g.: http://nexus.ci.svc.cluster.local:8081/content/groups/public/",
-      "displayName": "Maven mirror repository",
-      "name": "MAVEN_MIRROR_URL",
-      "value": ""
-    },
-    {
-      "displayName": "A-MQ cluster admin password",
-      "name": "MQ_CLUSTER_PASSWORD",
-      "from": "[a-zA-Z0-9]{8}",
-      "generate": "expression",
-      "required": true
-    },
-    {
-      "displayName": "JGroups cluster password",
-      "name": "JGROUPS_CLUSTER_PASSWORD",
-      "from": "[a-zA-Z0-9]{8}",
-      "generate": "expression",
-      "required": true
-    },
-    {
-        "displayName": "Database user name",
-        "name": "DB_USERNAME",
-        "from": "user[a-zA-Z0-9]{3}",
-        "generate": "expression",
-        "required": true
-    },
-    {
-        "displayName": "Database user password",
-        "name": "DB_PASSWORD",
-        "from": "[a-zA-Z0-9]{8}",
-        "generate": "expression",
-        "required": true
-    }
-  ],
-  "objects": [
-    {
-      "kind": "ImageStream",
-      "apiVersion": "v1",
-      "metadata": {
-        "name": "${APPLICATION_NAME}"
-      },
-      "spec": {
-        "tags": [
-          {
-            "name": "latest"
-          }
-        ]
-      }
-    },
-    {
-      "kind": "BuildConfig",
-      "apiVersion": "v1",
-      "metadata": {
-        "name": "${APPLICATION_NAME}"
-      },
-      "spec": {
-        "source": {
-          "type": "Git",
-          "git": {
-            "uri": "${GIT_URI}",
-            "ref": "${GIT_REF}"
-          },
-          "contextDir": "inventory-service"
-        },
-        "strategy": {
-          "type": "Source",
-          "sourceStrategy": {
-            "from": {
-              "kind": "ImageStreamTag",
-              "namespace": "openshift",
-              "name": "jboss-eap70-openshift:1.4"
-            },
-            "incremental" : true,
-            "env": [
-              {
-                "name": "MAVEN_MIRROR_URL",
-                "value": "${MAVEN_MIRROR_URL}"
-              }
-            ],
-            "forcePull": true
-          }
-        },
-        "output": {
-          "to": {
-            "kind": "ImageStreamTag",
-            "name": "${APPLICATION_NAME}:latest"
-          }
-        }
-      }
-    },
-    {
-      "kind": "DeploymentConfig",
-      "apiVersion": "v1",
-      "metadata": {
-        "name": "${APPLICATION_NAME}"
-      },
-      "spec": {
-        "strategy": {
-          "type": "Recreate",
-          "resources": {}
-        },
-        "triggers": [
-          {
-            "type": "ImageChange",
-            "imageChangeParams": {
-              "automatic": true,
-              "containerNames": [
-                "${APPLICATION_NAME}"
-              ],
-              "from": {
-                "kind": "ImageStreamTag",
-                "name": "${APPLICATION_NAME}:latest"
-              }
-            }
-          },
-          {
-            "type": "ConfigChange"
-          }
-        ],
-        "replicas": 1,
-        "selector": {
-          "deploymentConfig": "${APPLICATION_NAME}"
-        },
-        "template": {
-          "metadata": {
-            "name": "${APPLICATION_NAME}",
-            "labels": {
-              "deploymentConfig": "${APPLICATION_NAME}",
-              "application": "${APPLICATION_NAME}"
-            }
-          },
-          "spec": {
-            "containers": [
-              {
-                "name": "${APPLICATION_NAME}",
-                "image": "${APPLICATION_NAME}",
-                "ports": [
-                  {
-                    "name": "jolokia",
-                    "containerPort": 8778,
-                    "protocol": "TCP"
-                  },
-                  {
-                    "name": "http",
-                    "containerPort": 8080,
-                    "protocol": "TCP"
-                  },
-                  {
-                    "name": "ping",
-                    "containerPort": 8888,
-                    "protocol": "TCP"
-                  }
-                ],
-                "env": [
-                  {
-                    "name": "OPENSHIFT_KUBE_PING_LABELS",
-                    "value": "application=${APPLICATION_NAME}"
-                  },
-                  {
-                    "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
-                    "valueFrom": {
-                      "fieldRef": {
-                        "fieldPath": "metadata.namespace"
-                      }
-                    }
-                  },
-                  {
-                    "name": "MQ_CLUSTER_PASSWORD",
-                    "value": "${MQ_CLUSTER_PASSWORD}"
-                  },
-                  {
-                    "name": "JGROUPS_CLUSTER_PASSWORD",
-                    "value": "${JGROUPS_CLUSTER_PASSWORD}"
-                  },
-                  {
-                    "name": "AUTO_DEPLOY_EXPLODED",
-                    "value": "false"
-                  },
-                  {
-                      "name": "DB_SERVICE_PREFIX_MAPPING",
-                      "value": "${APPLICATION_NAME}-postgresql=DB"
-                  },
-                  {
-                      "name": "TX_DATABASE_PREFIX_MAPPING",
-                      "value": "${APPLICATION_NAME}-postgresql=DB"
-                  },
-                  {
-                      "name": "DB_JNDI",
-                      "value": "java:jboss/datasources/InventoryDS"
-                  },
-                  {
-                      "name": "DB_USERNAME",
-                      "value": "${DB_USERNAME}"
-                  },
-                  {
-                      "name": "DB_PASSWORD",
-                      "value": "${DB_PASSWORD}"
-                  },
-                  {
-                      "name": "DB_DATABASE",
-                      "value": "inventorydb"
-                  }
-                ],
-                "resources": {
-                    "limits": {
-                        "cpu": "1500m",
-                        "memory": "2Gi"
-                    },
-                    "requests": {
-                        "cpu": "200m",
-                        "memory": "1Gi"
-                    }
-                },
-                "livenessProbe": {
-                  "httpGet": {
-                    "path": "/",
-                    "port": 8080,
-                    "scheme": "HTTP"
-                  },
-                  "timeoutSeconds": 5,
-                  "periodSeconds": 5,
-                  "successThreshold": 1,
-                  "failureThreshold": 5,
-                  "initialDelaySeconds": 120
-                },
-                "readinessProbe": {
-                  "httpGet": {
-                    "path": "/",
-                    "port": 8080,
-                    "scheme": "HTTP"
-                  },
-                  "timeoutSeconds": 1,
-                  "periodSeconds": 5,
-                  "successThreshold": 1,
-                  "failureThreshold": 5,
-                  "initialDelaySeconds": 15
-                },
-                "lifecycle": {
-                  "preStop": {
-                    "exec": {
-                      "command": [
-                        "/opt/eap/bin/jboss-cli.sh",
-                        "-c",
-                        ":shutdown(timeout=60)"
-                      ]
-                    }
-                  }
-                },
-                "terminationMessagePath": "/dev/termination-log",
-                "imagePullPolicy": "Always"
-              }
-            ],
-            "restartPolicy": "Always",
-            "terminationGracePeriodSeconds": 75,
-            "dnsPolicy": "ClusterFirst",
-            "securityContext": {}
-          }
-        }
-      }
-    },
-    {
-      "kind": "Service",
-      "apiVersion": "v1",
-      "metadata": {
-        "name": "${APPLICATION_NAME}",
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "inventory",
         "annotations": {
-          "description": "The inventory service's http port.",
-          "service.alpha.openshift.io/dependencies": "[{\"name\":\"${APPLICATION_NAME}-postgresql\",\"namespace\":\"\",\"kind\":\"Service\"}]"
-        }
-      },
-      "spec": {
-        "ports": [
-          {
-            "protocol": "TCP",
-            "port": 8080,
-            "targetPort": 8080
-          }
-        ],
-        "selector": {
-          "deploymentConfig": "${APPLICATION_NAME}"
-        }
-      }
-    },
-    {
-        "kind": "Route",
-        "apiVersion": "v1",
-        "metadata": {
-            "name": "${APPLICATION_NAME}"
-        },
-        "spec": {
-            "to": {
-                "kind": "Service",
-                "name": "${APPLICATION_NAME}",
-                "weight": 100
-            },
-            "port": {
-                "targetPort": 8080
-            }
+            "description": "The inventory service",
+            "iconClass": "icon-java",
+            "tags": "microservice,jboss,angularjs"
         }
     },
-    {
-        "kind": "Service",
-        "apiVersion": "v1",
-        "spec": {
-            "ports": [
-                {
-                    "port": 5432,
-                    "targetPort": 5432
-                }
-            ],
-            "selector": {
-                "deploymentConfig": "${APPLICATION_NAME}-postgresql"
-            }
-        },
-        "metadata": {
-            "name": "${APPLICATION_NAME}-postgresql",
-            "labels": {
-                "application": "${APPLICATION_NAME}"
-            },
-            "annotations": {
-                "description": "The database server's port."
-            }
-        }
+    "labels": {
+        "application": "inventory",
+        "hystrix.enabled": "true"
     },
-    {
-        "kind": "DeploymentConfig",
-        "apiVersion": "v1",
-        "metadata": {
-            "name": "${APPLICATION_NAME}-postgresql",
-            "labels": {
-                "application": "${APPLICATION_NAME}"
+    "parameters": [{
+            "displayName": "Application name",
+            "name": "APPLICATION_NAME",
+            "value": "inventory"
+        },
+        {
+            "description": "Git source URI for application",
+            "displayName": "Git repository",
+            "name": "GIT_URI",
+            "value": "https://github.com/jbossdemocentral/coolstore-microservice",
+            "required": true
+        },
+        {
+            "displayName": "Git branch/tag",
+            "name": "GIT_REF",
+            "value": "stable-ocp-3.4",
+            "required": true
+        },
+        {
+            "description": "Maven mirror repository, e.g.: http://nexus.ci.svc.cluster.local:8081/content/groups/public/",
+            "displayName": "Maven mirror repository",
+            "name": "MAVEN_MIRROR_URL",
+            "value": ""
+        },
+        {
+            "displayName": "A-MQ cluster admin password",
+            "name": "MQ_CLUSTER_PASSWORD",
+            "from": "[a-zA-Z0-9]{8}",
+            "generate": "expression",
+            "required": true
+        },
+        {
+            "displayName": "JGroups cluster password",
+            "name": "JGROUPS_CLUSTER_PASSWORD",
+            "from": "[a-zA-Z0-9]{8}",
+            "generate": "expression",
+            "required": true
+        },
+        {
+            "displayName": "Database user name",
+            "name": "DB_USERNAME",
+            "from": "user[a-zA-Z0-9]{3}",
+            "generate": "expression",
+            "required": true
+        },
+        {
+            "displayName": "Database user password",
+            "name": "DB_PASSWORD",
+            "from": "[a-zA-Z0-9]{8}",
+            "generate": "expression",
+            "required": true
+        }
+    ],
+    "objects": [{
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}"
+            },
+            "spec": {
+                "tags": [{
+                    "name": "latest"
+                }]
             }
         },
-        "spec": {
-            "strategy": {
-                "type": "Recreate"
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}"
             },
-            "triggers": [
-                {
-                    "type": "ImageChange",
-                    "imageChangeParams": {
-                        "automatic": true,
-                        "containerNames": [
-                            "${APPLICATION_NAME}-postgresql"
-                        ],
+            "spec": {
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "${GIT_URI}",
+                        "ref": "${GIT_REF}"
+                    },
+                    "contextDir": "inventory-service"
+                },
+                "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
                         "from": {
                             "kind": "ImageStreamTag",
                             "namespace": "openshift",
-                            "name": "postgresql:latest"
-                        }
+                            "name": "jboss-eap70-openshift:1.4"
+                        },
+                        "incremental": true,
+                        "env": [{
+                            "name": "MAVEN_MIRROR_URL",
+                            "value": "${MAVEN_MIRROR_URL}"
+                        }],
+                        "forcePull": true
                     }
                 },
-                {
-                    "type": "ConfigChange"
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "${APPLICATION_NAME}:latest"
+                    }
                 }
-            ],
-            "replicas": 1,
-            "selector": {
-                "deploymentConfig": "${APPLICATION_NAME}-postgresql"
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}"
             },
-            "template": {
-                "metadata": {
-                    "name": "${APPLICATION_NAME}-postgresql",
-                    "labels": {
-                        "deploymentConfig": "${APPLICATION_NAME}-postgresql",
-                        "application": "${APPLICATION_NAME}"
-                    }
+            "spec": {
+                "strategy": {
+                    "type": "Recreate",
+                    "resources": {}
                 },
-                "spec": {
-                    "terminationGracePeriodSeconds": 60,
-                    "containers": [
-                        {
-                            "name": "${APPLICATION_NAME}-postgresql",
-                            "image": "postgresql",
-                            "imagePullPolicy": "Always",
-                            "ports": [
+                "triggers": [{
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "${APPLICATION_NAME}"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "${APPLICATION_NAME}:latest"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "selector": {
+                    "deploymentConfig": "${APPLICATION_NAME}"
+                },
+                "template": {
+                    "metadata": {
+                        "name": "${APPLICATION_NAME}",
+                        "labels": {
+                            "deploymentConfig": "${APPLICATION_NAME}",
+                            "application": "${APPLICATION_NAME}"
+                        }
+                    },
+                    "spec": {
+                        "containers": [{
+                            "name": "${APPLICATION_NAME}",
+                            "image": "${APPLICATION_NAME}",
+                            "ports": [{
+                                    "name": "jolokia",
+                                    "containerPort": 8778,
+                                    "protocol": "TCP"
+                                },
                                 {
-                                    "containerPort": 5432,
+                                    "name": "http",
+                                    "containerPort": 8080,
+                                    "protocol": "TCP"
+                                },
+                                {
+                                    "name": "ping",
+                                    "containerPort": 8888,
                                     "protocol": "TCP"
                                 }
                             ],
-                            "env": [
+                            "env": [{
+                                    "name": "OPENSHIFT_KUBE_PING_LABELS",
+                                    "value": "application=${APPLICATION_NAME}"
+                                },
                                 {
+                                    "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
+                                    "valueFrom": {
+                                        "fieldRef": {
+                                            "fieldPath": "metadata.namespace"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "MQ_CLUSTER_PASSWORD",
+                                    "value": "${MQ_CLUSTER_PASSWORD}"
+                                },
+                                {
+                                    "name": "JGROUPS_CLUSTER_PASSWORD",
+                                    "value": "${JGROUPS_CLUSTER_PASSWORD}"
+                                },
+                                {
+                                    "name": "AUTO_DEPLOY_EXPLODED",
+                                    "value": "false"
+                                },
+                                {
+                                    "name": "DB_SERVICE_PREFIX_MAPPING",
+                                    "value": "${APPLICATION_NAME}-postgresql=DB"
+                                },
+                                {
+                                    "name": "TX_DATABASE_PREFIX_MAPPING",
+                                    "value": "${APPLICATION_NAME}-postgresql=DB"
+                                },
+                                {
+                                    "name": "DB_JNDI",
+                                    "value": "java:jboss/datasources/InventoryDS"
+                                },
+                                {
+                                    "name": "DB_USERNAME",
+                                    "value": "${DB_USERNAME}"
+                                },
+                                {
+                                    "name": "DB_PASSWORD",
+                                    "value": "${DB_PASSWORD}"
+                                },
+                                {
+                                    "name": "DB_DATABASE",
+                                    "value": "inventorydb"
+                                }
+                            ],
+                            "resources": {
+                                "limits": {
+                                    "cpu": "1500m",
+                                    "memory": "2Gi"
+                                },
+                                "requests": {
+                                    "cpu": "200m",
+                                    "memory": "1Gi"
+                                }
+                            },
+                            "livenessProbe": {
+                                "httpGet": {
+                                    "path": "/",
+                                    "port": 8080,
+                                    "scheme": "HTTP"
+                                },
+                                "timeoutSeconds": 5,
+                                "periodSeconds": 5,
+                                "successThreshold": 1,
+                                "failureThreshold": 5,
+                                "initialDelaySeconds": 120
+                            },
+                            "readinessProbe": {
+                                "httpGet": {
+                                    "path": "/",
+                                    "port": 8080,
+                                    "scheme": "HTTP"
+                                },
+                                "timeoutSeconds": 1,
+                                "periodSeconds": 5,
+                                "successThreshold": 1,
+                                "failureThreshold": 5,
+                                "initialDelaySeconds": 15
+                            },
+                            "lifecycle": {
+                                "preStop": {
+                                    "exec": {
+                                        "command": [
+                                            "/opt/eap/bin/jboss-cli.sh",
+                                            "-c",
+                                            ":shutdown(timeout=60)"
+                                        ]
+                                    }
+                                }
+                            },
+                            "terminationMessagePath": "/dev/termination-log",
+                            "imagePullPolicy": "Always"
+                        }],
+                        "restartPolicy": "Always",
+                        "terminationGracePeriodSeconds": 75,
+                        "dnsPolicy": "ClusterFirst",
+                        "securityContext": {}
+                    }
+                }
+            }
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}",
+                "annotations": {
+                    "description": "The inventory service's http port.",
+                    "service.alpha.openshift.io/dependencies": "[{\"name\":\"${APPLICATION_NAME}-postgresql\",\"namespace\":\"\",\"kind\":\"Service\"}]"
+                }
+            },
+            "spec": {
+                "ports": [{
+                    "protocol": "TCP",
+                    "port": 8080,
+                    "targetPort": 8080
+                }],
+                "selector": {
+                    "deploymentConfig": "${APPLICATION_NAME}"
+                }
+            }
+        },
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}"
+            },
+            "spec": {
+                "to": {
+                    "kind": "Service",
+                    "name": "${APPLICATION_NAME}",
+                    "weight": 100
+                },
+                "port": {
+                    "targetPort": 8080
+                }
+            }
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "spec": {
+                "ports": [{
+                    "port": 5432,
+                    "targetPort": 5432
+                }],
+                "selector": {
+                    "deploymentConfig": "${APPLICATION_NAME}-postgresql"
+                }
+            },
+            "metadata": {
+                "name": "${APPLICATION_NAME}-postgresql",
+                "labels": {
+                    "application": "${APPLICATION_NAME}"
+                },
+                "annotations": {
+                    "description": "The database server's port."
+                }
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}-postgresql",
+                "labels": {
+                    "application": "${APPLICATION_NAME}"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "triggers": [{
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "${APPLICATION_NAME}-postgresql"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "namespace": "openshift",
+                                "name": "postgresql:latest"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "selector": {
+                    "deploymentConfig": "${APPLICATION_NAME}-postgresql"
+                },
+                "template": {
+                    "metadata": {
+                        "name": "${APPLICATION_NAME}-postgresql",
+                        "labels": {
+                            "deploymentConfig": "${APPLICATION_NAME}-postgresql",
+                            "application": "${APPLICATION_NAME}"
+                        }
+                    },
+                    "spec": {
+                        "terminationGracePeriodSeconds": 60,
+                        "containers": [{
+                            "name": "${APPLICATION_NAME}-postgresql",
+                            "image": "postgresql",
+                            "imagePullPolicy": "Always",
+                            "ports": [{
+                                "containerPort": 5432,
+                                "protocol": "TCP"
+                            }],
+                            "env": [{
                                     "name": "POSTGRESQL_USER",
                                     "value": "${DB_USERNAME}"
                                 },
@@ -447,11 +427,10 @@
                                 },
                                 "timeoutSeconds": 1
                             }
-                        }
-                    ]
+                        }]
+                    }
                 }
             }
         }
-    }
-  ]
+    ]
 }
