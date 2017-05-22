@@ -416,6 +416,7 @@ EOM
   rm -rf $_CLONE_DIR && \
       git clone http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git $_CLONE_DIR && \
       cd $_CLONE_DIR && \
+      git checkout master && \
       git branch -m master master-old && \
       git checkout $GITHUB_REF && \
       git branch -m $GITHUB_REF master && \
