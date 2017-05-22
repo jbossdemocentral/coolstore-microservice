@@ -4,6 +4,10 @@ This is an example demo showing a retail store consisting of several of microser
 
 It demonstrates how to wire up small microservices into a larger application using microservice architectural principals.
 
+Development Branch
+------------------
+:warning: **Please note that master is our development branch and may contain untested features.** For stable branch use a version branch like `1.0.x`
+
 Services
 --------
 There are several individual microservices and infrastructure components that make up this app:
