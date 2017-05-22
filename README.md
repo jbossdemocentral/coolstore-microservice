@@ -16,7 +16,7 @@ There are several individual microservices and infrastructure components that ma
 
 ![Architecture Screenshot](docs/images/arch-diagram.png?raw=true "Architecture Diagram")
 
-<img src="docs/images/store.png?raw=true" width="740" />
+![Architecture Screenshot](docs/images/store.png?raw=true "CoolStore Online Shop")
 
 Prerequisites
 ================
