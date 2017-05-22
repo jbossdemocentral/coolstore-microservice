@@ -146,7 +146,7 @@ function print_info() {
   echo "Minimal setup:       $ARG_MINIMAL"
   echo "Ephemeral:           $ARG_EPHEMERAL"
   echo "Project suffix:      $PRJ_SUFFIX"
-  echo "GitHub repo:         https://github.com/$GITHUB_ACCOUNT/coolstore-microservice"
+  echo "GitHub repo:         $GITHUB_URI"
   echo "GitHub branch/tag:   $GITHUB_REF"
   echo "Gogs url:            http://$GOGS_ROUTE"
   echo "Gogs admin user:     $GOGS_ADMIN_USER"
@@ -280,7 +280,6 @@ function deploy_gogs() {
   local _DB_USER=gogs
   local _DB_PASSWORD=gogs
   local _DB_NAME=gogs
-  local _GITHUB_REPO="https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git"
 
   echo "Using template $_TEMPLATE"
   oc process -f $_TEMPLATE -v HOSTNAME=$GOGS_ROUTE -v GOGS_VERSION=0.9.113 -v DATABASE_USER=$_DB_USER -v DATABASE_PASSWORD=$_DB_PASSWORD -v DATABASE_NAME=$_DB_NAME -n $PRJ_CI | oc create -f - -n $PRJ_CI
@@ -304,18 +303,29 @@ function deploy_gogs() {
   # import GitHub repo
   read -r -d '' _DATA_JSON << EOM
 {
-  "clone_addr": "$_GITHUB_REPO",
-  "uid": 1,
-  "repo_name": "coolstore-microservice"
+  "name": "coolstore-microservice",
+  "private": false
 }
 EOM
 
-  _RETURN=$(curl -o /dev/null -sL -w "%{http_code}" -H "Content-Type: application/json" -d "$_DATA_JSON" -u $GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD -X POST http://$GOGS_ROUTE/api/v1/repos/migrate)
+  _RETURN=$(curl -o /dev/null -sL -w "%{http_code}" -H "Content-Type: application/json" -d "$_DATA_JSON" -u $GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD -X POST http://$GOGS_ROUTE/api/v1/user/repos)
   if [ $_RETURN != "201" ] && [ $_RETURN != "200" ] ; then
-    echo "WARNING: Failed (http code $_RETURN) to import GitHub repo $_REPO to Gogs"
+    echo "WARNING: Failed (http code $_RETURN) to create repository"
   else
     echo "CoolStore GitHub repo imported to Gogs"
   fi
+
+  sleep 2
+
+  local _CLONE_DIR=/tmp/$(date +%s)-coolstore-microservice
+  rm -rf $_CLONE_DIR && \
+      git clone http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git $_CLONE_DIR && \
+      cd $_CLONE_DIR && \
+      git remote add github $GITHUB_URI && \
+      git pull github $GITHUB_REF && \
+      git add . --all && \
+      git push -f http://$GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD@$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git master && \
+      rm -rf $_CLONE_DIR
 
   # create user
   read -r -d '' _DATA_JSON << EOM
@@ -332,20 +342,6 @@ EOM
   else
     echo "Gogs user created: $GOGS_USER"
   fi
-
-  sleep 2
-
-  # import tag to master
-  local _CLONE_DIR=/tmp/$(date +%s)-coolstore-microservice
-  rm -rf $_CLONE_DIR && \
-      git clone http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git $_CLONE_DIR && \
-      cd $_CLONE_DIR && \
-      git checkout master && \
-      git branch -m master master-old && \
-      git checkout $GITHUB_REF && \
-      git branch -m $GITHUB_REF master && \
-      git push -f http://$GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD@$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git master && \
-      rm -rf $_CLONE_DIR
 }
 
 # Deploy Jenkins
@@ -638,6 +634,7 @@ case "$ARG_COMMAND" in
         echo "Deploying MSA demo..."
         create_projects 
         print_info
+        
         deploy_nexus
         wait_for_nexus_to_be_ready
         build_images
