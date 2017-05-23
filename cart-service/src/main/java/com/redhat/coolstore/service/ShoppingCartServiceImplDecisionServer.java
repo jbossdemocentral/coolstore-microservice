@@ -24,18 +24,16 @@ import org.kie.server.client.RuleServicesClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import com.redhat.coolstore.model.kie.PromoEvent;
 import com.redhat.coolstore.model.Product;
 import com.redhat.coolstore.model.Promotion;
 import com.redhat.coolstore.model.ShoppingCart;
 import com.redhat.coolstore.model.ShoppingCartItem;
+import com.redhat.coolstore.model.kie.PromoEvent;
 
 import feign.Feign;
 import feign.jackson.JacksonDecoder;
 
-@Component
 public class ShoppingCartServiceImplDecisionServer implements ShoppingCartService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ShoppingCartServiceImplDecisionServer.class);
