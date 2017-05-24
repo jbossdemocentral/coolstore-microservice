@@ -243,10 +243,10 @@
                                     "scheme": "HTTP"
                                 },
                                 "timeoutSeconds": 5,
-                                "periodSeconds": 5,
+                                "periodSeconds": 10,
                                 "successThreshold": 1,
                                 "failureThreshold": 5,
-                                "initialDelaySeconds": 120
+                                "initialDelaySeconds": 60
                             },
                             "readinessProbe": {
                                 "httpGet": {
@@ -255,10 +255,10 @@
                                     "scheme": "HTTP"
                                 },
                                 "timeoutSeconds": 1,
-                                "periodSeconds": 5,
+                                "periodSeconds": 10,
                                 "successThreshold": 1,
                                 "failureThreshold": 5,
-                                "initialDelaySeconds": 15
+                                "initialDelaySeconds": 60
                             },
                             "lifecycle": {
                                 "preStop": {
@@ -425,7 +425,9 @@
                                 "tcpSocket": {
                                     "port": 5432
                                 },
-                                "timeoutSeconds": 1
+                                "timeoutSeconds": 1,
+                                "periodSeconds": 5,
+                                "failureThreshold": 5
                             }
                         }]
                     }
