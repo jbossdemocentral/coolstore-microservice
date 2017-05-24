@@ -160,7 +160,9 @@ objects:
             httpGet:
               path: /health
               port: 8081
-            initialDelaySeconds: 180
+            initialDelaySeconds: 30
+            failureThreshold: 5
+            periodSeconds: 10
           name: coolstore-gw
           ports:
           - containerPort: 8778
@@ -169,7 +171,9 @@ objects:
             httpGet:
               path: /health
               port: 8081
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
+            failureThreshold: 5
+            periodSeconds: 10
           resources:
             limits:
               cpu: 700m
@@ -268,13 +272,13 @@ objects:
                 - -c
                 - :shutdown(timeout=60)
           livenessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 120
-            periodSeconds: 5
+            initialDelaySeconds: 60
+            periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 5
           name: inventory
@@ -289,13 +293,13 @@ objects:
             name: ping
             protocol: TCP
           readinessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 15
-            periodSeconds: 5
+            initialDelaySeconds: 60
+            periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
           resources:
@@ -386,6 +390,8 @@ objects:
             name: inventory-postgresql-data
           livenessProbe:
             initialDelaySeconds: 30
+            failureThreshold: 5
+            periodSeconds: 10
             tcpSocket:
               port: 5432
             timeoutSeconds: 1
@@ -398,6 +404,8 @@ objects:
               - psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c 'SELECT 1'
             initialDelaySeconds: 5
             timeoutSeconds: 1
+            failureThreshold: 5
+            periodSeconds: 5
           resources:
             limits:
               cpu: 500m
@@ -710,10 +718,9 @@ objects:
               path: /health
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 15
-            periodSeconds: 5
-            successThreshold: 1
-            timeoutSeconds: 1
+            initialDelaySeconds: 60
+            failureThreshold: 5
+            periodSeconds: 10
           name: cart
           ports:
           - containerPort: 8778
@@ -726,15 +733,13 @@ objects:
             name: https
             protocol: TCP
           readinessProbe:
-            failureThreshold: 10
             httpGet:
               path: /health
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 15
-            periodSeconds: 5
-            successThreshold: 1
-            timeoutSeconds: 1
+            initialDelaySeconds: 60
+            failureThreshold: 5
+            periodSeconds: 10
           resources:
             limits:
               cpu: 1

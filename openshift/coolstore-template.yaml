@@ -96,17 +96,17 @@ objects:
               path: /
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 120
-            periodSeconds: 5
+            initialDelaySeconds: 30
+            periodSeconds: 10
             successThreshold: 1
-            timeoutSeconds: 5
+            timeoutSeconds: 5            
           readinessProbe:
             failureThreshold: 5
             httpGet:
               path: /
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 15
+            initialDelaySeconds: 30
             periodSeconds: 5
             successThreshold: 1
             timeoutSeconds: 1
@@ -224,7 +224,9 @@ objects:
             httpGet:
               path: /health
               port: 8081
-            initialDelaySeconds: 180
+            initialDelaySeconds: 30
+            failureThreshold: 5
+            periodSeconds: 10
           name: coolstore-gw
           ports:
           - containerPort: 8778
@@ -233,7 +235,9 @@ objects:
             httpGet:
               path: /health
               port: 8081
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
+            failureThreshold: 5
+            periodSeconds: 5
           resources: {}
     triggers:
     - imageChangeParams:

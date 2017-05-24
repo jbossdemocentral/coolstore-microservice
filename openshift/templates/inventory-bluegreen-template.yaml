@@ -72,10 +72,11 @@ objects:
               path: /
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 120
+            initialDelaySeconds: 30
             periodSeconds: 5
             successThreshold: 1
             timeoutSeconds: 5
+            periodSeconds: 10
           name: inventory
           ports:
           - containerPort: 8778
@@ -93,10 +94,10 @@ objects:
               path: /
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 15
-            periodSeconds: 5
+            initialDelaySeconds: 30
             successThreshold: 1
             timeoutSeconds: 1
+            periodSeconds: 10
           resources:
             limits:
               cpu: 2
@@ -198,8 +199,8 @@ objects:
               path: /
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 120
-            periodSeconds: 5
+            initialDelaySeconds: 30
+            periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 5
           name: inventory
@@ -320,6 +321,8 @@ objects:
             tcpSocket:
               port: 5432
             timeoutSeconds: 1
+            failureThreshold: 5
+            periodSeconds: 10
           readinessProbe:
             exec:
               command:
@@ -329,6 +332,8 @@ objects:
               - psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c 'SELECT 1'
             initialDelaySeconds: 5
             timeoutSeconds: 1
+            failureThreshold: 5
+            periodSeconds: 5
           resources:
             limits:
               cpu: 500m
