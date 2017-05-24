@@ -16,6 +16,7 @@ function usage() {
     echo "   delete                   Clean up and remove demo projects and objects"
     echo "   verify                   Verify the demo is deployed correctly"
     echo "   idle                     Make all demo servies idle"
+    echo "   unidle                   Make all demo servies unidle"
     echo 
     echo "DEMOS:"
     echo "   msa                      Microservices app with all services" 
@@ -65,6 +66,13 @@ while :; do
             ;;
         idle)
             ARG_COMMAND=idle
+            if [ -n "$2" ]; then
+                ARG_DEMO=$2
+                shift
+            fi
+            ;;
+        unidle)
+            ARG_COMMAND=unidle
             if [ -n "$2" ]; then
                 ARG_DEMO=$2
                 shift
@@ -207,9 +215,9 @@ function print_info() {
   echo "Project suffix:      $PRJ_SUFFIX"
   echo "GitHub repo:         $GITHUB_URI"
   echo "GitHub branch/tag:   $GITHUB_REF"
-  echo "Maven mirror url:    $MAVEN_MIRROR_URL"
 
-  if [ "$ENABLE_CI_CD" = true ] ; then
+  if [ "$ENABLE_CI_CD" = true ] && [ "$ARG_COMMAND" == "deploy" ] ; then
+    echo "Maven mirror url:    $MAVEN_MIRROR_URL"
     echo "Gogs url:            http://$GOGS_ROUTE"
     echo "Gogs admin user:     $GOGS_ADMIN_USER"
     echo "Gogs admin pwd:      $GOGS_ADMIN_PASSWORD"
@@ -674,6 +682,21 @@ function make_idle() {
   oc idle -n $PRJ_DEVELOPER --all
 }
 
+function make_unidle() {
+  echo_header "Unidling Services"
+  local _DIGIT_REGEX="^[[:digit:]]*$"
+
+  for project in $PRJ_COOLSTORE_PROD $PRJ_COOLSTORE_TEST $PRJ_CI $PRJ_INVENTORY $PRJ_DEVELOPER
+  do
+    for dc in $(oc get dc -n $project -o=custom-columns=:.metadata.name); do
+      local replicas=$(oc get dc $dc --template='{{ index .metadata.annotations "idling.alpha.openshift.io/previous-scale"}}' -n $project 2>/dev/null)
+      if [[ $replicas =~ $_DIGIT_REGEX ]]; then
+        oc scale --replicas=$replicas dc $dc -n $project
+      fi
+    done
+  done
+}
+
 # GPTE convention
 function set_default_project() {
   if [ $LOGGEDIN_USER == 'system:admin' ] ; then
@@ -726,6 +749,12 @@ case "$ARG_COMMAND" in
         echo "Idling MSA demo ($ARG_DEMO)..."
         print_info
         make_idle
+        ;;
+
+    unidle)
+        echo "Unidling MSA demo ($ARG_DEMO)..."
+        print_info
+        make_unidle
         ;;
 
     deploy)
