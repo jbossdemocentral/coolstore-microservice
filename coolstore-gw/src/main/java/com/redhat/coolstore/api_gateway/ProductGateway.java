@@ -16,14 +16,12 @@
  */
 package com.redhat.coolstore.api_gateway;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.component.jackson.ListJacksonDataFormat;
@@ -39,7 +37,6 @@ import org.springframework.stereotype.Component;
 
 import com.redhat.coolstore.api_gateway.model.Inventory;
 import com.redhat.coolstore.api_gateway.model.Product;
-import com.redhat.coolstore.api_gateway.model.ShoppingCart;
 
 @Component
 public class ProductGateway extends RouteBuilder {
@@ -94,8 +91,8 @@ public class ProductGateway extends RouteBuilder {
                 	.removeHeaders("CamelHttp*")
                 	.recipientList(simple("http4://{{env:CATALOG_ENDPOINT:catalog:8080}}/api/products")).end()
                 .onFallback()
-                	.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
-                    .to("direct:productFallback")
+                	//.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
+                	.to("direct:productFallback")
                     .stop()
                 .end()
                 .choice()
@@ -114,8 +111,8 @@ public class ProductGateway extends RouteBuilder {
         from("direct:productFallback")
                 .id("ProductFallbackRoute")
                 .transform()
-                .constant(Collections.singletonList(new Product("0", "Unavailable Product", "Unavailable Product", 0, null)))
-                .marshal().json(JsonLibrary.Jackson, List.class);
+                .constant(Collections.singletonList(new Product("0", "Unavailable Product", "Unavailable Product", 0, null)));
+                //.marshal().json(JsonLibrary.Jackson, List.class);
         
        
 
@@ -132,8 +129,8 @@ public class ProductGateway extends RouteBuilder {
 		    	.removeHeaders("CamelHttp*")
 		    	.recipientList(simple("http4://{{env:INVENTORY_ENDPOINT:inventory:8080}}/api/availability/${header.itemId}")).end()
             .onFallback()
-            	.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
-                .to("direct:inventoryFallback")
+            	//.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
+            	.to("direct:inventoryFallback")
             .end()
             .choice().when(body().isNull())
             	.to("direct:inventoryFallback")
@@ -144,8 +141,8 @@ public class ProductGateway extends RouteBuilder {
         from("direct:inventoryFallback")
                 .id("inventoryFallbackRoute")
                 .transform()
-                .constant(new Inventory("0", 0, "Local Store", "http://developers.redhat.com"))
-                .marshal().json(JsonLibrary.Jackson, Inventory.class);
+                .constant(new Inventory("0", 0, "Local Store", "http://developers.redhat.com"));
+                //.marshal().json(JsonLibrary.Jackson, Inventory.class);
         
         
         

@@ -95,8 +95,11 @@ public class ProductGatewayTest {
 		});
 
         ResponseEntity<String> orderResponse = restTemplate.getForEntity("/api/products", String.class);
-        assertThat(orderResponse.getStatusCodeValue(), equalTo(HttpStatus.SC_SERVICE_UNAVAILABLE));
         
+        //assertThat(orderResponse.getStatusCodeValue(), equalTo(HttpStatus.SC_SERVICE_UNAVAILABLE));
+        assertThat(orderResponse.getStatusCodeValue(), equalTo(HttpStatus.SC_OK));
+        JsonNode node = new ObjectMapper(new JsonFactory()).readTree(orderResponse.getBody());
+        assertThat("0", equalTo(node.get(0).get("itemId").asText()));
        
     }
 }
