@@ -636,7 +636,7 @@ function verify_build_and_deployments() {
   for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_CI $PRJ_INVENTORY
   do
     local _DC=
-    for dc in $(oc get dc -n $project -o=custom-columns=:.metadata.name,:.status.replicas); do
+    for dc in $(oc get dc -n $project -o=custom-columns=:.metadata.name,:.status.availableReplicas); do
       # redeploy if deployment has failed or has taken too long
       if [ $dc = 0 ] && [ -z "$(oc get pods -n $project | grep "$dc-[0-9]\+-deploy")" ] ; then
         echo "WARNING: Deployment $project/$_DC in project $project is not complete. Starting a new deployment..."
