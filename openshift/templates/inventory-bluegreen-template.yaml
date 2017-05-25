@@ -67,12 +67,12 @@ objects:
                 - -c
                 - :shutdown(timeout=60)
           livenessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
-              path: /
+              path: /api/availability/1
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 5
             successThreshold: 1
             timeoutSeconds: 5
@@ -89,12 +89,12 @@ objects:
             name: ping
             protocol: TCP
           readinessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
-              path: /
+              path: /api/availability/1
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             successThreshold: 1
             timeoutSeconds: 1
             periodSeconds: 10
@@ -194,12 +194,12 @@ objects:
                 - -c
                 - :shutdown(timeout=60)
           livenessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
-              path: /
+              path: /api/availability/1
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 5
@@ -215,12 +215,12 @@ objects:
             name: ping
             protocol: TCP
           readinessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
-              path: /
+              path: /api/availability/1
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 15
+            initialDelaySeconds: 60
             periodSeconds: 5
             successThreshold: 1
             timeoutSeconds: 1
@@ -321,7 +321,7 @@ objects:
             tcpSocket:
               port: 5432
             timeoutSeconds: 1
-            failureThreshold: 5
+            failureThreshold: 10
             periodSeconds: 10
           readinessProbe:
             exec:
@@ -332,7 +332,7 @@ objects:
               - psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c 'SELECT 1'
             initialDelaySeconds: 5
             timeoutSeconds: 1
-            failureThreshold: 5
+            failureThreshold: 10
             periodSeconds: 5
           resources:
             limits:

@@ -91,7 +91,7 @@ objects:
           - containerPort: 8080
             protocol: TCP
           livenessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /
               port: 8080
@@ -101,7 +101,7 @@ objects:
             successThreshold: 1
             timeoutSeconds: 5            
           readinessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /
               port: 8080
@@ -225,7 +225,7 @@ objects:
               path: /health
               port: 8081
             initialDelaySeconds: 30
-            failureThreshold: 5
+            failureThreshold: 10
             periodSeconds: 10
           name: coolstore-gw
           ports:
@@ -236,8 +236,8 @@ objects:
               path: /health
               port: 8081
             initialDelaySeconds: 30
-            failureThreshold: 5
-            periodSeconds: 5
+            failureThreshold: 10
+            periodSeconds: 10
           resources: {}
     triggers:
     - imageChangeParams:
@@ -369,13 +369,13 @@ objects:
                 - -c
                 - :shutdown(timeout=60)
           livenessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 120
-            periodSeconds: 5
+            initialDelaySeconds: 60
+            periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 5
           name: inventory
@@ -390,13 +390,13 @@ objects:
             name: ping
             protocol: TCP
           readinessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 15
-            periodSeconds: 5
+            initialDelaySeconds: 60
+            periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
           resources:
@@ -699,7 +699,7 @@ objects:
           image: mongodb
           imagePullPolicy: IfNotPresent
           livenessProbe:
-            failureThreshold: 3
+            failureThreshold: 10
             initialDelaySeconds: 30
             periodSeconds: 10
             successThreshold: 1
@@ -718,7 +718,7 @@ objects:
               - -c
               - mongo 127.0.0.1:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD
                 --eval="quit()"
-            failureThreshold: 3
+            failureThreshold: 10
             initialDelaySeconds: 3
             periodSeconds: 10
             successThreshold: 1
@@ -820,7 +820,7 @@ objects:
           image: cart
           imagePullPolicy: Always
           livenessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /health
               port: 8080
@@ -930,7 +930,7 @@ objects:
           resources: {}
           terminationMessagePath: /dev/termination-log
           readinessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /health
               port: 8080
@@ -940,7 +940,7 @@ objects:
             successThreshold: 1
             timeoutSeconds: 1
           livenessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /health
               port: 8080
@@ -1039,7 +1039,7 @@ objects:
           resources: {}
           terminationMessagePath: /dev/termination-log
           readinessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /
               port: 8080
@@ -1049,7 +1049,7 @@ objects:
             successThreshold: 1
             timeoutSeconds: 1
           livenessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /
               port: 8080
