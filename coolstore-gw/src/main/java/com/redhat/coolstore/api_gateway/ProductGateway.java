@@ -40,28 +40,27 @@ import com.redhat.coolstore.api_gateway.model.Product;
 
 @Component
 public class ProductGateway extends RouteBuilder {
-	private static final Logger LOG = LoggerFactory.getLogger(ProductGateway.class);
-	
-	
-	@Value("${hystrix.executionTimeout}")
-	private int hystrixExecutionTimeout;
-	
-	@Value("${hystrix.groupKey}")
-	private String hystrixGroupKey;
-	
-	@Value("${hystrix.circuitBreakerEnabled}")
-	private boolean hystrixCircuitBreakerEnabled;
-	
-	@Autowired
-	private Environment env;
-	
+    private static final Logger LOG = LoggerFactory.getLogger(ProductGateway.class);
+
+    @Value("${hystrix.executionTimeout}")
+    private int hystrixExecutionTimeout;
+
+    @Value("${hystrix.groupKey}")
+    private String hystrixGroupKey;
+
+    @Value("${hystrix.circuitBreakerEnabled}")
+    private boolean hystrixCircuitBreakerEnabled;
+
+    @Autowired
+    private Environment env;
+
     @Override
     public void configure() throws Exception {
-    	try {
-    		getContext().setTracing(Boolean.parseBoolean(env.getProperty("ENABLE_TRACER", "false")));	
-		} catch (Exception e) {
-			LOG.error("Failed to parse the ENABLE_TRACER value: {}", env.getProperty("ENABLE_TRACER", "false"));
-		}
+        try {
+            getContext().setTracing(Boolean.parseBoolean(env.getProperty("ENABLE_TRACER", "false")));
+        } catch (Exception e) {
+            LOG.error("Failed to parse the ENABLE_TRACER value: {}", env.getProperty("ENABLE_TRACER", "false"));
+        }
     	
         
         JacksonDataFormat productFormatter = new ListJacksonDataFormat();
@@ -69,11 +68,7 @@ public class ProductGateway extends RouteBuilder {
 
        
 
-        rest("/products/").description("Product Catalog Service")
-            .produces(MediaType.APPLICATION_JSON_VALUE)
-
-            
-            
+        rest("/products/").description("Product Catalog Service").produces(MediaType.APPLICATION_JSON_VALUE)
         // Handle CORS Pre-flight requests
         .options("/")
             .route().id("productsOptions").end()
@@ -82,28 +77,26 @@ public class ProductGateway extends RouteBuilder {
         .get("/").description("Get product catalog").outType(Product.class)
             .route().id("productRoute")
                 .hystrix().id("Product Service")
-                	.hystrixConfiguration()
-		    			.executionTimeoutInMilliseconds(hystrixExecutionTimeout)
-		    			.groupKey(hystrixGroupKey)
-		    			.circuitBreakerEnabled(hystrixCircuitBreakerEnabled)
-		    		.end()
-                	.setBody(simple("null"))
-                	.removeHeaders("CamelHttp*")
-                	.recipientList(simple("http4://{{env:CATALOG_ENDPOINT:catalog:8080}}/api/products")).end()
+                    .hystrixConfiguration()
+                        .executionTimeoutInMilliseconds(hystrixExecutionTimeout)
+                        .groupKey(hystrixGroupKey)
+                        .circuitBreakerEnabled(hystrixCircuitBreakerEnabled)
+                    .end()
+                .setBody(simple("null")).removeHeaders("CamelHttp*")
+                .recipientList(simple("http4://{{env:CATALOG_ENDPOINT:catalog:8080}}/api/products")).end()
                 .onFallback()
-                	//.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
-                	.to("direct:productFallback")
+                    //.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
+                    .to("direct:productFallback")
                     .stop()
                 .end()
                 .choice()
-                	.when(body().isNull())
-                		.to("direct:productFallback")
-                	.end()	
-                	.unmarshal(productFormatter)
-	                .split(body()).parallelProcessing()
-	                .enrich("direct:inventory", new InventoryEnricher())
-	            .end()
-	            
+                    .when(body().isNull())
+                        .to("direct:productFallback")
+                    .end()
+                    .unmarshal(productFormatter)
+                .split(body()).parallelProcessing()
+                .enrich("direct:inventory", new InventoryEnricher())
+                .end()
         .endRest();
         
         
@@ -113,27 +106,26 @@ public class ProductGateway extends RouteBuilder {
                 .transform()
                 .constant(Collections.singletonList(new Product("0", "Unavailable Product", "Unavailable Product", 0, null)));
                 //.marshal().json(JsonLibrary.Jackson, List.class);
-        
-       
+
 
         from("direct:inventory")
             .id("inventoryRoute")
             .setHeader("itemId", simple("${body.itemId}"))            
             .hystrix().id("Inventory Service")
-		         .hystrixConfiguration()
-					.executionTimeoutInMilliseconds(hystrixExecutionTimeout)
-					.groupKey(hystrixGroupKey)
-					.circuitBreakerEnabled(hystrixCircuitBreakerEnabled)
-				.end()
-		    	.setBody(simple("null"))
-		    	.removeHeaders("CamelHttp*")
-		    	.recipientList(simple("http4://{{env:INVENTORY_ENDPOINT:inventory:8080}}/api/availability/${header.itemId}")).end()
+                .hystrixConfiguration()
+                    .executionTimeoutInMilliseconds(hystrixExecutionTimeout)
+                    .groupKey(hystrixGroupKey)
+                    .circuitBreakerEnabled(hystrixCircuitBreakerEnabled)
+                .end()
+                .setBody(simple("null"))
+                .removeHeaders("CamelHttp*")
+                .recipientList(simple("http4://{{env:INVENTORY_ENDPOINT:inventory:8080}}/api/availability/${header.itemId}")).end()
             .onFallback()
-            	//.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
-            	.to("direct:inventoryFallback")
+                //.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Response.Status.SERVICE_UNAVAILABLE.getStatusCode()))
+                .to("direct:inventoryFallback")
             .end()
             .choice().when(body().isNull())
-            	.to("direct:inventoryFallback")
+                .to("direct:inventoryFallback")
             .end()
             .setHeader("CamelJacksonUnmarshalType", simple(Inventory.class.getName()))
             .unmarshal().json(JsonLibrary.Jackson, Inventory.class);
@@ -141,11 +133,8 @@ public class ProductGateway extends RouteBuilder {
         from("direct:inventoryFallback")
                 .id("inventoryFallbackRoute")
                 .transform()
-                .constant(new Inventory("0", 0, "Local Store", "http://developers.redhat.com"));
-                //.marshal().json(JsonLibrary.Jackson, Inventory.class);
-        
-        
-        
+                .constant(new Inventory("0", 0, "Local Store", "http://developers.redhat.com"))
+                .marshal().json(JsonLibrary.Jackson, Inventory.class);
     }
 
     private class InventoryEnricher implements AggregationStrategy {
