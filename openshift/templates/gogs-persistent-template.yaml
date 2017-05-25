@@ -178,7 +178,7 @@ objects:
               timeoutSeconds: 1
               periodSeconds: 20
               successThreshold: 1
-              failureThreshold: 3
+              failureThreshold: 5
           livenessProbe:
               httpGet:
                 path: /
@@ -188,7 +188,7 @@ objects:
               timeoutSeconds: 1
               periodSeconds: 10
               successThreshold: 1
-              failureThreshold: 3
+              failureThreshold: 5
           resources:
             limits:
               cpu: 500m

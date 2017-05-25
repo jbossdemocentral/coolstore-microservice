@@ -53,7 +53,7 @@ objects:
           - containerPort: 8080
             protocol: TCP
           livenessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /
               port: 8080
@@ -64,7 +64,7 @@ objects:
             successThreshold: 1
             timeoutSeconds: 5
           readinessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /
               port: 8080
@@ -161,7 +161,7 @@ objects:
               path: /health
               port: 8081
             initialDelaySeconds: 30
-            failureThreshold: 5
+            failureThreshold: 10
             periodSeconds: 10
           name: coolstore-gw
           ports:
@@ -172,7 +172,7 @@ objects:
               path: /health
               port: 8081
             initialDelaySeconds: 30
-            failureThreshold: 5
+            failureThreshold: 10
             periodSeconds: 10
           resources:
             limits:
@@ -274,7 +274,7 @@ objects:
           livenessProbe:
             failureThreshold: 10
             httpGet:
-              path: /
+              path: /api/availability/1
               port: 8080
               scheme: HTTP
             initialDelaySeconds: 60
@@ -295,7 +295,7 @@ objects:
           readinessProbe:
             failureThreshold: 10
             httpGet:
-              path: /
+              path: /api/availability/1
               port: 8080
               scheme: HTTP
             initialDelaySeconds: 60
@@ -390,7 +390,7 @@ objects:
             name: inventory-postgresql-data
           livenessProbe:
             initialDelaySeconds: 30
-            failureThreshold: 5
+            failureThreshold: 10
             periodSeconds: 10
             tcpSocket:
               port: 5432
@@ -404,7 +404,7 @@ objects:
               - psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c 'SELECT 1'
             initialDelaySeconds: 5
             timeoutSeconds: 1
-            failureThreshold: 5
+            failureThreshold: 10
             periodSeconds: 5
           resources:
             limits:
@@ -498,18 +498,26 @@ objects:
           - containerPort: 8080
             name: http
             protocol: TCP
-          readinessProbe:
-            failureThreshold: 10
-            exec:
-              command:
-              - /bin/bash
-              - -c
-              - curl -s -u Skq3VtCd:oktt6yhw 'http://localhost:8080/manager/jmxproxy/?get=Catalina%3Atype%3DServer&att=stateName'
-                |grep -iq 'stateName *= *STARTED'
-            initialDelaySeconds: 15
-            periodSeconds: 5
-            successThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: /api/products
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
             timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /api/products
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
           resources:
             limits:
               cpu: 500m
@@ -615,7 +623,7 @@ objects:
           image: mongodb
           imagePullPolicy: IfNotPresent
           livenessProbe:
-            failureThreshold: 3
+            failureThreshold: 10
             initialDelaySeconds: 30
             periodSeconds: 10
             successThreshold: 1
@@ -634,8 +642,8 @@ objects:
               - -c
               - mongo 127.0.0.1:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD
                 --eval="quit()"
-            failureThreshold: 3
-            initialDelaySeconds: 3
+            failureThreshold: 10
+            initialDelaySeconds: 5
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
@@ -713,13 +721,12 @@ objects:
           image: cart
           imagePullPolicy: Always
           livenessProbe:
-            failureThreshold: 5
             httpGet:
               path: /health
               port: 8080
               scheme: HTTP
             initialDelaySeconds: 60
-            failureThreshold: 5
+            failureThreshold: 10
             periodSeconds: 10
           name: cart
           ports:
@@ -738,7 +745,7 @@ objects:
               port: 8080
               scheme: HTTP
             initialDelaySeconds: 60
-            failureThreshold: 5
+            failureThreshold: 10
             periodSeconds: 10
           resources:
             limits:

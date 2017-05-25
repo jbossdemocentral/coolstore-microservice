@@ -238,26 +238,26 @@
                             },
                             "livenessProbe": {
                                 "httpGet": {
-                                    "path": "/",
+                                    "path": "/api/availability/1",
                                     "port": 8080,
                                     "scheme": "HTTP"
                                 },
                                 "timeoutSeconds": 5,
                                 "periodSeconds": 10,
                                 "successThreshold": 1,
-                                "failureThreshold": 5,
+                                "failureThreshold": 10,
                                 "initialDelaySeconds": 60
                             },
                             "readinessProbe": {
                                 "httpGet": {
-                                    "path": "/",
+                                    "path": "/api/availability/1",
                                     "port": 8080,
                                     "scheme": "HTTP"
                                 },
                                 "timeoutSeconds": 1,
                                 "periodSeconds": 10,
                                 "successThreshold": 1,
-                                "failureThreshold": 5,
+                                "failureThreshold": 10,
                                 "initialDelaySeconds": 60
                             },
                             "lifecycle": {
@@ -427,7 +427,7 @@
                                 },
                                 "timeoutSeconds": 1,
                                 "periodSeconds": 5,
-                                "failureThreshold": 5
+                                "failureThreshold": 10
                             }
                         }]
                     }
