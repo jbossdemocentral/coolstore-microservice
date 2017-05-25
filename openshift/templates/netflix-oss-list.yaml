@@ -52,7 +52,7 @@ items:
           resources: {}
           terminationMessagePath: /dev/termination-log
           readinessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /health
               port: 8080
@@ -62,7 +62,7 @@ items:
             successThreshold: 1
             timeoutSeconds: 1
           livenessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /health
               port: 8080
@@ -175,7 +175,7 @@ items:
           resources: {}
           terminationMessagePath: /dev/termination-log
           readinessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /
               port: 8080
@@ -185,7 +185,7 @@ items:
             successThreshold: 1
             timeoutSeconds: 1
           livenessProbe:
-            failureThreshold: 5
+            failureThreshold: 10
             httpGet:
               path: /
               port: 8080
