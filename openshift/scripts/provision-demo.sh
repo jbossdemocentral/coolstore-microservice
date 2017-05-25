@@ -655,7 +655,8 @@ function verify_build_and_deployments() {
   do
     local _DC=
     for dc in $(oc get dc -n $project -o=custom-columns=:.metadata.name,:.status.replicas); do
-      if [ $dc = 0 ] && [ -z "$(oc get pods -n $project | grep "$dc-[0-9]\+-deploy" | grep Running)" ] ; then
+      # redeploy if deployment has failed or has taken too long
+      if [ $dc = 0 ] && [ -z "$(oc get pods -n $project | grep "$dc-[0-9]\+-deploy")" ] ; then
         echo "WARNING: Deployment $project/$_DC in project $project is not complete. Starting a new deployment..."
         oc rollout cancel dc/$_DC -n $project >/dev/null
         sleep 5
