@@ -608,4 +608,8 @@ parameters:
   name: GIT_REF
   required: true
   value: master
+- description: Hostname/public route of the web-ui service for example web-ui-coolstore.apps.example.com. Do not specify protocol (eg. http or https)
+  displayName: Hostname of the web-ui service
+  name: WEB-UI-HOSTNAME
+  required: true
 
