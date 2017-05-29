@@ -588,7 +588,7 @@ objects:
       - name: LD_LIBRARY_PATH
         value: /opt/rh/rh-nodejs4/root/usr/lib64
       - name: COOLSTORE_WEB_URI
-        value: web-ui-coolstore-dev.apps.thomasqvarnstrom.com
+        value: ${WEB_UI_HOSTNAME}
       volumeMounts:
       - mountPath: /tmp/config-files
         name: config-volume
@@ -610,6 +610,6 @@ parameters:
   value: master
 - description: Hostname/public route of the web-ui service for example web-ui-coolstore.apps.example.com. Do not specify protocol (eg. http or https)
   displayName: Hostname of the web-ui service
-  name: WEB-UI-HOSTNAME
+  name: WEB_UI_HOSTNAME
   required: true
 
