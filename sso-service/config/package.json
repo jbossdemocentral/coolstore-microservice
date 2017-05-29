@@ -1,0 +1,21 @@
+{
+  "name": "sso-config-client",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "main": "client.js",
+  "scripts": {
+    "start": "node client",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Red Hat Inc",
+  "contributors": [
+    "Thomas Qvarnstrom <tqvarnst@redhat.com> (https://developers.redhat.com)"
+  ],
+  "license": "Apache-2.0",
+  "private": true,
+  "description": "This script configures the SSO server with default setting for the coolstore demo",
+  "homepage": "https://developers.redhat.com",
+  "dependencies": {
+    "request": "2.79.0"
+  }
+}
