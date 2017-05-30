@@ -596,7 +596,7 @@ function deploy_pipeline() {
 {
   "type": "gogs",
   "config": {
-    "url": "https://$OPENSHIFT_MASTER/oapi/v1/namespaces/$PRJ_CI/buildconfigs/$_PIPELINE_NAME/webhooks/$WEBHOOK_SECRET/generic",
+    "url": "$OPENSHIFT_MASTER/oapi/v1/namespaces/$PRJ_CI/buildconfigs/$_PIPELINE_NAME/webhooks/$WEBHOOK_SECRET/generic",
     "content_type": "json"
   },
   "events": [
