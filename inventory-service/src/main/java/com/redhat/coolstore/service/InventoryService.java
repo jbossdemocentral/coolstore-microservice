@@ -1,6 +1,5 @@
 package com.redhat.coolstore.service;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,7 +23,7 @@ public class InventoryService {
 		Inventory inventory = em.find(Inventory.class,itemId);
 		
 //		List<String> recalledProducts = Arrays.asList("165613","165614");
-//		if (recalledProducts.contains(inventory.getItemId())) {
+//		if (recalledProducts.contains(itemId)) {
 //			inventory.setQuantity(0);
 //		}
 		
