@@ -101,10 +101,10 @@ objects:
           resources:
             limits:
               cpu: 2
-              memory: 1Gi
+              memory: 2Gi
             requests:
               cpu: 200m
-              memory: 512Mi
+              memory: 1Gi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
@@ -227,10 +227,10 @@ objects:
           resources:
             limits:
               cpu: 2
-              memory: 1Gi
+              memory: 2Gi
             requests:
               cpu: 200m
-              memory: 512Mi
+              memory: 1Gi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
