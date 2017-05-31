@@ -24,6 +24,9 @@ import org.kie.server.client.RuleServicesClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
 
 import com.redhat.coolstore.model.Product;
 import com.redhat.coolstore.model.Promotion;
@@ -34,6 +37,9 @@ import com.redhat.coolstore.model.kie.PromoEvent;
 import feign.Feign;
 import feign.jackson.JacksonDecoder;
 
+@Service
+@Primary
+@Profile("drools")
 public class ShoppingCartServiceImplDecisionServer implements ShoppingCartService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ShoppingCartServiceImplDecisionServer.class);
