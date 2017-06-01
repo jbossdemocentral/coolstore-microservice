@@ -320,7 +320,8 @@ objects:
         realm = (process.env.SSO_REALM || "coolstore"),
         sso_reg_user = (process.env.SSO_SERVICE_USER_NAME || "admin"),
         sso_reg_password = (process.env.SSO_SERVICE_USER_PASSWD || "coolstore"),
-        coolstore_client_id = (process.env.COOLSTORE_CLIENT_ID || "web-ui"),
+        coolstore_web_client_id = (process.env.COOLSTORE_WEB_CLIENT_ID || "coolstore-web-ui"),
+        coolstore_gw_client_id = (process.env.COOLSTORE_GW_CLIENT_ID || "coolstore-gateway"),
         coolstore_web_uri = (process.env.COOLSTORE_WEB_URI || "");
 
 
@@ -350,7 +351,7 @@ objects:
                     bearer: token
                 },
                 json: {
-                    clientId: coolstore_client_id,
+                    clientId: coolstore_web_client_id,
                     enabled: true,
                     protocol: "openid-connect",
                     redirectUris: [
@@ -362,6 +363,25 @@ objects:
                     ],
                     "bearerOnly": false,
                     "publicClient": true
+                }
+            }, function (err, resp, body) {
+                console.log("register client result: " + resp.statusCode + " " + resp.statusMessage + " " + JSON.stringify(body));
+            });
+            request.post(
+            {
+                uri: sso_service_url  + '/auth/admin/realms/' + realm + '/clients',
+                strictSSL: false,
+                auth: {
+                    bearer: token
+                },
+                json: { 
+                    clientId: coolstore_gw_client_id,
+                    enabled: true,
+                    protocol: "openid-connect",
+                    secret: "0de7b727-8af3-43cb-84da-988d54dffc01",
+                    clientAuthenticatorType: "client-secret",
+                    "bearerOnly": true,
+                    "publicClient": false
                 }
             }, function (err, resp, body) {
                 console.log("register client result: " + resp.statusCode + " " + resp.statusMessage + " " + JSON.stringify(body));

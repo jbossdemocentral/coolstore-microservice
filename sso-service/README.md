@@ -29,7 +29,8 @@ Follow below instructions to enable SSO manually.
 
 1. Add environment variables to the Web UI deployment configuration
 
-        oc env dc/web-ui SSO_URL=sso-${PRJ_CI}.${DOMAIN} SSO_CLIENT_ID=web-ui SSO_REALM=coolstore -n ${PRJ_COOLSTORE_PROD}
+        oc env dc/web-ui SSO_URL=http://sso-${PRJ_CI}.${DOMAIN}/auth SSO_CLIENT_ID=coolstore-web-ui SSO_REALM=coolstore -n ${PRJ_COOLSTORE_PROD}
+        oc env dc/coolstore-gw SSO_URL=http://sso-${PRJ_CI}.${DOMAIN}/auth SSO_CLIENT_ID=coolstore-gateway SSO_REALM=coolstore SPRING_PROFILES_ACTIVE=sso -n ${PRJ_COOLSTORE_PROD}
 
 1. Wait for the web-ui to redeploy and after that SSO should be enabled for the application
 
