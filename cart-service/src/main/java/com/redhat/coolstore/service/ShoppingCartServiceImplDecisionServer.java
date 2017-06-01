@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import com.redhat.coolstore.model.PromoEvent;
+import com.redhat.coolstore.PromoEvent;
 import com.redhat.coolstore.model.kie.Product;
 import com.redhat.coolstore.model.kie.Promotion;
 import com.redhat.coolstore.model.kie.ShoppingCart;
@@ -103,7 +103,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 
 			if (executeResponse.getType() == ResponseType.SUCCESS) {
 				ExecutionResults results = executeResponse.getResult();
-				com.redhat.coolstore.model.ShoppingCart resultSc = (com.redhat.coolstore.model.ShoppingCart) results.getValue("shoppingcart");
+				com.redhat.coolstore.ShoppingCart resultSc = (com.redhat.coolstore.ShoppingCart) results.getValue("shoppingcart");
 				mapShoppingCartPricingResults(resultSc, sc);
 			} else {
 				// TODO: Some proper, micro-service type error handling here.
@@ -149,7 +149,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 		/*
 		 * Build the ShoppingCart fact from the given ShoppingCart.
 		 */
-		com.redhat.coolstore.model.ShoppingCart factSc = buildShoppingCartFact(sc);
+		com.redhat.coolstore.ShoppingCart factSc = buildShoppingCartFact(sc);
 
 		commands.add(commandsFactory.newInsert(factSc, "shoppingcart", true, "DEFAULT"));
 
@@ -157,7 +157,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 		List<ShoppingCartItem> scItems = sc.getShoppingCartItemList();
 		for (ShoppingCartItem nextSci : scItems) {
 			// Build the ShoppingCartItem fact from the given ShoppingCartItem.
-			com.redhat.coolstore.model.ShoppingCartItem factSci = buildShoppingCartItem(nextSci);
+			com.redhat.coolstore.ShoppingCartItem factSci = buildShoppingCartItem(nextSci);
 			factSci.setShoppingCart(factSc);
 			commands.add(commandsFactory.newInsert(factSci));
 		}
@@ -201,8 +201,8 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	 *            the {@link ShoppingCart} from which to build the fact.
 	 * @return the {@link com.redhat.coolstore.ShoppingCart} fact
 	 */
-	private com.redhat.coolstore.model.ShoppingCart buildShoppingCartFact(ShoppingCart sc) {
-		com.redhat.coolstore.model.ShoppingCart factSc = new com.redhat.coolstore.model.ShoppingCart();
+	private com.redhat.coolstore.ShoppingCart buildShoppingCartFact(ShoppingCart sc) {
+		com.redhat.coolstore.ShoppingCart factSc = new com.redhat.coolstore.ShoppingCart();
 		factSc.setCartItemPromoSavings(sc.getCartItemPromoSavings());
 		factSc.setCartItemTotal(sc.getCartItemTotal());
 		factSc.setCartTotal(sc.getCartTotal());
@@ -218,8 +218,8 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	 *            the {@link ShoppingCartItem} from which to build the fact.
 	 * @return the {@link com.redhat.coolstore.ShoppingCartItem} fact.
 	 */
-	private com.redhat.coolstore.model.ShoppingCartItem buildShoppingCartItem(ShoppingCartItem sci) {
-		com.redhat.coolstore.model.ShoppingCartItem factSci = new com.redhat.coolstore.model.ShoppingCartItem();
+	private com.redhat.coolstore.ShoppingCartItem buildShoppingCartItem(ShoppingCartItem sci) {
+		com.redhat.coolstore.ShoppingCartItem factSci = new com.redhat.coolstore.ShoppingCartItem();
 		factSci.setItemId(sci.getProduct().getItemId());
 		factSci.setName(sci.getProduct().getName());
 		factSci.setPrice(sci.getProduct().getPrice());
@@ -235,7 +235,7 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	 * @param sc
 	 *            the {@link ShoppingCart} onto which we need to map the results.
 	 */
-	private void mapShoppingCartPricingResults(com.redhat.coolstore.model.ShoppingCart resultSc, ShoppingCart sc) {
+	private void mapShoppingCartPricingResults(com.redhat.coolstore.ShoppingCart resultSc, ShoppingCart sc) {
 		sc.setCartItemPromoSavings(resultSc.getCartItemPromoSavings());
 		sc.setCartItemTotal(resultSc.getCartItemTotal());
 		sc.setShippingPromoSavings(resultSc.getShippingPromoSavings());
