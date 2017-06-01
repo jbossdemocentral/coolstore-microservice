@@ -61,6 +61,9 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	private RuleServicesClient rulesClient;
 
 	@Autowired
+	private CatalogService catalogService;
+	
+	@Autowired
 	private PromoService ps;
 
 	private Map<String, ShoppingCart> cartDB = new HashMap<>();
@@ -117,11 +120,8 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 	@Override
 	public Product getProduct(String itemId) {
 		if (!productMap.containsKey(itemId)) {
-
-			CatalogService cat = Feign.builder().decoder(new JacksonDecoder()).target(CatalogService.class, CATALOG_ENDPOINT);
-
 			// Fetch and cache products. TODO: Cache should expire at some point!
-			List<Product> products = cat.products();
+			List<Product> products = catalogService.products();
 			productMap = products.stream().collect(Collectors.toMap(Product::getItemId, Function.identity()));
 		}
 
