@@ -2,107 +2,119 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.redhat.coolstore</groupId>
-	<artifactId>gateway</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+    <groupId>com.redhat.coolstore</groupId>
+    <artifactId>gateway</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
 
-	<description>Coolstore gateway application running Camel and Hystrix in Spring Boot</description>
+    <description>Coolstore gateway application running Camel and Hystrix in Spring Boot</description>
 
-	<properties>
-	   <spring-boot.version>1.4.1.RELEASE</spring-boot.version>
-    	<fabric8.version>2.2.192</fabric8.version>
-    	<fabric8.maven.plugin.version>3.4.0</fabric8.maven.plugin.version>
-    	<maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
-    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    	<maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
-  	</properties>
+    <properties>
+       <spring-boot.version>1.4.1.RELEASE</spring-boot.version>
+        <fabric8.version>2.2.192</fabric8.version>
+        <fabric8.maven.plugin.version>3.4.0</fabric8.maven.plugin.version>
+        <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
+      </properties>
 
     <dependencyManagement>
-	    <dependencies>
-	      <dependency>
-	        <groupId>io.fabric8</groupId>
-	        <artifactId>fabric8-project-bom-camel-spring-boot</artifactId>
-	        <version>${fabric8.version}</version>
-	        <type>pom</type>
-	        <scope>import</scope>
-	      </dependency>
-	    </dependencies>
-	  </dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>fabric8-project-bom-camel-spring-boot</artifactId>
+            <version>${fabric8.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+          <dependency>
+            <groupId>org.keycloak.bom</groupId>
+            <artifactId>keycloak-adapter-bom</artifactId>
+            <version>3.1.0.Final</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
 
-	<dependencies>
-		
+    <dependencies>
+        
         <!-- Spring -->
        <dependency>
-	      <groupId>org.apache.camel</groupId>
-	      <artifactId>camel-spring-boot-starter</artifactId>
-	   </dependency>
-	   <dependency>
-	      <groupId>org.springframework.boot</groupId>
-	      <artifactId>spring-boot-starter-web</artifactId>
-	   </dependency>
-	   <dependency>
-	      <groupId>org.springframework.boot</groupId>
-	      <artifactId>spring-boot-starter-actuator</artifactId>
-	   </dependency>
-	   <dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-servlet-starter</artifactId>
-		</dependency>
+          <groupId>org.apache.camel</groupId>
+          <artifactId>camel-spring-boot-starter</artifactId>
+       </dependency>
        <dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-hystrix-starter</artifactId>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-http4-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-jsonpath-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-jackson-starter</artifactId>
-		</dependency>
-		 <dependency>
-	      <groupId>org.apache.camel</groupId>
-	      <artifactId>camel-swagger-java-starter</artifactId>
-	    </dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-web</artifactId>
+       </dependency>
+       <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-actuator</artifactId>
+       </dependency>
+       <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-servlet-starter</artifactId>
+        </dependency>
+       <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-hystrix-starter</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-http4-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jsonpath-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jackson-starter</artifactId>
+        </dependency>
+         <dependency>
+          <groupId>org.apache.camel</groupId>
+          <artifactId>camel-swagger-java-starter</artifactId>
+        </dependency>
 
-		
+        <!-- Keycloak / RH SSO -->
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-spring-boot-starter</artifactId>
+        </dependency>
+        
 
-		<!-- testing -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.arquillian.junit</groupId>
-			<artifactId>arquillian-junit-container</artifactId>
-			<scope>test</scope>
-		</dependency>
-		
-	</dependencies>
+        <!-- testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+    </dependencies>
 
-	<build>
-		<finalName>coolstore-gw</finalName>
-		<defaultGoal>spring-boot:run</defaultGoal>
-		<plugins>
-		 <plugin>
+    <build>
+        <finalName>coolstore-gw</finalName>
+        <defaultGoal>spring-boot:run</defaultGoal>
+        <plugins>
+         <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven-compiler-plugin.version}</version>
         <configuration>
@@ -157,5 +169,5 @@
         </configuration>
       </plugin>
     </plugins>
-	</build>
+    </build>
 </project>
