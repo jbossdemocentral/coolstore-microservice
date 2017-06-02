@@ -2,7 +2,7 @@ package com.redhat.coolstore.service;
 
 import org.springframework.stereotype.Component;
 
-import com.redhat.coolstore.model.ShoppingCart;
+import com.redhat.coolstore.model.kie.ShoppingCart;
 
 @Component
 public class ShippingService {
