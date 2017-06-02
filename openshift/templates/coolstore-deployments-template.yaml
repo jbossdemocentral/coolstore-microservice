@@ -42,8 +42,8 @@ objects:
       spec:
         containers:
         - env:
-          - name: COOLSTORE_GW_ENDPOINT
-            value: http://gw-${HOSTNAME_SUFFIX}
+          - name: COOLSTORE_GW_SERVICE
+            value: coolstore-gw
           - name: HOSTNAME_HTTP
             value: web-ui:8080
           image: web-ui
@@ -149,12 +149,6 @@ objects:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          - name: CART_ENDPOINT
-            value: cart-${HOSTNAME_SUFFIX}
-          - name: INVENTORY_ENDPOINT
-            value: inventory-${HOSTNAME_SUFFIX}
-          - name: CATALOG_ENDPOINT
-            value: catalog-${HOSTNAME_SUFFIX}
           image: library/coolstore-gw:${APP_VERSION}
           livenessProbe:
             httpGet:
