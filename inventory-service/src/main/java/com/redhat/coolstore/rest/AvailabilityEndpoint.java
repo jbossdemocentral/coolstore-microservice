@@ -10,6 +10,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.coolstore.model.Inventory;
 import com.redhat.coolstore.service.InventoryService;
 
@@ -18,6 +21,8 @@ import com.redhat.coolstore.service.InventoryService;
 public class AvailabilityEndpoint implements Serializable {
 
 	private static final long serialVersionUID = -7227732980791688773L;
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(AvailabilityEndpoint.class);
 
 	@Inject
 	private InventoryService inventoryService;
@@ -26,7 +31,7 @@ public class AvailabilityEndpoint implements Serializable {
 	@Path("{itemId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Inventory getAvailability(@PathParam("itemId") String itemId) {
-		System.out.println("Calling the inventory service");
+		LOGGER.debug("Calling the inventory service");
 		return inventoryService.getInventory(itemId);
 	}
 
