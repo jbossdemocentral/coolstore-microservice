@@ -43,7 +43,7 @@ objects:
         containers:
         - env:
           - name: COOLSTORE_GW_SERVICE
-            value: coolstore-gw
+            value: gw
           - name: HOSTNAME_HTTP
             value: web-ui:8080
           image: web-ui
