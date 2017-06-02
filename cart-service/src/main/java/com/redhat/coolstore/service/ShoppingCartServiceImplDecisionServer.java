@@ -162,6 +162,10 @@ public class ShoppingCartServiceImplDecisionServer implements ShoppingCartServic
 			commands.add(commandsFactory.newInsert(factSci));
 		}
 
+		// Add extra fireAllRules command. Workaround for: https://issues.jboss.org/browse/DROOLS-1593
+		// TODO: Remove workaround when bug has been fixed.
+		commands.add(commandsFactory.newFireAllRules());
+		
 		// Start the process (ruleflow).
 		commands.add(commandsFactory.newStartProcess(RULEFLOW_PROCESS_NAME));
 
