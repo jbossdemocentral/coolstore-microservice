@@ -58,7 +58,7 @@ objects:
               path: /
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             timeoutSeconds: 10
             periodSeconds: 5
             successThreshold: 1
@@ -69,7 +69,7 @@ objects:
               path: /
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             timeoutSeconds: 10
             periodSeconds: 5
             successThreshold: 1
@@ -305,10 +305,10 @@ objects:
           resources:
             limits:
               cpu: 1
-              memory: 1Gi
+              memory: 2Gi
             requests:
-              cpu: 50m
-              memory: 512Mi
+              cpu: 100m
+              memory: 1Gi
           terminationMessagePath: /dev/termination-log
         dnsPolicy: ClusterFirst
         restartPolicy: Always
@@ -503,7 +503,7 @@ objects:
               path: /api/products
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             timeoutSeconds: 1
             periodSeconds: 10
             successThreshold: 1
@@ -513,7 +513,7 @@ objects:
               path: /api/products
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             timeoutSeconds: 1
             periodSeconds: 10
             successThreshold: 1

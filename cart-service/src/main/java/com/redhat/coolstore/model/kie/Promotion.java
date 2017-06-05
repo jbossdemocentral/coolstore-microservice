@@ -1,4 +1,4 @@
-package com.redhat.coolstore.model;
+package com.redhat.coolstore.model.kie;
 
 public class Promotion {
 
