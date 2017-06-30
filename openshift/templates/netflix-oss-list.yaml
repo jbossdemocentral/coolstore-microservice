@@ -53,20 +53,22 @@ items:
           terminationMessagePath: /dev/termination-log
           readinessProbe:
             failureThreshold: 10
-            httpGet:
-              path: /health
-              port: 8080
-              scheme: HTTP
+            exec:
+              command:
+                - curl
+                - '-f'
+                - 'http://localhost:8080/health'
             initialDelaySeconds: 30
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 5
           livenessProbe:
             failureThreshold: 10
-            httpGet:
-              path: /health
-              port: 8080
-              scheme: HTTP
+            exec:
+              command:
+                - curl
+                - '-f'
+                - 'http://localhost:8080/health'
             initialDelaySeconds: 60
             periodSeconds: 30
             successThreshold: 1
@@ -176,20 +178,22 @@ items:
           terminationMessagePath: /dev/termination-log
           readinessProbe:
             failureThreshold: 10
-            httpGet:
-              path: /
-              port: 8080
-              scheme: HTTP
+            exec:
+              command:
+                - curl
+                - '-f'
+                - 'http://localhost:8080'
             initialDelaySeconds: 30
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 5
           livenessProbe:
             failureThreshold: 10
-            httpGet:
-              path: /
-              port: 8080
-              scheme: HTTP
+            exec:
+              command:
+                - curl
+                - '-f'
+                - 'http://localhost:8080'
             initialDelaySeconds: 30
             periodSeconds: 10
             successThreshold: 1
