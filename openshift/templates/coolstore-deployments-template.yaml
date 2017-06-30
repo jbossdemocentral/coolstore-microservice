@@ -176,10 +176,10 @@ objects:
             periodSeconds: 10
           resources:
             limits:
-              cpu: 700m
+              cpu: 1
               memory: 2Gi
             requests:
-              cpu: 100m
+              cpu: 200m
               memory: 512Mi
     triggers:
     - imageChangeParams:
