@@ -54,10 +54,11 @@ objects:
             protocol: TCP
           livenessProbe:
             failureThreshold: 10
-            httpGet:
-              path: /
-              port: 8080
-              scheme: HTTP
+            exec:
+              command:
+                - curl
+                - '-f'
+                - 'http://localhost:8080'
             initialDelaySeconds: 60
             timeoutSeconds: 10
             periodSeconds: 5
@@ -65,10 +66,11 @@ objects:
             timeoutSeconds: 5
           readinessProbe:
             failureThreshold: 10
-            httpGet:
-              path: /
-              port: 8080
-              scheme: HTTP
+            exec:
+              command:
+                - curl
+                - '-f'
+                - 'http://localhost:8080'
             initialDelaySeconds: 60
             timeoutSeconds: 10
             periodSeconds: 5
@@ -157,9 +159,11 @@ objects:
             value: catalog-${HOSTNAME_SUFFIX}
           image: library/coolstore-gw:${APP_VERSION}
           livenessProbe:
-            httpGet:
-              path: /health
-              port: 8081
+            exec:
+              command:
+                - curl
+                - '-f'
+                - 'http://localhost:8081/health'
             initialDelaySeconds: 30
             failureThreshold: 10
             periodSeconds: 10
@@ -169,9 +173,11 @@ objects:
           - containerPort: 8778
             name: jolokia
           readinessProbe:
-            httpGet:
-              path: /health
-              port: 8081
+            exec:
+              command:
+                - curl
+                - '-f'
+                - 'http://localhost:8081/health'
             initialDelaySeconds: 30
             failureThreshold: 10
             periodSeconds: 10
@@ -501,20 +507,22 @@ objects:
             name: http
             protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /api/products
-              port: 8080
-              scheme: HTTP
+            exec:
+              command:
+                - curl
+                - '-f'
+                - 'http://localhost:8080/api/products'
             initialDelaySeconds: 60
             timeoutSeconds: 1
             periodSeconds: 10
             successThreshold: 1
             failureThreshold: 10
           readinessProbe:
-            httpGet:
-              path: /api/products
-              port: 8080
-              scheme: HTTP
+            exec:
+              command:
+                - curl
+                - '-f'
+                - 'http://localhost:8080/api/products'
             initialDelaySeconds: 60
             timeoutSeconds: 1
             periodSeconds: 10
@@ -731,10 +739,11 @@ objects:
           image: cart
           imagePullPolicy: Always
           livenessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-              scheme: HTTP
+            exec:
+              command:
+                - curl
+                - '-f'
+                - 'http://localhost:8080/health'
             initialDelaySeconds: 60
             failureThreshold: 10
             periodSeconds: 10
@@ -750,10 +759,11 @@ objects:
             name: https
             protocol: TCP
           readinessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-              scheme: HTTP
+            exec:
+              command:
+                - curl
+                - '-f'
+                - 'http://localhost:8080/health'
             initialDelaySeconds: 60
             failureThreshold: 10
             periodSeconds: 10
