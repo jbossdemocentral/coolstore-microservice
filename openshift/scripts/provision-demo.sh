@@ -634,12 +634,16 @@ EOM
 function verify_build_and_deployments() {
   echo_header "Verifying build and deployments"
   # verify builds
+  echo "Verifying builds..."
   local _BUILDS_FAILED=false
   for buildconfig in coolstore-gw web-ui inventory cart catalog pricing
   do
     if [ -n "$(oc get builds -n ${PRJ_COOLSTORE_PROD[0]} | grep $buildconfig | grep Failed)" ] && [ -z "$(oc get builds -n ${PRJ_COOLSTORE_PROD[0]} | grep $buildconfig | grep Complete)" ]; then
       _BUILDS_FAILED=true
-      echo "WARNING: Build $project/$buildconfig has failed. Starging a new build..."
+      echo "WARNING: Build $project/$buildconfig: FAILED"
+      echo
+      echo "Starting a new build for $project/$buildconfig ..."
+      echo
       oc start-build $buildconfig -n ${PRJ_COOLSTORE_PROD[0]} --wait
     fi
   done
@@ -650,35 +654,37 @@ function verify_build_and_deployments() {
     deploy_pipeline
   fi
 
-  # first, verify db deployments
-  for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_INVENTORY
-  do
-    local _DC=
-    for dc in $(oc get dc catalog-mongodb inventory-postgresql -n $project -o=custom-columns=:.metadata.name,:.status.availableReplicas); do
-      # redeploy if deployment has failed or has taken too long
-      if [ $dc = 0 ] && [ -z "$(oc get pods -n $project | grep "$dc-[0-9]\+-deploy")" ] ; then
-        echo "WARNING: Deployment $project/$_DC in project $project is not complete. Starting a new deployment..."
-        oc rollout cancel dc/$_DC -n $project >/dev/null
-        sleep 5
-        oc rollout latest dc/$_DC -n $project
-        oc rollout status dc/$_DC -n $project
-      fi
-      _DC=$dc
-    done
-  done
+  echo "Verifying deployments..."
+  # verify and retry deployments
+  if [ "$ENABLE_CI_CD" = true ] ; then
+    if [ "$ENABLE_TEST_ENV" = true ] ; then
+      verify_deployments_in_projects ${PRJ_COOLSTORE_TEST[0]} ${PRJ_COOLSTORE_PROD[0]} ${PRJ_CI[0]} ${PRJ_SERVICE_DEV[0]}
+    else
+      verify_deployments_in_projects ${PRJ_COOLSTORE_PROD[0]} ${PRJ_CI[0]} ${PRJ_SERVICE_DEV[0]}
+    fi
+  else
+    verify_deployments_in_projects ${PRJ_COOLSTORE_PROD[0]} ${PRJ_CI[0]}
+  fi 
+}
 
-  # then, verify other deployments (dependent on db)
-  for project in $PRJ_COOLSTORE_TEST $PRJ_COOLSTORE_PROD $PRJ_CI $PRJ_INVENTORY
+function verify_deployments_in_projects() {
+  for project in "$@"
   do
     local _DC=
-    for dc in $(oc get dc -n $project -o=custom-columns=:.metadata.name,:.status.availableReplicas); do
+    local _DEPLOYMENTS=$(oc get dc catalog-mongodb inventory-postgresql -n $project -o=custom-columns=:.metadata.name,:.status.availableReplicas 2>/dev/null;oc get dc -n $project -o=custom-columns=:.metadata.name,:.status.availableReplicas)
+    for dc in $_DEPLOYMENTS; do
       # redeploy if deployment has failed or has taken too long
       if [ $dc = 0 ] && [ -z "$(oc get pods -n $project | grep "$dc-[0-9]\+-deploy")" ] ; then
-        echo "WARNING: Deployment $project/$_DC in project $project is not complete. Starting a new deployment..."
+        echo "WARNING: Deployment $project/$_DC: FAILED"
+        echo
+        echo "Starting a new deployment for $project/$_DC ..."
+        echo
         oc rollout cancel dc/$_DC -n $project >/dev/null
         sleep 5
         oc rollout latest dc/$_DC -n $project
         oc rollout status dc/$_DC -n $project
+      elif [ $dc = 1 ] ; then
+        echo "Deployment $project/$_DC: OK"
       fi
       _DC=$dc
     done
