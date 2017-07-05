@@ -780,24 +780,32 @@ case "$ARG_COMMAND" in
         oc delete project ${PRJ_CI[0]} ${PRJ_COOLSTORE_PROD[0]}
         [ "$ENABLE_CI_CD" = true ] && oc delete project ${PRJ_SERVICE_DEV[0]}
         [ "$ENABLE_TEST_ENV" = true ] && oc delete project ${PRJ_COOLSTORE_TEST[0]} ${PRJ_DEVELOPER[0]}
+        echo
+        echo "Delete completed successfully!"
         ;;
       
     verify)
         echo "Verifying MSA demo ($ARG_DEMO)..."
         print_info
         verify_build_and_deployments
+        echo
+        echo "Post-Software checks completed successfully!"
         ;;
 
     idle)
         echo "Idling MSA demo ($ARG_DEMO)..."
         print_info
         make_idle
+        echo
+        echo "Idling completed successfully!"
         ;;
 
     unidle)
         echo "Unidling MSA demo ($ARG_DEMO)..."
         print_info
         make_unidle
+        echo
+        echo "Unidling completed successfully!"
         ;;
 
     deploy)
@@ -837,6 +845,8 @@ case "$ARG_COMMAND" in
           sleep 30
           verify_build_and_deployments
         fi
+        echo
+        echo "Provisioning completed successfully!"
         ;;
         
     *)
@@ -849,5 +859,5 @@ set_default_project
 popd >/dev/null
 
 END=`date +%s`
-echo
-echo "Provisioning done! (Completed in $(( ($END - $START)/60 )) min $(( ($END - $START)%60 )) sec)"
+echo "(Completed in $(( ($END - $START)/60 )) min $(( ($END - $START)%60 )) sec)"
+echo 
