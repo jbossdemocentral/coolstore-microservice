@@ -324,7 +324,7 @@ function add_inventory_template_to_projects() {
   curl -sL $_TEMPLATE | tr -d '\n' | tr -s '[:space:]' \
     | sed "s|\"MAVEN_MIRROR_URL\", \"value\": \"\"|\"MAVEN_MIRROR_URL\", \"value\": \"$MAVEN_MIRROR_URL\"|g" \
     | sed "s|\"https://github.com/jbossdemocentral/coolstore-microservice\"|\"http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git\"|g" \
-    | sed "s|stable-ocp-3.5|master|g" \
+    | sed "s|1.0.x|master|g" \
     | oc create -f - -n $PRJ_DEVELOPER
 }
 
