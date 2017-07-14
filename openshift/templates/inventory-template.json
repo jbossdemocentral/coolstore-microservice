@@ -109,6 +109,14 @@
                         "forcePull": true
                     }
                 },
+                "triggers": [
+                    {
+                        "imageChange": {},
+                        "type": "ImageChange"
+                    }, {
+                        "type": "ConfigChange"
+                    }
+                ],
                 "output": {
                     "to": {
                         "kind": "ImageStreamTag",
