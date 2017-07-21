@@ -173,7 +173,7 @@ WEBHOOK_SECRET=UfW7gQ6Jx4
 ENABLE_CI_CD=false
 ENABLE_TEST_ENV=false
 SCALE_DOWN_PROD=false
-WORKSHOP_YAML=demo-all.yml
+WORKSHOP_YAML=demo-cicd-eap.yml
 
 case $ARG_DEMO in
     msa)
