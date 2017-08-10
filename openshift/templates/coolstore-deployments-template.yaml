@@ -25,11 +25,11 @@ objects:
   metadata:
     name: web-ui
     labels:
-      application: web-ui
+      app: web-ui
   spec:
     replicas: 1
     selector:
-      application: web-ui
+      app: web-ui
       deploymentconfig: web-ui
     strategy:
       resources: {}
@@ -37,7 +37,7 @@ objects:
     template:
       metadata:
         labels:
-          application: web-ui
+          app: web-ui
           deploymentconfig: web-ui
       spec:
         containers:
@@ -103,7 +103,6 @@ objects:
   metadata:
     labels:
       app: web-ui
-      application: web-ui
     name: web-ui
   spec:
     ports:
@@ -118,7 +117,7 @@ objects:
   metadata:
     name: web-ui
     labels:
-      application: web-ui
+      app: web-ui
   spec:
     host: web-ui-${HOSTNAME_SUFFIX}
     to:
@@ -130,7 +129,7 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      application: coolstore-gw
+      app: coolstore-gw
   spec:
     replicas: 1
     selector:
@@ -141,7 +140,7 @@ objects:
     template:
       metadata:
         labels:
-          application: coolstore-gw
+          app: coolstore-gw
           deploymentconfig: coolstore-gw
         name: coolstore-gw
       spec:
@@ -204,7 +203,6 @@ objects:
   metadata:
     labels:
       app: coolstore-gw
-      application: coolstore-gw
       hystrix.enabled: "true"
     name: coolstore-gw
   spec:
@@ -219,7 +217,7 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      application: coolstore-gw
+      app: coolstore-gw
   spec:
     host: gw-${HOSTNAME_SUFFIX}
     to:
@@ -231,7 +229,7 @@ objects:
   metadata:
     name: inventory
     labels:
-      application: inventory
+      app: inventory
   spec:
     replicas: 1
     selector:
@@ -242,7 +240,7 @@ objects:
     template:
       metadata:
         labels:
-          application: inventory
+          app: inventory
           deploymentconfig: inventory
         name: inventory
       spec:
@@ -339,7 +337,6 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
       app: inventory
-      application: inventory
     name: inventory
   spec:
     ports:
@@ -352,7 +349,7 @@ objects:
   kind: Route
   metadata:
     labels:
-      application: inventory
+      app: inventory
     name: inventory
   spec:
     host: inventory-${HOSTNAME_SUFFIX}
@@ -365,7 +362,7 @@ objects:
   metadata:
     name: inventory-postgresql
     labels:
-      application: inventory
+      app: inventory
   spec:
     replicas: 1
     selector:
@@ -375,7 +372,7 @@ objects:
     template:
       metadata:
         labels:
-          application: inventory
+          app: inventory
           deploymentconfig: inventory-postgresql
         name: inventory-postgresql
       spec:
@@ -441,7 +438,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      application: inventory
+      app: inventory
     name: inventory-postgresql
   spec:
     ports:
@@ -453,7 +450,7 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     labels:
-      application: inventory
+      app: inventory
     name: inventory-postgresql-pv
   spec:
     accessModes:
@@ -467,7 +464,7 @@ objects:
   metadata:
     name: catalog
     labels:
-      application: catalog
+      app: catalog
   spec:
     replicas: 1
     selector:
@@ -478,7 +475,7 @@ objects:
     template:
       metadata:
         labels:
-          application: catalog
+          app: catalog
           deploymentconfig: catalog
         name: catalog
       spec:
@@ -557,7 +554,6 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'
     labels:
       app: catalog
-      application: catalog
     name: catalog
   spec:
     ports:
@@ -570,7 +566,7 @@ objects:
   kind: Route
   metadata:
     labels:
-      application: catalog
+      app: catalog
     name: catalog
   spec:
     host: catalog-${HOSTNAME_SUFFIX}
@@ -583,7 +579,6 @@ objects:
   metadata:
     labels:
       app: catalog
-      application: catalog
     name: catalog-mongodb
   spec:
     ports:
@@ -599,7 +594,7 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
-      application: catalog
+      app: catalog
     name: catalog-mongodb
   spec:
     replicas: 1
@@ -613,7 +608,7 @@ objects:
     template:
       metadata:
         labels:
-          application: catalog
+          app: catalog
           deploymentconfig: catalog-mongodb
       spec:
         containers:
@@ -695,7 +690,7 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     labels:
-      application: catalog
+      app: catalog
     name: mongodb-data-pv
   spec:
     accessModes:
@@ -709,7 +704,7 @@ objects:
   metadata:
     name: cart
     labels:
-      application: cart
+      app: cart
   spec:
     replicas: 1
     selector:
@@ -720,7 +715,7 @@ objects:
     template:
       metadata:
         labels:
-          application: cart
+          app: cart
           deploymentconfig: cart
         name: cart
       spec:
@@ -794,7 +789,6 @@ objects:
   metadata:
     labels:
       app: cart
-      application: cart
     name: cart
   spec:
     ports:
@@ -807,7 +801,7 @@ objects:
   kind: Route
   metadata:
     labels:
-      application: cart
+      app: cart
     name: cart
   spec:
     host: cart-${HOSTNAME_SUFFIX}

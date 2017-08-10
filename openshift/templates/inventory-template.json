@@ -10,7 +10,7 @@
         }
     },
     "labels": {
-        "application": "inventory",
+        "app": "inventory",
         "hystrix.enabled": "true"
     },
     "parameters": [{
@@ -99,7 +99,7 @@
                         "from": {
                             "kind": "ImageStreamTag",
                             "namespace": "openshift",
-                            "name": "jboss-eap70-openshift:1.4"
+                            "name": "jboss-eap70-openshift:1.5"
                         },
                         "incremental": true,
                         "env": [{
@@ -113,7 +113,7 @@
                     "imageChange": {},
                     "type": "ImageChange"
                 }, {
-                    "type": "ImageChange"
+                    "type": "ConfigChange"
                 }],
                 "output": {
                     "to": {
@@ -160,7 +160,7 @@
                         "name": "${APPLICATION_NAME}",
                         "labels": {
                             "deploymentConfig": "${APPLICATION_NAME}",
-                            "application": "${APPLICATION_NAME}"
+                            "app": "${APPLICATION_NAME}"
                         }
                     },
                     "spec": {
@@ -341,7 +341,7 @@
             "metadata": {
                 "name": "${APPLICATION_NAME}-postgresql",
                 "labels": {
-                    "application": "${APPLICATION_NAME}"
+                    "app": "${APPLICATION_NAME}"
                 },
                 "annotations": {
                     "description": "The database server's port."
@@ -354,7 +354,7 @@
             "metadata": {
                 "name": "${APPLICATION_NAME}-postgresql",
                 "labels": {
-                    "application": "${APPLICATION_NAME}"
+                    "app": "${APPLICATION_NAME}"
                 }
             },
             "spec": {
@@ -388,7 +388,7 @@
                         "name": "${APPLICATION_NAME}-postgresql",
                         "labels": {
                             "deploymentConfig": "${APPLICATION_NAME}-postgresql",
-                            "application": "${APPLICATION_NAME}"
+                            "app": "${APPLICATION_NAME}"
                         }
                     },
                     "spec": {
