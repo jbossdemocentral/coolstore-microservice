@@ -213,6 +213,7 @@ function print_info() {
   echo "OpenShift master:    $OPENSHIFT_MASTER"
   echo "Current user:        $LOGGEDIN_USER"
   echo "Project suffix:      $PRJ_SUFFIX"
+  echo "Ephemeral:           $ARG_EPHEMERAL"
   echo "GitHub repo:         $GITHUB_URI"
   echo "GitHub branch/tag:   $GITHUB_REF"
 

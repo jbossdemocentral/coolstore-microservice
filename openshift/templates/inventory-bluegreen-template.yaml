@@ -16,7 +16,7 @@ objects:
   metadata:
     name: inventory-blue
     labels:
-      application: inventory
+      app: inventory
       variant: blue
   spec:
     replicas: 1
@@ -28,7 +28,7 @@ objects:
     template:
       metadata:
         labels:
-          application: inventory
+          app: inventory
           variant: blue
           deploymentconfig: inventory-blue
         name: inventory-blue
@@ -127,7 +127,6 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
       app: inventory-live
-      application: inventory
       variant: blue
     name: inventory-blue
   spec:
@@ -143,7 +142,7 @@ objects:
   metadata:
     name: inventory-green
     labels:
-      application: inventory
+      app: inventory
       variant: green
   spec:
     replicas: 1
@@ -155,7 +154,7 @@ objects:
     template:
       metadata:
         labels:
-          application: inventory
+          app: inventory
           variant: green
           deploymentconfig: inventory-green
         name: inventory-green
@@ -253,7 +252,6 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
       app: inventory-idle
-      application: inventory
       variant: green
     name: inventory-green
   spec:
@@ -267,7 +265,7 @@ objects:
   kind: Route
   metadata:
     labels:
-      application: inventory
+      app: inventory
       variant: green
     name: inventory
   spec:
@@ -285,7 +283,7 @@ objects:
   metadata:
     name: inventory-postgresql
     labels:
-      application: inventory
+      app: inventory
   spec:
     replicas: 1
     selector:
@@ -295,7 +293,7 @@ objects:
     template:
       metadata:
         labels:
-          application: inventory
+          app: inventory
           deploymentconfig: inventory-postgresql
         name: inventory-postgresql
       spec:
@@ -361,7 +359,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      application: inventory
+      app: inventory
     name: inventory-postgresql
   spec:
     ports:
@@ -373,7 +371,7 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     labels:
-      application: inventory
+      app: inventory
     name: inventory-postgresql-pv
   spec:
     accessModes:
