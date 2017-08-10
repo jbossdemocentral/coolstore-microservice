@@ -393,7 +393,7 @@ function deploy_gogs() {
   wait_while_empty "Gogs PostgreSQL" 600 "oc get ep gogs-postgresql -o yaml -n ${PRJ_CI[0]} | grep '\- addresses:'"
   wait_while_empty "Gogs" 600 "oc get ep gogs -o yaml -n ${PRJ_CI[0]} | grep '\- addresses:'"
 
-  sleep 20
+  sleep 10
 
   # add admin user
   _RETURN=$(curl -o /dev/null -sL --post302 -w "%{http_code}" http://$GOGS_ROUTE/user/sign_up \
@@ -415,20 +415,28 @@ EOM
   if [ $_RETURN != "201" ] && [ $_RETURN != "200" ] ; then
     echo "WARNING: Failed (http code $_RETURN) to create repository"
   else
-    echo "CoolStore GitHub repo imported to Gogs"
+    echo "CoolStore repo created"
   fi
 
   sleep 2
 
-  local _CLONE_DIR=/tmp/$(date +%s)-coolstore-microservice
-  rm -rf $_CLONE_DIR && \
-      git clone http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git $_CLONE_DIR && \
-      cd $_CLONE_DIR && \
-      git remote add github $GITHUB_URI && \
-      git pull github $GITHUB_REF && \
+  local _REPO_DIR=/tmp/$(date +%s)-coolstore-microservice
+  pushd ~ >/dev/null && \
+      rm -rf $_REPO_DIR && \
+      mkdir $_REPO_DIR && \
+      cd $_REPO_DIR && \
+      git init && \
+      curl -sL -o ./coolstore.zip https://github.com/$GITHUB_ACCOUNT/coolstore-microservice/archive/$GITHUB_REF.zip && \
+      tar xfz ./coolstore.zip --strip 1 && \
+      rm ./coolstore.zip && \
+      git remote add origin http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git && \
       git add . --all && \
+      git commit -m "Initial add" && \
       git push -f http://$GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD@$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git master && \
-      rm -rf $_CLONE_DIR
+      popd >/dev/null && \
+      rm -rf $_REPO_DIR
+
+  sleep 2
 
   # create user
   read -r -d '' _DATA_JSON << EOM
@@ -491,7 +499,7 @@ function configure_bluegreen_in_prod() {
   echo_header "Configuring blue/green deployments in ${PRJ_COOLSTORE_PROD[0]} project..."
   echo "Using bluegreen template $_TEMPLATE_BLUEGREEN"
 
-  oc delete all,pvc -l application=inventory --now --ignore-not-found -n ${PRJ_COOLSTORE_PROD[0]}
+  oc delete all,pvc -l app=inventory --now --ignore-not-found -n ${PRJ_COOLSTORE_PROD[0]}
   oc process -f $_TEMPLATE_BLUEGREEN --param=APP_VERSION_BLUE=prod-blue --param=APP_VERSION_GREEN=prod-green --param=HOSTNAME_SUFFIX=${PRJ_COOLSTORE_PROD[0]}.$DOMAIN -n ${PRJ_COOLSTORE_PROD[0]} | oc create -f - -n ${PRJ_COOLSTORE_PROD[0]}
   sleep 2
   remove_coolstore_storage_if_ephemeral ${PRJ_COOLSTORE_PROD[0]}
