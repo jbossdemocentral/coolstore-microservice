@@ -7,7 +7,7 @@ items:
   kind: ImageStream
   metadata:
     labels:
-      application: turbine-server
+      app: turbine-server
       group: netflix-oss
     name: turbine-server
   spec:
@@ -21,13 +21,13 @@ items:
   kind: DeploymentConfig
   metadata:
     labels:
-      application: turbine-server
+      app: turbine-server
       group: netflix-oss
     name: turbine-server
   spec:
     replicas: 1
     selector:
-      application: turbine-server
+      app: turbine-server
       group: netflix-oss
       deploymentconfig: turbine-server
     strategy:
@@ -35,7 +35,7 @@ items:
     template:
       metadata:
         labels:
-          application: turbine-server
+          app: turbine-server
           group: netflix-oss
           deploymentconfig: turbine-server
       spec:
@@ -100,7 +100,6 @@ items:
   metadata:
     labels:
       app: turbine-server
-      application: turbine-server
       group: netflix-oss
     name: turbine-server
   spec:
@@ -110,14 +109,14 @@ items:
       protocol: TCP
       targetPort: 8080
     selector:
-      application: turbine-server
+      app: turbine-server
       group: netflix-oss
       deploymentconfig: turbine-server
 - apiVersion: v1
   kind: Route
   metadata:
     labels:
-      application: turbine-server
+      app: turbine-server
       group: netflix-oss
     name: turbine-server
   spec:
@@ -132,7 +131,7 @@ items:
   kind: ImageStream
   metadata:
     labels:
-      application: hystrix-dashboard
+      app: hystrix-dashboard
       group: netflix-oss
     name: hystrix-dashboard
   spec:
@@ -146,13 +145,13 @@ items:
   kind: DeploymentConfig
   metadata:
     labels:
-      application: hystrix-dashboard
+      app: hystrix-dashboard
       group: netflix-oss
     name: hystrix-dashboard
   spec:
     replicas: 1
     selector:
-      application: hystrix-dashboard
+      app: hystrix-dashboard
       group: netflix-oss
       deploymentconfig: hystrix-dashboard
     strategy:
@@ -160,7 +159,7 @@ items:
     template:
       metadata:
         labels:
-          application: hystrix-dashboard
+          app: hystrix-dashboard
           group: netflix-oss
           deploymentconfig: hystrix-dashboard
       spec:
@@ -220,7 +219,6 @@ items:
   metadata:
     labels:
       app: hystrix-dashboard
-      application: hystrix-dashboard
       group: netflix-oss
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"turbine-server","namespace":"","kind":"Service"}]'
@@ -232,14 +230,14 @@ items:
       protocol: TCP
       targetPort: 8080
     selector:
-      application: hystrix-dashboard
+      app: hystrix-dashboard
       deploymentconfig: hystrix-dashboard
       group: netflix-oss
 - apiVersion: v1
   kind: Route
   metadata:
     labels:
-      application: hystrix-dashboard
+      app: hystrix-dashboard
       group: netflix-oss
     name: hystrix-dashboard
   spec:

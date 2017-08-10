@@ -154,7 +154,7 @@ PRJ_DEVELOPER=developer-$PRJ_SUFFIX
 
 # config
 GITHUB_ACCOUNT=${GITHUB_ACCOUNT:-jbossdemocentral}
-GITHUB_REF=${GITHUB_REF:-stable-ocp-3.5}
+GITHUB_REF=${GITHUB_REF:-stable-ocp-3.6}
 GITHUB_URI=https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git
 
 # maven 
@@ -213,6 +213,7 @@ function print_info() {
   echo "OpenShift master:    $OPENSHIFT_MASTER"
   echo "Current user:        $LOGGEDIN_USER"
   echo "Project suffix:      $PRJ_SUFFIX"
+  echo "Ephemeral:           $ARG_EPHEMERAL"
   echo "GitHub repo:         $GITHUB_URI"
   echo "GitHub branch/tag:   $GITHUB_REF"
 
@@ -324,7 +325,7 @@ function add_inventory_template_to_projects() {
   curl -sL $_TEMPLATE | tr -d '\n' | tr -s '[:space:]' \
     | sed "s|\"MAVEN_MIRROR_URL\", \"value\": \"\"|\"MAVEN_MIRROR_URL\", \"value\": \"$MAVEN_MIRROR_URL\"|g" \
     | sed "s|\"https://github.com/jbossdemocentral/coolstore-microservice\"|\"http://$GOGS_ROUTE/$GOGS_USER/coolstore-microservice.git\"|g" \
-    | sed "s|stable-ocp-3.5|master|g" \
+    | sed "s|stable-ocp-3.6|master|g" \
     | oc create -f - -n $PRJ_DEVELOPER
 }
 

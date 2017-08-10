@@ -26,7 +26,7 @@ objects:
   metadata:
     name: web-ui
     labels:
-      application: web-ui
+      app: web-ui
   spec:
     tags:
     - name: latest
@@ -35,7 +35,7 @@ objects:
   metadata:
     name: web-ui
     labels:
-      application: web-ui
+      app: web-ui
   spec:
     output:
       to:
@@ -63,11 +63,11 @@ objects:
   metadata:
     name: web-ui
     labels:
-      application: web-ui
+      app: web-ui
   spec:
     replicas: 1
     selector:
-      application: web-ui
+      app: web-ui
       deploymentconfig: web-ui
     strategy:
       resources: {}
@@ -75,7 +75,7 @@ objects:
     template:
       metadata:
         labels:
-          application: web-ui
+          app: web-ui
           deploymentconfig: web-ui
       spec:
         containers:
@@ -131,7 +131,6 @@ objects:
   metadata:
     labels:
       app: web-ui
-      application: web-ui
     name: web-ui
   spec:
     ports:
@@ -155,7 +154,7 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      application: coolstore-gw
+      app: coolstore-gw
   spec: {}
   status:
     dockerImageRepository: ""
@@ -164,7 +163,7 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      application: coolstore-gw
+      app: coolstore-gw
   spec:
     output:
       to:
@@ -198,7 +197,7 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      application: coolstore-gw
+      app: coolstore-gw
   spec:
     replicas: 1
     selector:
@@ -209,7 +208,7 @@ objects:
     template:
       metadata:
         labels:
-          application: coolstore-gw
+          app: coolstore-gw
           deploymentconfig: coolstore-gw
         name: coolstore-gw
       spec:
@@ -254,7 +253,6 @@ objects:
   metadata:
     labels:
       app: coolstore-gw
-      application: coolstore-gw
       hystrix.enabled: "true"
     name: coolstore-gw
   spec:
@@ -269,7 +267,7 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      application: coolstore-gw
+      app: coolstore-gw
   spec:
     to:
       kind: Service
@@ -280,7 +278,7 @@ objects:
   metadata:
     name: inventory
     labels:
-      application: inventory
+      app: inventory
   spec:
     tags:
     - name: latest
@@ -289,7 +287,7 @@ objects:
   metadata:
     name: inventory
     labels:
-      application: inventory
+      app: inventory
   spec:
     output:
       to:
@@ -308,7 +306,7 @@ objects:
           value: ${MAVEN_MIRROR_URL}
         from:
           kind: ImageStreamTag
-          name: jboss-eap70-openshift:1.4
+          name: jboss-eap70-openshift:1.5
           namespace: openshift
       type: Source
     triggers:
@@ -320,7 +318,7 @@ objects:
   metadata:
     name: inventory
     labels:
-      application: inventory
+      app: inventory
   spec:
     replicas: 1
     selector:
@@ -331,7 +329,7 @@ objects:
     template:
       metadata:
         labels:
-          application: inventory
+          app: inventory
           deploymentconfig: inventory
         name: inventory
       spec:
@@ -426,7 +424,6 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
       app: inventory
-      application: inventory
     name: inventory
   spec:
     ports:
@@ -440,7 +437,7 @@ objects:
   metadata:
     name: inventory-postgresql
     labels:
-      application: inventory
+      app: inventory
   spec:
     replicas: 1
     selector:
@@ -450,7 +447,7 @@ objects:
     template:
       metadata:
         labels:
-          application: inventory
+          app: inventory
           deploymentconfig: inventory-postgresql
         name: inventory-postgresql
       spec:
@@ -505,7 +502,6 @@ objects:
   metadata:
     labels:
       app: inventory
-      application: inventory
     name: inventory-postgresql
   spec:
     ports:
@@ -519,7 +515,7 @@ objects:
   metadata:
     name: catalog
     labels:
-      application: catalog
+      app: catalog
   spec:
     tags:
     - name: latest
@@ -545,7 +541,7 @@ objects:
           value: ${MAVEN_MIRROR_URL}
         from:
           kind: ImageStreamTag
-          name: jboss-webserver30-tomcat8-openshift:1.2
+          name: jboss-webserver30-tomcat8-openshift:1.3
           namespace: openshift
       type: Source
     triggers:
@@ -557,7 +553,7 @@ objects:
   metadata:
     name: catalog
     labels:
-      application: catalog
+      app: catalog
   spec:
     replicas: 1
     selector:
@@ -568,7 +564,7 @@ objects:
     template:
       metadata:
         labels:
-          application: catalog
+          app: catalog
           deploymentconfig: catalog
         name: catalog
       spec:
@@ -635,7 +631,6 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'
     labels:
       app: catalog
-      application: catalog
     name: catalog
   spec:
     ports:
@@ -649,7 +644,6 @@ objects:
   metadata:
     labels:
       app: catalog
-      application: catalog
     name: catalog-mongodb
   spec:
     ports:
@@ -665,7 +659,7 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
-      application: catalog
+      app: catalog
     name: catalog-mongodb
   spec:
     replicas: 1
@@ -679,7 +673,7 @@ objects:
     template:
       metadata:
         labels:
-          application: catalog
+          app: catalog
           deploymentconfig: catalog-mongodb
       spec:
         containers:
@@ -758,7 +752,7 @@ objects:
   metadata:
     name: cart
     labels:
-      application: cart
+      app: cart
   spec:
     tags:
     - name: latest
@@ -767,7 +761,7 @@ objects:
   metadata:
     name: cart
     labels:
-      application: cart
+      app: cart
   spec:
     output:
       to:
@@ -786,7 +780,7 @@ objects:
           value: ${MAVEN_MIRROR_URL}
         from:
           kind: ImageStreamTag
-          name: redhat-openjdk18-openshift:1.0
+          name: redhat-openjdk18-openshift:1.1
           namespace: openshift
       type: Source
     triggers:
@@ -798,7 +792,7 @@ objects:
   metadata:
     name: cart
     labels:
-      application: cart
+      app: cart
   spec:
     replicas: 1
     selector:
@@ -809,7 +803,7 @@ objects:
     template:
       metadata:
         labels:
-          application: cart
+          app: cart
           deploymentconfig: cart
         name: cart
       spec:
@@ -875,7 +869,6 @@ objects:
   metadata:
     labels:
       app: cart
-      application: cart
     name: cart
   spec:
     ports:
@@ -889,7 +882,7 @@ objects:
   kind: ImageStream
   metadata:
     labels:
-      application: turbine-server
+      app: turbine-server
     name: turbine-server
   spec:
     dockerImageRepository: docker.io/siamaksade/turbine-server # temporary till fabric8 images remove privillegd requirement
@@ -902,19 +895,19 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
-      application: turbine-server
+      app: turbine-server
     name: turbine-server
   spec:
     replicas: 1
     selector:
-      application: turbine-server
+      app: turbine-server
       deploymentconfig: turbine-server
     strategy:
       type: Recreate
     template:
       metadata:
         labels:
-          application: turbine-server
+          app: turbine-server
           deploymentconfig: turbine-server
       spec:
         containers:
@@ -969,7 +962,6 @@ objects:
   metadata:
     labels:
       app: turbine-server
-      application: turbine-server
     name: turbine-server
   spec:
     ports:
@@ -978,13 +970,13 @@ objects:
       protocol: TCP
       targetPort: 8080
     selector:
-      application: turbine-server
+      app: turbine-server
       deploymentconfig: turbine-server
 - apiVersion: v1
   kind: Route
   metadata:
     labels:
-      application: turbine-server
+      app: turbine-server
     name: turbine-server
   spec:
     port:
@@ -998,7 +990,7 @@ objects:
   kind: ImageStream
   metadata:
     labels:
-      application: hystrix-dashboard
+      app: hystrix-dashboard
     name: hystrix-dashboard
   spec:
     dockerImageRepository: docker.io/siamaksade/hystrix-dashboard # temporary till fabric8 images remove privillegd requirement
@@ -1011,19 +1003,19 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
-      application: hystrix-dashboard
+      app: hystrix-dashboard
     name: hystrix-dashboard
   spec:
     replicas: 1
     selector:
-      application: hystrix-dashboard
+      app: hystrix-dashboard
       deploymentconfig: hystrix-dashboard
     strategy:
       type: Recreate
     template:
       metadata:
         labels:
-          application: hystrix-dashboard
+          app: hystrix-dashboard
           deploymentconfig: hystrix-dashboard
       spec:
         containers:
@@ -1073,7 +1065,6 @@ objects:
   metadata:
     labels:
       app: hystrix-dashboard
-      application: hystrix-dashboard
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"turbine-server","namespace":"","kind":"Service"}]'
     name: hystrix-dashboard
@@ -1084,13 +1075,13 @@ objects:
       protocol: TCP
       targetPort: 8080
     selector:
-      application: hystrix-dashboard
+      app: hystrix-dashboard
       deploymentconfig: hystrix-dashboard
 - apiVersion: v1
   kind: Route
   metadata:
     labels:
-      application: hystrix-dashboard
+      app: hystrix-dashboard
     name: hystrix-dashboard
   spec:
     port:
@@ -1108,7 +1099,7 @@ parameters:
 - displayName: Git branch/tag reference
   name: GIT_REF
   required: true
-  value: stable-ocp-3.5
+  value: stable-ocp-3.6
 - description: Maven mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/content/groups/public/)
   displayName: Maven mirror url
   name: MAVEN_MIRROR_URL
