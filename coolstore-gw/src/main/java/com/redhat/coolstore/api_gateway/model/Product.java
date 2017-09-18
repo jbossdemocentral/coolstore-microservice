@@ -7,6 +7,7 @@ public class Product  {
 	public String desc;
 	public double price;
 	public Inventory availability;
+	public Rating rating;
 
 	public Product() {
 
@@ -17,6 +18,14 @@ public class Product  {
 		this.desc = desc;
 		this.price = price;
 		this.availability = availability;
+	}
+
+	public Rating getRating() {
+		return rating;
+	}
+
+	public void setRating(Rating rating) {
+		this.rating = rating;
 	}
 
 	public Inventory getAvailability() {

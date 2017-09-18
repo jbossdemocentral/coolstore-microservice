@@ -1,6 +1,6 @@
 'use strict';
 
-var module = angular.module('app', ['ngRoute', 'patternfly']), auth = {
+var module = angular.module('app', ['ngRoute', 'ui.bootstrap', 'patternfly']), auth = {
     loggedIn: false,
     ssoEnabled: false,
     logout: function () {

@@ -3,8 +3,8 @@
 angular.module('app')
 
     .controller("HomeController",
-        ['$scope', '$http', '$filter', 'Notifications', 'cart', 'catalog', 'Auth',
-            function ($scope, $http, $filter, Notifications, cart, catalog, $auth) {
+        ['$scope', '$http', '$filter', '$modal', 'Notifications', 'cart', 'catalog', 'Auth', 'Rating',
+            function ($scope, $http, $filter, $modal, Notifications, cart, catalog, $auth, Rating) {
 
                 $scope.products = [];
                 $scope.addToCart = function (item) {
@@ -26,6 +26,34 @@ angular.module('app')
                     $auth.login();
                 };
 
+                $scope.rateFunction = function(itemId, rating)
+                {
+                    Rating.postRating(itemId, rating).then(function(newRate) {
+                        $scope.products.forEach(function(item) {
+                            if (item.product.itemId === itemId) {
+                                item.product.rating.rating = rating;
+                                item.product.rating.rated = true;
+                                item.product.rating.count++;
+                            }
+                        });
+                    }, function(err) {
+                        Notifications.error("Error saving rating: " + err.statusText);
+                    });
+                };
+
+                $scope.showReviews = function(product) {
+                    $modal.open({
+                        templateUrl: 'partials/reviews.html',
+                        controller: 'ReviewController',
+                        size: 'lg',
+                        resolve: {
+                            product: function () {
+                                return product
+                            }
+
+                        }
+                    });
+                };
 
                 // initialize products
                 catalog.getProducts().then(function (data) {
@@ -40,6 +68,20 @@ angular.module('app')
                 });
 
 
+            }])
+
+    .controller("ReviewController",
+        ['$scope', '$http', 'Notifications', 'product', 'review',
+            function ($scope, $http, Notifications, product, review) {
+
+                $scope.product = product;
+                $scope.reviews = null;
+
+                review.getReviews(product.itemId).then(function(reviews) {
+                    $scope.reviews = reviews;
+                }, function(err) {
+                    Notifications.error("Error fetching reviews for " + product.name + ": " + err.statusText);
+                });
             }])
 
     .controller("CartController",

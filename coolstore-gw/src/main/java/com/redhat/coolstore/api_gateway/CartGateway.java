@@ -18,6 +18,7 @@ package com.redhat.coolstore.api_gateway;
 
 import javax.ws.rs.core.Response;
 
+import com.redhat.coolstore.api_gateway.model.Rating;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
