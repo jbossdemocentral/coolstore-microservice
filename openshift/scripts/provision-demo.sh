@@ -17,10 +17,10 @@ function usage() {
     echo "   verify                   Verify the demo is deployed correctly"
     echo "   idle                     Make all demo servies idle"
     echo "   unidle                   Make all demo servies unidle"
-    echo 
+    echo
     echo "DEMOS:"
-    echo "   msa                      Microservices app with all services" 
-    echo "   msa-min                  Microservices app with minimum services" 
+    echo "   msa                      Microservices app with all services"
+    echo "   msa-min                  Microservices app with minimum services"
     echo "   msa-cicd-eap             CI/CD and microservices with JBoss EAP (dev-test-prod)"
     echo "   msa-cicd-eap-min         CI/CD and microservices with JBoss EAP with minimum services (dev-prod)"
     echo
@@ -157,7 +157,7 @@ GITHUB_ACCOUNT=${GITHUB_ACCOUNT:-jbossdemocentral}
 GITHUB_REF=${GITHUB_REF:-stable-ocp-3.5}
 GITHUB_URI=https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git
 
-# maven 
+# maven
 MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.$PRJ_CI.svc.cluster.local:8081/content/groups/public}
 
 GOGS_USER=developer
@@ -357,10 +357,10 @@ function wait_for_nexus_to_be_ready() {
 # Deploy Gogs
 function deploy_gogs() {
   echo_header "Deploying Gogs git server..."
-  
-  local _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/master/openshift/gogs-persistent-template.yaml"
+
+  local _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/binary/openshift/gogs-persistent-template.yaml"
   if [ "$ARG_EPHEMERAL" = true ] ; then
-    _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/master/openshift/gogs-template.yaml"
+    _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/binary/openshift/gogs-template.yaml"
   fi
 
   local _DB_USER=gogs
@@ -497,13 +497,13 @@ function deploy_coolstore_prod_env() {
 
   oc process -f $_TEMPLATE_DEPLOYMENT --param=APP_VERSION=$_APP_VERSION --param=HOSTNAME_SUFFIX=$PRJ_COOLSTORE_PROD.$DOMAIN -n $PRJ_COOLSTORE_PROD | oc create -f - -n $PRJ_COOLSTORE_PROD
   oc create -f $_TEMPLATE_NETFLIX -n $PRJ_COOLSTORE_PROD
-  
+
   remove_coolstore_storage_if_ephemeral $PRJ_COOLSTORE_PROD
 
   # driven by the demo type
   if [ "$SCALE_DOWN_PROD" = true ] ; then
     scale_down_deployments $PRJ_COOLSTORE_PROD cart turbine-server hystrix-dashboard inventory inventory-postgresql
-   fi  
+   fi
 }
 
 # Deploy Inventory service into Inventory DEV project
@@ -534,14 +534,14 @@ function build_images() {
 
 function wait_for_builds_to_complete() {
   # wait for builds
-  for buildconfig in coolstore-gw web-ui inventory cart catalog 
+  for buildconfig in coolstore-gw web-ui inventory cart catalog
   do
     wait_while_empty "$buildconfig image" 600 "oc get builds -n $PRJ_COOLSTORE_PROD | grep $buildconfig | grep -v Running"
     sleep 10
   done
 
   # verify successful builds
-  for buildconfig in coolstore-gw web-ui inventory cart catalog 
+  for buildconfig in coolstore-gw web-ui inventory cart catalog
   do
     if [ -z "$(oc get builds -n $PRJ_COOLSTORE_PROD | grep $buildconfig | grep Complete)" ]; then
       echo "ERROR: Build $buildconfig did not complete successfully"
@@ -560,7 +560,7 @@ function promote_images() {
 
   for is in coolstore-gw web-ui cart catalog
   do
-    
+
     if [ "$ENABLE_TEST_ENV" = true ] ; then
       oc tag $PRJ_COOLSTORE_PROD/$is:latest $PRJ_COOLSTORE_TEST/$is:test
     fi
@@ -583,7 +583,7 @@ function deploy_pipeline() {
   echo_header "Configuring CI/CD..."
 
   local _PIPELINE_NAME=inventory-pipeline
-  
+
 
   if [ "$ENABLE_TEST_ENV" = true ] ; then
     local _TEMPLATE=https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-pipeline-template.yaml
@@ -648,7 +648,7 @@ function verify_build_and_deployments() {
     fi
   else
     verify_deployments_in_projects $PRJ_COOLSTORE_PROD $PRJ_CI
-  fi 
+  fi
 }
 
 function verify_deployments_in_projects() {
@@ -766,7 +766,7 @@ case "$ARG_COMMAND" in
         echo
         echo "Delete completed successfully!"
         ;;
-      
+
     verify)
         echo "Verifying MSA demo ($ARG_DEMO)..."
         print_info
@@ -801,7 +801,7 @@ case "$ARG_COMMAND" in
         fi
 
         print_info
-        
+
         deploy_nexus
         wait_for_nexus_to_be_ready
         build_images
@@ -831,7 +831,7 @@ case "$ARG_COMMAND" in
         echo
         echo "Provisioning completed successfully!"
         ;;
-        
+
     *)
         echo "Invalid command specified: '$ARG_COMMAND'"
         usage
@@ -843,4 +843,4 @@ popd >/dev/null
 
 END=`date +%s`
 echo "(Completed in $(( ($END - $START)/60 )) min $(( ($END - $START)%60 )) sec)"
-echo 
+echo
