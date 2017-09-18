@@ -549,7 +549,7 @@ function build_images() {
   sleep 10
 
   # build images
-  for buildconfig in web-ui inventory cart catalog coolstore-gw pricing
+  for buildconfig in web-ui inventory cart catalog coolstore-gw pricing rating review
   do
     oc start-build $buildconfig -n ${PRJ_COOLSTORE_PROD[0]}
     wait_while_empty "$buildconfig build" 180 "oc get builds -n ${PRJ_COOLSTORE_PROD[0]} | grep $buildconfig | grep Running"
@@ -559,7 +559,7 @@ function build_images() {
 
 function wait_for_builds_to_complete() {
   # wait for builds
-  for buildconfig in coolstore-gw web-ui inventory cart catalog pricing
+  for buildconfig in coolstore-gw web-ui inventory cart catalog pricing rating review
   do
     wait_while_empty "$buildconfig image" 600 "oc get builds -n ${PRJ_COOLSTORE_PROD[0]} | grep $buildconfig | grep -v Running"
     sleep 10
@@ -583,7 +583,7 @@ function promote_images() {
   # remove buildconfigs. Jenkins does that!
   oc delete bc --all -n ${PRJ_COOLSTORE_PROD[0]}
 
-  for is in coolstore-gw web-ui cart catalog pricing
+  for is in coolstore-gw web-ui cart catalog pricing rating review
   do
     
     if [ "$ENABLE_TEST_ENV" = true ] ; then
@@ -645,7 +645,7 @@ function verify_build_and_deployments() {
   # verify builds
   echo "Verifying builds..."
   local _BUILDS_FAILED=false
-  for buildconfig in coolstore-gw web-ui inventory cart catalog pricing
+  for buildconfig in coolstore-gw web-ui inventory cart catalog pricing rating review
   do
     if [ -n "$(oc get builds -n ${PRJ_COOLSTORE_PROD[0]} | grep $buildconfig | grep Failed)" ] && [ -z "$(oc get builds -n ${PRJ_COOLSTORE_PROD[0]} | grep $buildconfig | grep Complete)" ]; then
       _BUILDS_FAILED=true

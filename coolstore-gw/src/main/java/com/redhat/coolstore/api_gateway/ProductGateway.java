@@ -21,8 +21,10 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
+import com.redhat.coolstore.api_gateway.model.Rating;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.http4.HttpMethods;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.component.jackson.ListJacksonDataFormat;
 import org.apache.camel.model.dataformat.JsonLibrary;
@@ -96,6 +98,7 @@ public class ProductGateway extends RouteBuilder {
                     .unmarshal(productFormatter)
                 .split(body()).parallelProcessing()
                 .enrich("direct:inventory", new InventoryEnricher())
+                .enrich("direct:rating", new RatingEnricher())
                 .end()
         .endRest();
         
@@ -135,6 +138,32 @@ public class ProductGateway extends RouteBuilder {
                 .transform()
                 .constant(new Inventory("0", 0, "Local Store", "http://developers.redhat.com"))
                 .marshal().json(JsonLibrary.Jackson, Inventory.class);
+
+        from("direct:rating")
+                .id("ratingRoute")
+                .setHeader("itemId", simple("${body.itemId}"))
+                .setBody(simple("null"))
+                .removeHeaders("CamelHttp*")
+                .setHeader(Exchange.HTTP_METHOD, HttpMethods.GET)
+                .setHeader(Exchange.HTTP_URI, simple("http://{{env:RATING_ENDPOINT:rating:8080}}/api/rating/${header.itemId}"))
+                .hystrix().id("Rating Service")
+                .hystrixConfiguration()
+                .executionTimeoutInMilliseconds(5000).circuitBreakerSleepWindowInMilliseconds(10000)
+                .end()
+                .to("http4://DUMMY2")
+                .onFallback()
+                .to("direct:ratingFallback")
+                .end()
+                .choice().when(body().isNull()).to("direct:ratingFallback").end()
+                .setHeader("CamelJacksonUnmarshalType", simple(Rating.class.getName()))
+                .unmarshal().json(JsonLibrary.Jackson, Rating.class);
+
+        from("direct:ratingFallback")
+                .id("ratingFallbackRoute")
+                .transform()
+                .constant(new Rating("0", 2.0, 1))
+                .marshal().json(JsonLibrary.Jackson, Rating.class);
+
     }
 
     private class InventoryEnricher implements AggregationStrategy {
@@ -152,4 +181,19 @@ public class ProductGateway extends RouteBuilder {
 
         }
     }
+
+    private class RatingEnricher implements AggregationStrategy {
+        @Override
+        public Exchange aggregate(Exchange original, Exchange resource) {
+
+            // Add the discovered availability to the product and set it back
+            Product p = original.getIn().getBody(Product.class);
+            Rating r = resource.getIn().getBody(Rating.class);
+            p.setRating(r);
+            original.getOut().setBody(p);
+            return original;
+
+        }
+    }
+
 }
