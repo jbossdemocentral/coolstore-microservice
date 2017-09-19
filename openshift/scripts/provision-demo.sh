@@ -163,6 +163,7 @@ PRJ_DEVELOPER=developer-$PRJ_SUFFIX
 GITHUB_ACCOUNT=${GITHUB_ACCOUNT:-jbossdemocentral}
 GITHUB_REF=${GITHUB_REF:-master}
 GITHUB_URI=https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git
+IMAGES_PROJECT=coolstore-builds
 
 # maven 
 MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.${PRJ_CI[0]}.svc.cluster.local:8081/content/groups/public}
@@ -549,6 +550,25 @@ function deploy_service_dev_env() {
   sleep 2
 }
 
+function images_exists() {
+  # check if images project exist
+  oc get project $IMAGES_PROJECT > /dev/null 2>&1
+  if [ ! $? -eq 0 ]; then
+    return 1
+  fi
+
+  # check if all images exist
+  for buildconfig in web-ui inventory cart catalog coolstore-gw pricing rating review
+  do
+    oc get bc $buildconfig -n $IMAGES_PROJECT > /dev/null 2>&1
+    if [ ! $? -eq 0 ]; then
+      return 1
+    fi
+  done
+
+  return 0
+}
+
 function build_images() {
   local _TEMPLATE_BUILDS="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-builds-template.yaml"
   echo "Using build template $_TEMPLATE_BUILDS"
@@ -583,8 +603,36 @@ function wait_for_builds_to_complete() {
   done
 }
 
-function promote_images() {
-  echo_header "Promoting Images..."
+# promote images from an existing shared project
+function promote_existing_images_no_cicd() {
+  echo_header "Promoting Existing Images from $IMAGES_PROJECT ..."
+
+  for is in coolstore-gw web-ui cart catalog pricing rating review inventory
+  do
+    oc tag $IMAGES_PROJECT/$is:latest ${PRJ_COOLSTORE_PROD[0]}/$is:latest
+  done
+}
+
+# promote images from an existing shared project
+function promote_existing_images_for_cicd() {
+  echo_header "Promoting Existing Images from $IMAGES_PROJECT ..."
+
+  for is in coolstore-gw web-ui cart catalog pricing rating review
+  do
+    if [ "$ENABLE_TEST_ENV" = true ] ; then
+      oc tag $IMAGES_PROJECT/$is:latest ${PRJ_COOLSTORE_TEST[0]}/$is:test
+    fi
+    oc tag $IMAGES_PROJECT/$is:latest ${PRJ_COOLSTORE_PROD[0]}/$is:prod
+  done
+
+  oc tag $IMAGES_PROJECT/inventory:latest ${PRJ_SERVICE_DEV[0]}/inventory:latest
+  oc tag $IMAGES_PROJECT/inventory:latest ${PRJ_COOLSTORE_PROD[0]}/inventory:prod-green
+  oc tag $IMAGES_PROJECT/inventory:latest ${PRJ_COOLSTORE_PROD[0]}/inventory:prod-blue
+}
+
+# promote images that were just built
+function promote_built_images() {
+  echo_header "Promoting Built Images in ${PRJ_COOLSTORE_PROD[0]} ..."
 
   wait_for_builds_to_complete
 
@@ -610,6 +658,18 @@ function promote_images() {
   oc tag ${PRJ_COOLSTORE_PROD[0]}/inventory:latest ${PRJ_COOLSTORE_PROD[0]}/inventory:prod-green
   oc tag ${PRJ_COOLSTORE_PROD[0]}/inventory:latest ${PRJ_COOLSTORE_PROD[0]}/inventory:prod-blue
   oc tag ${PRJ_COOLSTORE_PROD[0]}/inventory:latest -d
+}
+
+function promote_images() {
+  if images_exists; then
+    if [ "$ENABLE_CI_CD" = true ] ; then
+      promote_existing_images_for_cicd
+    else
+      promote_existing_images_no_cicd
+    fi
+  else
+    promote_built_images
+  fi
 }
 
 function deploy_pipeline() {
@@ -837,7 +897,10 @@ case "$ARG_COMMAND" in
         
         deploy_nexus
         wait_for_nexus_to_be_ready
-        build_images
+
+        if ! images_exists; then
+          build_images
+        fi
         
         deploy_coolstore_prod_env
 
@@ -854,8 +917,9 @@ case "$ARG_COMMAND" in
           fi
 
           deploy_service_dev_env
-          promote_images
         fi
+
+        promote_images
 
         if [ "$ARG_RUN_VERIFY" = true ] ; then
           echo "Waiting for deployments to finish..."
