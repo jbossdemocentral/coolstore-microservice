@@ -430,7 +430,7 @@ objects:
         - inventory-postgresql
         from:
           kind: ImageStreamTag
-          name: postgresql:latest
+          name: postgresql:9.5
           namespace: openshift
       type: ImageChange
     - type: ConfigChange
@@ -772,7 +772,7 @@ objects:
         - rating
         from:
           kind: ImageStreamTag
-          name: rating:latest
+          name: rating:${APP_VERSION}
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -1281,7 +1281,7 @@ objects:
         - review
         from:
           kind: ImageStreamTag
-          name: review:latest
+          name: review:${APP_VERSION}
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -1373,7 +1373,7 @@ objects:
         - review-postgresql
         from:
           kind: ImageStreamTag
-          name: postgresql:latest
+          name: postgresql:9.5
           namespace: openshift
       type: ImageChange
     - type: ConfigChange
