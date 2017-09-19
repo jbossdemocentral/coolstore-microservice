@@ -751,7 +751,6 @@ objects:
           namespace: openshift
       type: ImageChange
     - type: ConfigChange
-
 # Rating Service
 - apiVersion: v1
   kind: ImageStream
