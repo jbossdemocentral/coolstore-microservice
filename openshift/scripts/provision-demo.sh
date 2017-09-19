@@ -838,11 +838,12 @@ case "$ARG_COMMAND" in
         deploy_nexus
         wait_for_nexus_to_be_ready
         build_images
-        deploy_guides
+        
         deploy_coolstore_prod_env
 
         if [ "$ENABLE_CI_CD" = true ] ; then
           configure_bluegreen_in_prod
+          deploy_guides
           deploy_gogs
           deploy_jenkins
           deploy_pipeline
