@@ -46,6 +46,8 @@ oc rsh $(oc get pods -o name -l application=coolstore-gw)
 curl http://catalog:8080/api/products
 curl http://inventory:8080/api/availability/329299
 curl http://cart:8080/api/cart/FOO
+curl http://rating:8080/api/rating/329299
+curl http://review:8080/api/review/329299
 ```
 
 Deploy CoolStore Microservices with CI/CD
