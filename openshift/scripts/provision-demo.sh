@@ -187,13 +187,13 @@ case $ARG_DEMO in
     msa)
         WORKSHOP_YAML=demo-msa.yml
         MAVEN_MIRROR_URL=$ARG_MAVEN_MIRROR_URL
-        PRJ_COOLSTORE_PROD=("coolstore-$PRJ_SUFFIX" "CoolStore" "CoolStore Environment")
+        PRJ_COOLSTORE_PROD=("coolstore-$PRJ_SUFFIX" "CoolStore" "CoolStore Microservice Application")
         ;;
     msa-min)
         SCALE_DOWN_PROD=true
         WORKSHOP_YAML=demo-msa-min.yml
         MAVEN_MIRROR_URL=$ARG_MAVEN_MIRROR_URL
-        PRJ_COOLSTORE_PROD=("coolstore-$PRJ_SUFFIX" "CoolStore" "CoolStore Environment")
+        PRJ_COOLSTORE_PROD=("coolstore-$PRJ_SUFFIX" "CoolStore" "CoolStore Microservice Application")
         ;;
     msa-cicd-eap)
         ENABLE_CI_CD=true
