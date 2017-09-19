@@ -474,7 +474,7 @@ function remove_coolstore_storage_if_ephemeral() {
   if [ "$ARG_EPHEMERAL" = true ] ; then
     remove_storage_claim inventory-postgresql inventory-postgresql-data inventory-postgresql-pv $_PROJECT
     remove_storage_claim catalog-mongodb mongodb-data catalog-mongodb-pv $_PROJECT
-    remove_storage_claim rating-mongodb rating-data rating-mongodb-pv $_PROJECT
+    remove_storage_claim rating-mongodb mongodb-data rating-mongodb-pv $_PROJECT
     remove_storage_claim review-postgresql review-postgresql-data review-postgresql-pv $_PROJECT
   fi
 }
