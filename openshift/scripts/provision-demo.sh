@@ -185,31 +185,39 @@ WORKSHOP_YAML=demo-cicd-eap.yml
 case $ARG_DEMO in
     msa)
         WORKSHOP_YAML=demo-msa.yml
+        MAVEN_MIRROR_URL=$ARG_MAVEN_MIRROR_URL
+        PRJ_COOLSTORE_PROD=("coolstore-$PRJ_SUFFIX" "CoolStore" "CoolStore Environment")
         ;;
     msa-min)
         SCALE_DOWN_PROD=true
         WORKSHOP_YAML=demo-msa-min.yml
+        MAVEN_MIRROR_URL=$ARG_MAVEN_MIRROR_URL
+        PRJ_COOLSTORE_PROD=("coolstore-$PRJ_SUFFIX" "CoolStore" "CoolStore Environment")
         ;;
     msa-cicd-eap)
         ENABLE_CI_CD=true
         ENABLE_TEST_ENV=true
         WORKSHOP_YAML=demo-cicd-eap.yml
+        MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.${PRJ_CI[0]}.svc.cluster.local:8081/content/groups/public}
         ;;
     msa-cicd-eap-min)
         ENABLE_CI_CD=true
         SCALE_DOWN_PROD=true
         WORKSHOP_YAML=demo-cicd-eap-min.yml
+        MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.${PRJ_CI[0]}.svc.cluster.local:8081/content/groups/public}
         ;;
     agile-integration)
         ENABLE_CI_CD=true
         WORKSHOP_YAML=demo-agile-integration.yml
         PRJ_SERVICE_DEV=("gateway-dev-$PRJ_SUFFIX" "Gateway DEV" "Gateway DEV Environment")
+        MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.${PRJ_CI[0]}.svc.cluster.local:8081/content/groups/public}
         ;;
     agile-integration-min)
         ENABLE_CI_CD=true
         SCALE_DOWN_PROD=true
         WORKSHOP_YAML=demo-agile-integration-min.yml
         PRJ_SERVICE_DEV=("gateway-dev-$PRJ_SUFFIX" "Gateway DEV" "Gateway DEV Environment")
+        MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.${PRJ_CI[0]}.svc.cluster.local:8081/content/groups/public}
         ;;
     *)
         echo "ERROR: Invalid demo name: \"$ARG_DEMO\""
@@ -296,10 +304,10 @@ function configure_project_permissions() {
 
   # Hack to extract domain name when it's not determine in
   # advanced e.g. <user>-<project>.4s23.cluster
-  oc create route edge testroute --service=testsvc --port=80 -n ${PRJ_CI[0]} >/dev/null
-  DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n ${PRJ_CI[0]} | sed "s/testroute-${PRJ_CI[0]}.//g")
+  oc create route edge testroute --service=testsvc --port=80 -n ${PRJ_COOLSTORE_PROD[0]} >/dev/null
+  DOMAIN=$(oc get route testroute -o template --template='{{.spec.host}}' -n ${PRJ_COOLSTORE_PROD[0]} | sed "s/testroute-${PRJ_COOLSTORE_PROD[0]}.//g")
   GOGS_ROUTE="gogs-${PRJ_CI[0]}.$DOMAIN"
-  oc delete route testroute -n ${PRJ_CI[0]} >/dev/null
+  oc delete route testroute -n ${PRJ_COOLSTORE_PROD[0]} >/dev/null
 }
 
 # Create Infra Project for CI/CD
@@ -327,13 +335,10 @@ function create_cicd_projects() {
 function create_projects() {
   echo_header "Creating project..."
 
-  echo "Creating project ${PRJ_CI[0]}"
-  oc new-project ${PRJ_CI[0]} --display-name="${PRJ_CI[1]}" --description="${PRJ_CI[2]}" >/dev/null
-
   echo "Creating project ${PRJ_COOLSTORE_PROD[0]}"
   oc new-project ${PRJ_COOLSTORE_PROD[0]} --display-name="${PRJ_COOLSTORE_PROD[1]}" --description="${PRJ_COOLSTORE_PROD[2]}" >/dev/null
 
-  configure_project_permissions ${PRJ_CI[0]} ${PRJ_COOLSTORE_PROD[0]}
+  configure_project_permissions ${PRJ_COOLSTORE_PROD[0]}
 }
 
 # Add Service Template
@@ -427,8 +432,9 @@ EOM
       cd $_REPO_DIR && \
       git init && \
       curl -sL -o ./coolstore.zip https://github.com/$GITHUB_ACCOUNT/coolstore-microservice/archive/$GITHUB_REF.zip && \
-      tar xfz ./coolstore.zip --strip 1 && \
-      rm ./coolstore.zip && \
+      unzip coolstore.zip && \
+      mv coolstore-microservice-$GITHUB_REF/* . && \
+      rm -rf coolstore.zip coolstore-microservice-$GITHUB_REF && \
       git remote add origin http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git && \
       git add . --all && \
       git commit -m "Initial add" && \
@@ -467,7 +473,9 @@ function remove_coolstore_storage_if_ephemeral() {
   local _PROJECT=$1
   if [ "$ARG_EPHEMERAL" = true ] ; then
     remove_storage_claim inventory-postgresql inventory-postgresql-data inventory-postgresql-pv $_PROJECT
-    remove_storage_claim catalog-mongodb mongodb-data mongodb-data-pv $_PROJECT
+    remove_storage_claim catalog-mongodb mongodb-data catalog-mongodb-pv $_PROJECT
+    remove_storage_claim rating-mongodb mongodb-data rating-mongodb-pv $_PROJECT
+    remove_storage_claim review-postgresql review-postgresql-data review-postgresql-pv $_PROJECT
   fi
 }
 
@@ -527,7 +535,7 @@ function deploy_coolstore_prod_env() {
 
   # driven by the demo type
   if [ "$SCALE_DOWN_PROD" = true ] ; then
-    scale_down_deployments ${PRJ_COOLSTORE_PROD[0]} cart turbine-server hystrix-dashboard pricing inventory inventory-postgresql
+    scale_down_deployments ${PRJ_COOLSTORE_PROD[0]} cart turbine-server hystrix-dashboard pricing inventory inventory-postgresql review review-postgresql rating rating-mongodb
    fi  
 }
 
@@ -748,7 +756,6 @@ function make_unidle() {
   done
 }
 
-# GPTE convention
 function set_default_project() {
   if [ $LOGGEDIN_USER == 'system:admin' ] ; then
     oc project default >/dev/null
@@ -786,8 +793,8 @@ echo_header "Multi-product MSA Demo ($(date))"
 case "$ARG_COMMAND" in
     delete)
         echo "Delete MSA demo ($ARG_DEMO)..."
-        oc delete project ${PRJ_CI[0]} ${PRJ_COOLSTORE_PROD[0]}
-        [ "$ENABLE_CI_CD" = true ] && oc delete project ${PRJ_SERVICE_DEV[0]}
+        oc delete project  ${PRJ_COOLSTORE_PROD[0]}
+        [ "$ENABLE_CI_CD" = true ] && oc delete project ${PRJ_CI[0]} ${PRJ_SERVICE_DEV[0]}
         [ "$ENABLE_TEST_ENV" = true ] && oc delete project ${PRJ_COOLSTORE_TEST[0]} ${PRJ_DEVELOPER[0]}
         echo
         echo "Delete completed successfully!"
@@ -854,6 +861,7 @@ case "$ARG_COMMAND" in
           sleep 30
           verify_build_and_deployments
         fi
+
         echo
         echo "Provisioning completed successfully!"
         ;;

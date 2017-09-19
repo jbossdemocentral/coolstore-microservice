@@ -430,7 +430,7 @@ objects:
         - inventory-postgresql
         from:
           kind: ImageStreamTag
-          name: postgresql:latest
+          name: postgresql:9.5
           namespace: openshift
       type: ImageChange
     - type: ConfigChange
@@ -673,7 +673,7 @@ objects:
         volumes:
         - name: mongodb-data
           persistentVolumeClaim:
-            claimName: mongodb-data-pv
+            claimName: catalog-mongodb-pv
     test: false
     triggers:
     - imageChangeParams:
@@ -691,14 +691,13 @@ objects:
   metadata:
     labels:
       app: catalog
-    name: mongodb-data-pv
+    name: catalog-mongodb-pv
   spec:
     accessModes:
     - ReadWriteOnce
     resources:
       requests:
         storage: 512Mi
-
 # Rating Service
 - apiVersion: v1
   kind: DeploymentConfig
@@ -773,7 +772,7 @@ objects:
         - rating
         from:
           kind: ImageStreamTag
-          name: rating:latest
+          name: rating:${APP_VERSION}
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -850,8 +849,7 @@ objects:
               - /bin/sh
               - -i
               - -c
-              - sleep 10 && env && mongo ${RATING_MONGODB_SERVICE_HOST}:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD
-                --eval="$MONGODB_INIT"
+              - env && while ! mongo ${RATING_MONGODB_SERVICE_HOST}:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval="$MONGODB_INIT" > /dev/null 2>&1; do echo "waiting for mongo ..."; sleep 5; done
             containerName: rating-mongodb
             env:
             - name: MONGODB_INIT
@@ -916,7 +914,11 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              memory: 512Mi
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
           securityContext:
             capabilities: {}
             privileged: false
@@ -929,8 +931,9 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         volumes:
-        - emptyDir: {}
-          name: mongodb-data
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: rating-mongodb-pv
     test: false
     triggers:
     - imageChangeParams:
@@ -943,7 +946,18 @@ objects:
           namespace: openshift
       type: ImageChange
     - type: ConfigChange
-
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    labels:
+      app: rating
+    name: rating-mongodb-pv
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 512Mi
 # Cart Service
 - apiVersion: v1
   kind: DeploymentConfig
@@ -1267,7 +1281,7 @@ objects:
         - review
         from:
           kind: ImageStreamTag
-          name: review:latest
+          name: review:${APP_VERSION}
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -1350,7 +1364,8 @@ objects:
         terminationGracePeriodSeconds: 60
         volumes:
         - name: review-postgresql-data
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: review-postgresql-pv
     triggers:
     - imageChangeParams:
         automatic: true
@@ -1358,10 +1373,22 @@ objects:
         - review-postgresql
         from:
           kind: ImageStreamTag
-          name: postgresql:latest
+          name: postgresql:9.5
           namespace: openshift
       type: ImageChange
     - type: ConfigChange
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    labels:
+      app: review
+    name: review-postgresql-pv
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
 - apiVersion: v1
   kind: Service
   metadata:
