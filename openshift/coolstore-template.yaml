@@ -915,8 +915,7 @@ objects:
               - /bin/sh
               - -i
               - -c
-              - sleep 10 && env && mongo ${RATING_MONGODB_SERVICE_HOST}:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD
-                --eval="$MONGODB_INIT"
+              - env && while ! mongo ${RATING_MONGODB_SERVICE_HOST}:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval="$MONGODB_INIT" > /dev/null 2>&1; do echo "waiting for mongo ..."; sleep 5; done
             containerName: rating-mongodb
             env:
             - name: MONGODB_INIT
