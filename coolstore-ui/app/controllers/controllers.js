@@ -57,6 +57,11 @@ angular.module('app')
 
                 // initialize products
                 catalog.getProducts().then(function (data) {
+                    if (data.error != undefined && data.error != "") {
+                        Notifications.error("Error retrieving products: " + data.error);
+                        return;
+                    }
+                    
                     $scope.products = data.map(function (el) {
                         return {
                             quantity: "1",
