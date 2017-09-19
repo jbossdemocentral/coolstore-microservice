@@ -432,8 +432,9 @@ EOM
       cd $_REPO_DIR && \
       git init && \
       curl -sL -o ./coolstore.zip https://github.com/$GITHUB_ACCOUNT/coolstore-microservice/archive/$GITHUB_REF.zip && \
-      tar xfz ./coolstore.zip --strip 1 && \
-      rm ./coolstore.zip && \
+      unzip coolstore.zip && \
+      mv coolstore-microservice-$GITHUB_REF/* . && \
+      rm -rf coolstore.zip coolstore-microservice-$GITHUB_REF && \
       git remote add origin http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git && \
       git add . --all && \
       git commit -m "Initial add" && \
