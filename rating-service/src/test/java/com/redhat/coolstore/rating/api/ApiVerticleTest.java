@@ -330,7 +330,7 @@ public class ApiVerticleTest {
                 ArgumentCaptor<Rating> argument = ArgumentCaptor.forClass(Rating.class);
                 verify(ratingService).addRating(argument.capture(), any());
                 assertThat(argument.getValue().getItemId(), equalTo(itemId));
-                assertThat(argument.getValue().getCount(), equalTo(rating));
+                assertThat(argument.getValue().getRating(), equalTo(rating));
                 async.complete();
             })
             .end();
