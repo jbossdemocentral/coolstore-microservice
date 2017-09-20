@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Template
+labels:
+  demo: coolstore-microservice
+  template: gateway-pipeline
+metadata:
+  name: gateway-pipeline
+objects:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      build: ${PIPELINE_NAME}
+    name: ${PIPELINE_NAME}
+    annotations:
+      pipeline.alpha.openshift.io/uses: '[{"name": "coolstore-gw-pre", "namespace": "${DEV_PROJECT}", "kind": "BuildConfig"},{"name": "coolstore-gw-pre", "namespace": "${DEV_PROJECT}", "kind": "DeploymentConfig"},,{"name": "coolstore-gw", "namespace": "${DEV_PROJECT}", "kind": "DeploymentConfig"}]'
+  spec:
+    runPolicy: Serial
+    strategy:
+      jenkinsPipelineStrategy:
+        jenkinsfile: |-
+            node('maven') {
+            stage('build') {
+            print 'Building'
+            openshiftBuild(buildConfig: 'coolstore-gw-pre', namespace: '${DEV_PROJECT}', showBuildLogs: 'true')
+            }
+            stage('stage-green') {
+                print 'Staging - GREEN Deployment'
+                openshiftDeploy(deploymentConfig: 'coolstore-gw-pre', namespace: '${DEV_PROJECT}' )
+            }
+            stage ('promotionCheck') {
+                def userInput = input( id: 'userInput', message: 'Is this build staging ready?', parameters: [ [$class: 'TextParameterDefinition', defaultValue: 'Good to go', description: 'Comments and notes?', name: 'comments'] ])
+                print 'promotionCheck'
+                openshiftTag(namespace: '${DEV_PROJECT}', sourceStream: 'coolstore-gwgreen',  sourceTag: 'latest', destinationStream: 'coolstore-gw', destinationTag: 'latest')
+            }
+            stage('stage-blue') {
+                print 'Staging - BLUE Deployment'
+                openshiftDeploy(deploymentConfig: 'coolstore-gw', namespace: '${DEV_PROJECT}')
+            }
+            }
+      type: JenkinsPipeline
+    triggers:
+    - github:
+        secret: ${GITHUB_WEBHOOK_SECRET}
+      type: GitHub
+    - generic:
+        secret: ${GENERIC_WEBHOOK_SECRET}
+      type: Generic
+parameters:
+- description: The name for the pipeline.
+  displayName: Pipeline Name
+  name: PIPELINE_NAME
+  required: true
+  value: gateway-pipeline
+- description: DEV project name containting the buildconfigs
+  displayName: DEV Project Name
+  name: DEV_PROJECT
+  required: true
+  value: coolstore
+- description: GitHub webhook secret
+  displayName: GitHub Webhook Secret
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: GITHUB_WEBHOOK_SECRET
+  required: true
+- description: Generic webhook secret
+  displayName: Generic Webhook Secret
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: GENERIC_WEBHOOK_SECRET
+  required: true

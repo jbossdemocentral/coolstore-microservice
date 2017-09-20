@@ -4,7 +4,7 @@
          version="3.0">
 
     <module-name>coolstore-api-gateway</module-name>
-    <security-constraint>
+    <!--<security-constraint>
         <web-resource-collection>
             <web-resource-name>coolstore-api-gateway</web-resource-name>
             <url-pattern>/api/cart/checkout/*</url-pattern>
@@ -20,6 +20,6 @@
 
     <security-role>
         <role-name>user</role-name>
-    </security-role>
+    </security-role>-->
 
 </web-app>

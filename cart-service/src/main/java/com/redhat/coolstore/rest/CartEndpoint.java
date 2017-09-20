@@ -1,4 +1,4 @@
-package com.redhat.coolstore.rest;
+	package com.redhat.coolstore.rest;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,9 +21,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.redhat.coolstore.model.Product;
-import com.redhat.coolstore.model.ShoppingCart;
-import com.redhat.coolstore.model.ShoppingCartItem;
+import com.redhat.coolstore.model.kie.Product;
+import com.redhat.coolstore.model.kie.ShoppingCart;
+import com.redhat.coolstore.model.kie.ShoppingCartItem;
 import com.redhat.coolstore.service.ShoppingCartService;
 
 

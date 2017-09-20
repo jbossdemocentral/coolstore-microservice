@@ -1,0 +1,14 @@
+import java.lang.Number;
+import com.redhat.coolstore.ShoppingCart;
+
+rule "Total Shopping Cart"
+	no-loop true
+	ruleflow-group "total-rules"
+	dialect "mvel"
+	when
+		$sc : ShoppingCart( )
+	then
+		$sc.setCartTotal( $sc.cartItemTotal + $sc.shippingTotal );
+		$sc.setCartItemPromoSavings( ($sc.cartItemPromoSavings == 0.0) ? 0.0 : $sc.cartItemPromoSavings * -1 );
+		update( $sc );
+end

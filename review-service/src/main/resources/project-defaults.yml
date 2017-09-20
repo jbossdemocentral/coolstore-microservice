@@ -1,0 +1,9 @@
+swarm:
+  logging: INFO
+  datasources:
+    data-sources:
+      ReviewDS:
+        driver-name: h2
+        connection-url: jdbc:h2:mem:review;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+        user-name: swarm
+        password: password

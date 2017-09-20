@@ -10,7 +10,7 @@
         }
     },
     "labels": {
-        "application": "inventory",
+        "app": "inventory",
         "hystrix.enabled": "true"
     },
     "parameters": [{
@@ -28,7 +28,7 @@
         {
             "displayName": "Git branch/tag",
             "name": "GIT_REF",
-            "value": "stable-ocp-3.5",
+            "value": "master",
             "required": true
         },
         {
@@ -99,7 +99,7 @@
                         "from": {
                             "kind": "ImageStreamTag",
                             "namespace": "openshift",
-                            "name": "jboss-eap70-openshift:1.4"
+                            "name": "jboss-eap70-openshift:1.5"
                         },
                         "incremental": true,
                         "env": [{
@@ -109,14 +109,12 @@
                         "forcePull": true
                     }
                 },
-                "triggers": [
-                    {
-                        "imageChange": {},
-                        "type": "ImageChange"
-                    }, {
-                        "type": "ConfigChange"
-                    }
-                ],
+                "triggers": [{
+                    "imageChange": {},
+                    "type": "ImageChange"
+                }, {
+                    "type": "ConfigChange"
+                }],
                 "output": {
                     "to": {
                         "kind": "ImageStreamTag",
@@ -162,7 +160,7 @@
                         "name": "${APPLICATION_NAME}",
                         "labels": {
                             "deploymentConfig": "${APPLICATION_NAME}",
-                            "application": "${APPLICATION_NAME}"
+                            "app": "${APPLICATION_NAME}"
                         }
                     },
                     "spec": {
@@ -263,7 +261,7 @@
                                     "scheme": "HTTP"
                                 },
                                 "timeoutSeconds": 1,
-                                "periodSeconds": 10,
+                                "periodSeconds": 5,
                                 "successThreshold": 1,
                                 "failureThreshold": 10,
                                 "initialDelaySeconds": 60
@@ -343,7 +341,7 @@
             "metadata": {
                 "name": "${APPLICATION_NAME}-postgresql",
                 "labels": {
-                    "application": "${APPLICATION_NAME}"
+                    "app": "${APPLICATION_NAME}"
                 },
                 "annotations": {
                     "description": "The database server's port."
@@ -356,7 +354,7 @@
             "metadata": {
                 "name": "${APPLICATION_NAME}-postgresql",
                 "labels": {
-                    "application": "${APPLICATION_NAME}"
+                    "app": "${APPLICATION_NAME}"
                 }
             },
             "spec": {
@@ -390,7 +388,7 @@
                         "name": "${APPLICATION_NAME}-postgresql",
                         "labels": {
                             "deploymentConfig": "${APPLICATION_NAME}-postgresql",
-                            "application": "${APPLICATION_NAME}"
+                            "app": "${APPLICATION_NAME}"
                         }
                     },
                     "spec": {

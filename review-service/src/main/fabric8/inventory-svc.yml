@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory
+  annotations:
+    description: Inventory Service based on WF Swarm
+    service.alpha.openshift.io/dependencies: '[{"name":"inventory-database","namespace":"","kind":"Service"}]'
+spec:
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    deploymentconfig: inventory
+  type: LoadBalancer
