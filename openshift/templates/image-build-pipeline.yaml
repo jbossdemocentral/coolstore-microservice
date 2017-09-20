@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  name: image-build-pipeline
+  annotations:
+    pipeline.alpha.openshift.io/uses: '[{"name": "jenkins", "namespace": "", "kind": "DeploymentConfig"}]'
+spec:
+  triggers:
+    - type: GitHub
+      github:
+        secret: wDmoEUkbBp
+    - type: Generic
+      generic:
+        secret: wDmoEUkbBp
+  runPolicy: SerialLatestOnly
+  source:
+    type: None
+  strategy:
+    type: JenkinsPipeline
+    jenkinsPipelineStrategy:
+      jenkinsfile: >-
+        def GITHUB_ACCOUNT="jbossdemocentral"
+        def GITHUB_REF="stable-ocp-3.5"
+        def GITHUB_REPO="https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git"
+        def BUILDS_TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-builds-template.yaml"
+        def MAVEN_MIRROR_URL="http://nexus-opentlc-shared.apps.rhpds.openshift.opentlc.com/content/groups/public/"
+
+        node('maven') {
+          stage('Update BuildConfigs') {
+            sh "oc delete bc -l demo=coolstore-microservice"
+            sh "oc process -f $BUILDS_TEMPLATE --param=GIT_URI=$GITHUB_REPO --param=GIT_REF=$GITHUB_REF --param=MAVEN_MIRROR_URL=$MAVEN_MIRROR_URL | oc create -f - || true"
+          }
+          
+          stage('Build Images') {
+            def buildconfigs = ['web-ui', 'inventory', 'cart', 'catalog', 'coolstore-gw', 'pricing', 'rating', 'review']
+            for (bc in buildconfigs) {
+                sh "oc start-build ${bc}"
+                sleep 60
+            }
+          }
+        }

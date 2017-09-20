@@ -8,9 +8,9 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
-import com.redhat.coolstore.model.Promotion;
-import com.redhat.coolstore.model.ShoppingCart;
-import com.redhat.coolstore.model.ShoppingCartItem;
+import com.redhat.coolstore.model.kie.Promotion;
+import com.redhat.coolstore.model.kie.ShoppingCart;
+import com.redhat.coolstore.model.kie.ShoppingCartItem;
 
 @Component
 public class PromoService implements Serializable {

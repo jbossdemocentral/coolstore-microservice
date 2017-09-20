@@ -1,0 +1,17 @@
+import java.lang.Number;
+import com.redhat.coolstore.ShoppingCartItem;
+import com.redhat.coolstore.PromoEvent;
+
+rule "Apply Cart Item Promotions"
+	no-loop true
+	ruleflow-group "promo-cart-rules"
+	dialect "mvel"
+	when
+		$sci : ShoppingCartItem( $itemId : itemId)
+		PromoEvent( itemId == $itemId && $pctOff : percentOff) from entry-point "Promo Stream"
+	then
+		$sci.setPromoSavings( $sci.price * $pctOff );
+		update( $sci );
+		$sci.setPrice( $sci.price * (1 - $pctOff) );
+		update( $sci );
+end

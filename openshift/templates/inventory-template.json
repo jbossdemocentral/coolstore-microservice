@@ -28,7 +28,7 @@
         {
             "displayName": "Git branch/tag",
             "name": "GIT_REF",
-            "value": "stable-ocp-3.6",
+            "value": "master",
             "required": true
         },
         {
@@ -261,7 +261,7 @@
                                     "scheme": "HTTP"
                                 },
                                 "timeoutSeconds": 1,
-                                "periodSeconds": 10,
+                                "periodSeconds": 5,
                                 "successThreshold": 1,
                                 "failureThreshold": 10,
                                 "initialDelaySeconds": 60

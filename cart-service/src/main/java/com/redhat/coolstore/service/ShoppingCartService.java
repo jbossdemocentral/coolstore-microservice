@@ -1,7 +1,7 @@
 package com.redhat.coolstore.service;
 
-import com.redhat.coolstore.model.Product;
-import com.redhat.coolstore.model.ShoppingCart;
+import com.redhat.coolstore.model.kie.Product;
+import com.redhat.coolstore.model.kie.ShoppingCart;
 
 public interface ShoppingCartService {
 	public void priceShoppingCart(ShoppingCart sc);

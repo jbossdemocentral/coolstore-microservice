@@ -13,7 +13,7 @@ objects:
       build: ${PIPELINE_NAME}
     name: ${PIPELINE_NAME}
     annotations:
-      pipeline.alpha.openshift.io/uses: '[{"name": "inventory", "namespace": "${DEV_PROJECT}", "kind": "BuildConfig"},{"name": "inventory-green", "namespace": "${PROD_PROJECT}", "kind": "DeploymentConfig"},{"name": "inventory-blue", "namespace": "${PROD_PROJECT}", "kind": "DeploymentConfig"}]'
+      pipeline.alpha.openshift.io/uses: '[{"name": "jenkins", "namespace": "", "kind": "DeploymentConfig"}]'
   spec:
     runPolicy: Serial
     strategy:
@@ -22,7 +22,7 @@ objects:
           node ('maven') {
             stage 'Build'
             openshiftBuild(buildConfig: 'inventory', namespace: '${DEV_PROJECT}', showBuildLogs: 'true')
-            // openshiftVerifyBuild(buildConfig: 'inventory', namespace: '${DEV_PROJECT}', waitTime: 900000)
+            openshiftVerifyBuild(buildConfig: 'inventory', namespace: '${DEV_PROJECT}', waitTime: 900000)
 
             stage 'Run Tests in DEV'
             sleep 10

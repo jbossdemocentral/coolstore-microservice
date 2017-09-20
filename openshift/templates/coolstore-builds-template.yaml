@@ -34,6 +34,11 @@ objects:
       type: Git
     strategy:
       sourceStrategy:
+        env:
+        - name: NPM_MIRROR
+          value: ${NPM_MIRROR}
+        - name: BOWER_MIRROR
+          value: ${BOWER_MIRROR}
         forcePull: false
         from:
           kind: ImageStreamTag
@@ -162,7 +167,7 @@ objects:
         forcePull: false
         from:
           kind: ImageStreamTag
-          name: jboss-webserver30-tomcat8-openshift:1.3
+          name: jboss-webserver31-tomcat8-openshift:1.0
           namespace: openshift
       type: Source
     resources:
@@ -218,6 +223,131 @@ objects:
       requests:
         cpu: "200m"
         memory: "1Gi"
+# Pricing Rules Service
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: pricing
+  spec:
+    tags:
+    - name: latest
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: pricing
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: pricing:latest
+    source:
+      contextDir: pricing-service
+      git:
+        ref: ${GIT_REF}
+        uri: ${GIT_URI}
+      type: Git
+    strategy:
+      sourceStrategy:
+        env:
+        - name: KIE_CONTAINER_DEPLOYMENT
+          value: ${KIE_CONTAINER_DEPLOYMENT}
+        - name: MAVEN_MIRROR_URL
+          value: ${MAVEN_MIRROR_URL}
+        from:
+          kind: ImageStreamTag
+          name: jboss-decisionserver64-openshift:1.0
+          namespace: openshift
+      type: Source
+    resources:
+      limits:
+        cpu: 500m
+        memory: "2Gi"
+      requests:
+        cpu: "200m"
+        memory: "1Gi"
+    triggers:
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+# Rating service
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: rating
+    labels:
+      app: rating
+  spec:
+    tags:
+    - name: latest
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: rating
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: rating:latest
+    source:
+      contextDir: rating-service
+      git:
+        ref: ${GIT_REF}
+        uri: ${GIT_URI}
+      type: Git
+    strategy:
+      sourceStrategy:
+        env:
+        - name: MAVEN_MIRROR_URL
+          value: ${MAVEN_MIRROR_URL}
+        from:
+          kind: ImageStreamTag
+          name: redhat-openjdk18-openshift:1.1
+          namespace: openshift
+      type: Source
+    triggers:
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+# Reviews service
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: review
+    labels:
+      app: review
+  spec:
+    tags:
+    - name: latest
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: review
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: review:latest
+    source:
+      contextDir: review-service
+      git:
+        ref: ${GIT_REF}
+        uri: ${GIT_URI}
+      type: Git
+    strategy:
+      sourceStrategy:
+        env:
+        - name: MAVEN_MIRROR_URL
+          value: ${MAVEN_MIRROR_URL}
+        from:
+          kind: ImageStreamTag
+          name: redhat-openjdk18-openshift:1.1
+          namespace: openshift
+      type: Source
+    triggers:
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+
 parameters:
 - description: Git source URI for application
   displayName: Git source repository
@@ -232,3 +362,13 @@ parameters:
 - description: Maven mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/content/groups/public/)
   displayName: Maven mirror url
   name: MAVEN_MIRROR_URL
+- description: NPM mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/repository/npm/)
+  displayName: NPM mirror url
+  name: NPM_MIRROR
+- description: Bower mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/repository/bower-mirror/)
+  displayName: Bower mirror url
+  name: BOWER_MIRROR
+- description: Decision Server Coolstore Rules Container Spec
+  name: KIE_CONTAINER_DEPLOYMENT
+  required: true
+  value: CoolStoreRulesContainer=com.redhat:coolstore:2.0.0
