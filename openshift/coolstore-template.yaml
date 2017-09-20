@@ -57,7 +57,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: nodejs:4
-          namespace: openshift
+          namespace: ${IMAGE_STREAM_NAMESPACE}
       type: Source
     triggers:
     - imageChange: {}
@@ -191,7 +191,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: fis-java-openshift:2.0
-          namespace: openshift
+          namespace: ${IMAGE_STREAM_NAMESPACE}
       type: Source
     triggers:
     - type: ConfigChange
@@ -312,7 +312,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: jboss-eap70-openshift:1.5
-          namespace: openshift
+          namespace: ${IMAGE_STREAM_NAMESPACE}
       type: Source
     triggers:
     - type: ConfigChange
@@ -499,7 +499,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: postgresql:latest
-          namespace: openshift
+          namespace: ${IMAGE_STREAM_NAMESPACE}
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -547,7 +547,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: jboss-webserver31-tomcat8-openshift:1.0
-          namespace: openshift
+          namespace: ${IMAGE_STREAM_NAMESPACE}
       type: Source
     triggers:
     - type: ConfigChange
@@ -748,7 +748,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: mongodb:3.2
-          namespace: openshift
+          namespace: ${IMAGE_STREAM_NAMESPACE}
       type: ImageChange
     - type: ConfigChange
 # Rating Service
@@ -784,7 +784,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: redhat-openjdk18-openshift:1.1
-          namespace: openshift
+          namespace: ${IMAGE_STREAM_NAMESPACE}
       type: Source
     triggers:
     - type: ConfigChange
@@ -1004,7 +1004,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: mongodb:3.2
-          namespace: openshift
+          namespace: ${IMAGE_STREAM_NAMESPACE}
       type: ImageChange
     - type: ConfigChange
 
@@ -1057,7 +1057,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: redhat-openjdk18-openshift:1.1
-          namespace: openshift
+          namespace: ${IMAGE_STREAM_NAMESPACE}
       type: Source
     triggers:
     - type: ConfigChange
@@ -1194,7 +1194,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: jboss-decisionserver64-openshift:1.0
-          namespace: openshift
+          namespace: ${IMAGE_STREAM_NAMESPACE}
       type: Source
     triggers:
     - type: ConfigChange
@@ -1347,7 +1347,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: redhat-openjdk18-openshift:1.1
-          namespace: openshift
+          namespace: ${IMAGE_STREAM_NAMESPACE}
       type: Source
     triggers:
     - type: ConfigChange
@@ -1518,7 +1518,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: postgresql:latest
-          namespace: openshift
+          namespace: ${IMAGE_STREAM_NAMESPACE}
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -1844,4 +1844,9 @@ parameters:
   from: '[a-zA-Z0-9]{8}'
   generate: expression
   name: REVIEW_DB_PASSWORD
+  required: true
+- description: Namespace in which the ImageStreams for Red Hat Middleware images are installed. These ImageStreams are normally installed in the openshift namespace. You should only need to modify this if you've installed the ImageStreams in a different namespace/project.
+  displayName: ImageStream Namespace
+  value: openshift
+  name: IMAGE_STREAM_NAMESPACE
   required: true
