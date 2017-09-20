@@ -520,6 +520,8 @@ function deploy_coolstore_prod_env() {
   local _TEMPLATE_DEPLOYMENT="$_TEMPLATE_PREFIX/coolstore-deployments-template.yaml"
   local _TEMPLATE_NETFLIX="$_TEMPLATE_PREFIX/netflix-oss-list.yaml"
 
+  sleep 10
+
   echo_header "Deploying CoolStore app into ${PRJ_COOLSTORE_PROD[0]} project..."
   echo "Using deployment template $_TEMPLATE_DEPLOYMENT"
   echo "Using Netflix OSS template $_TEMPLATE_NETFLIX"
@@ -603,40 +605,10 @@ function wait_for_builds_to_complete() {
   done
 }
 
-# promote images from an existing shared project
-function promote_existing_images_no_cicd() {
-  echo_header "Promoting Existing Images from $COOLSTORE_IMAGES_NAMESPACE ..."
+function promote_images() {
+  echo_header "Promoting Images ..."
 
-  for is in coolstore-gw web-ui cart catalog pricing rating review inventory
-  do
-    oc tag $COOLSTORE_IMAGES_NAMESPACE/$is:latest ${PRJ_COOLSTORE_PROD[0]}/$is:latest
-  done
-}
-
-# promote images from an existing shared project
-function promote_existing_images_for_cicd() {
-  echo_header "Promoting Existing Images from $COOLSTORE_IMAGES_NAMESPACE ..."
-
-  for is in coolstore-gw web-ui cart catalog pricing rating review
-  do
-    if [ "$ENABLE_TEST_ENV" = true ] ; then
-      oc tag $COOLSTORE_IMAGES_NAMESPACE/$is:latest ${PRJ_COOLSTORE_TEST[0]}/$is:test
-    fi
-    oc tag $COOLSTORE_IMAGES_NAMESPACE/$is:latest ${PRJ_COOLSTORE_PROD[0]}/$is:prod
-  done
-
-  oc tag $COOLSTORE_IMAGES_NAMESPACE/inventory:latest ${PRJ_SERVICE_DEV[0]}/inventory:latest
-  oc tag $COOLSTORE_IMAGES_NAMESPACE/inventory:latest ${PRJ_COOLSTORE_PROD[0]}/inventory:prod-green
-  oc tag $COOLSTORE_IMAGES_NAMESPACE/inventory:latest ${PRJ_COOLSTORE_PROD[0]}/inventory:prod-blue
-}
-
-# promote images that were just built
-function promote_built_images() {
-  echo_header "Promoting Built Images in ${PRJ_COOLSTORE_PROD[0]} ..."
-
-  wait_for_builds_to_complete
-
-  # remove buildconfigs. Jenkins does that!
+  # remove buildconfigs
   oc delete bc --all -n ${PRJ_COOLSTORE_PROD[0]}
 
   for is in coolstore-gw web-ui cart catalog pricing rating review
@@ -660,16 +632,11 @@ function promote_built_images() {
   oc tag ${PRJ_COOLSTORE_PROD[0]}/inventory:latest -d
 }
 
-function promote_images() {
-  if images_exists; then
-    if [ "$ENABLE_CI_CD" = true ] ; then
-      promote_existing_images_for_cicd
-    else
-      promote_existing_images_no_cicd
-    fi
-  else
-    promote_built_images
-  fi
+function import_images() {
+  for is in coolstore-gw web-ui cart catalog pricing rating review inventory
+  do
+    oc tag $COOLSTORE_IMAGES_NAMESPACE/$is:latest ${PRJ_COOLSTORE_PROD[0]}/$is:latest
+  done
 }
 
 function deploy_pipeline() {
@@ -896,9 +863,11 @@ case "$ARG_COMMAND" in
         print_info
         
         deploy_nexus
-        wait_for_nexus_to_be_ready
 
-        if ! images_exists; then
+        if images_exists; then
+          import_images
+        else
+          wait_for_nexus_to_be_ready
           build_images
         fi
         
@@ -917,9 +886,13 @@ case "$ARG_COMMAND" in
           fi
 
           deploy_service_dev_env
-        fi
 
-        promote_images
+          if ! images_exists; then
+            wait_for_builds_to_complete
+          fi
+
+          promote_images
+        fi
 
         if [ "$ARG_RUN_VERIFY" = true ] ; then
           echo "Waiting for deployments to finish..."
