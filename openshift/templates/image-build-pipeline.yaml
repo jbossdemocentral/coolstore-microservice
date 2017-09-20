@@ -19,8 +19,8 @@ spec:
     type: JenkinsPipeline
     jenkinsPipelineStrategy:
       jenkinsfile: >-
-        def GITHUB_ACCOUNT="siamaksade"
-        def GITHUB_REF="stable-ocp-3.5-test"
+        def GITHUB_ACCOUNT="jbossdemocentral"
+        def GITHUB_REF="stable-ocp-3.5"
         def GITHUB_REPO="https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git"
         def BUILDS_TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-builds-template.yaml"
         def MAVEN_MIRROR_URL="http://nexus-opentlc-shared.apps.rhpds.openshift.opentlc.com/content/groups/public/"
