@@ -1,4 +1,4 @@
-Red Hat Cool Store Microservice Demo [![Build Status](https://travis-ci.org/jbossdemocentral/coolstore-microservice.svg?branch=master)](https://travis-ci.org/jbossdemocentral/coolstore-microservice)
+Red Hat Cool Store Microservice Demo [![Build Status](https://travis-ci.org/jbossdemocentral/coolstore-microservice.svg?branch=stable-ocp-3.6)](https://travis-ci.org/jbossdemocentral/coolstore-microservice)
 ====================================
 This is an example demo showing a retail store consisting of several microservices based on [Red Hat OpenShift Application Runtimes](https://www.redhat.com/en/resources/openshift-application-runtimes-datasheet) (Spring Boot, WildFly Swarm, Vert.x, JBoss EAP and Node.js) deployed to [OpenShift](https://access.redhat.com/documentation/en/openshift-container-platform).
 
