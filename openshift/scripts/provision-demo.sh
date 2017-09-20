@@ -438,6 +438,8 @@ EOM
       rm -rf coolstore.zip coolstore-microservice-$GITHUB_REF && \
       git remote add origin http://$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git && \
       git add . --all && \
+      git config user.email "rileylenard@redhat.com" && \
+      git config user.name "Riley Lenard" && \
       git commit -m "Initial add" && \
       git push -f http://$GOGS_ADMIN_USER:$GOGS_ADMIN_PASSWORD@$GOGS_ROUTE/$GOGS_ADMIN_USER/coolstore-microservice.git master && \
       popd >/dev/null && \
