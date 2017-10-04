@@ -212,10 +212,6 @@ objects:
           namespace: openshift
           name: redhat-openjdk18-openshift:1.1
       type: Source
-    triggers:
-    - type: ConfigChange
-    - imageChange: {}
-      type: ImageChange
     resources:
       limits:
         cpu: 500m
@@ -265,10 +261,6 @@ objects:
       requests:
         cpu: "200m"
         memory: "1Gi"
-    triggers:
-    - type: ConfigChange
-    - imageChange: {}
-      type: ImageChange
 # Rating service
 - apiVersion: v1
   kind: ImageStream
@@ -304,10 +296,6 @@ objects:
           name: redhat-openjdk18-openshift:1.1
           namespace: openshift
       type: Source
-    triggers:
-    - type: ConfigChange
-    - imageChange: {}
-      type: ImageChange
 # Reviews service
 - apiVersion: v1
   kind: ImageStream
@@ -343,11 +331,6 @@ objects:
           name: redhat-openjdk18-openshift:1.1
           namespace: openshift
       type: Source
-    triggers:
-    - type: ConfigChange
-    - imageChange: {}
-      type: ImageChange
-
 parameters:
 - description: Git source URI for application
   displayName: Git source repository
