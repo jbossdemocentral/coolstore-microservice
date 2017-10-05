@@ -443,6 +443,7 @@ objects:
     name: inventory-postgresql
     labels:
       app: inventory
+      comp-type: database
   spec:
     replicas: 1
     selector:
@@ -453,6 +454,7 @@ objects:
       metadata:
         labels:
           app: inventory
+          comp-type: database
           deploymentconfig: inventory-postgresql
         name: inventory-postgresql
       spec:
@@ -665,6 +667,7 @@ objects:
   metadata:
     labels:
       app: catalog
+      comp-type: database
     name: catalog-mongodb
   spec:
     replicas: 1
@@ -679,6 +682,7 @@ objects:
       metadata:
         labels:
           app: catalog
+          comp-type: database
           deploymentconfig: catalog-mongodb
       spec:
         containers:
@@ -902,6 +906,7 @@ objects:
   metadata:
     labels:
       app: rating
+      comp-type: database
     name: rating-mongodb
   spec:
     replicas: 0
@@ -935,6 +940,7 @@ objects:
       metadata:
         labels:
           app: rating
+          comp-type: database
           deploymentconfig: rating-mongodb
       spec:
         containers:
@@ -1461,6 +1467,7 @@ objects:
   metadata:
     name: review-postgresql
     labels:
+      comp-type: database
       app: review
   spec:
     replicas: 0
@@ -1472,6 +1479,7 @@ objects:
       metadata:
         labels:
           app: review
+          comp-type: database
           deploymentconfig: review-postgresql
         name: review-postgresql
       spec:
