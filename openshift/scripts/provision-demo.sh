@@ -489,14 +489,15 @@ function remove_coolstore_storage_if_ephemeral() {
   fi
 }
 
-function scale_down_deployments() {
-  local _PROJECT=$1
-	shift
-	while test ${#} -gt 0
-	do
-	  oc scale --replicas=0 dc $1 -n $_PROJECT
-	  shift
-	done
+function scale_down_deployments_by_labels() {
+  local _project=$1
+  local _selector=$2
+  local _deployments=$(oc get dc -l $_selector -o=custom-columns=:.metadata.name -n $_project)
+
+  for _dc in $_deployments; do
+      oc rollout cancel dc/$_dc -n $_project 2>/dev/null
+      oc scale --replicas=0 dc $_dc -n $_project
+  done
 }
 
 # Deploy Coolstore into Coolstore TEST project
@@ -504,8 +505,12 @@ function deploy_coolstore_test_env() {
   local _TEMPLATE="https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/coolstore-deployments-template.yaml"
 
   echo_header "Deploying CoolStore app into ${PRJ_COOLSTORE_TEST[0]} project..."
-  echo "Using deployment template $_TEMPLATE_DEPLOYMENT"
+  echo "Using deployment template $_TEMPLATE"
   oc process -f $_TEMPLATE --param=APP_VERSION=test --param=HOSTNAME_SUFFIX=${PRJ_COOLSTORE_TEST[0]}.$DOMAIN -n ${PRJ_COOLSTORE_TEST[0]} | oc create -f - -n ${PRJ_COOLSTORE_TEST[0]}
+  
+  sleep 2
+  scale_down_deployments_by_labels ${PRJ_COOLSTORE_TEST[0]} comp-required!=true,app!=inventory
+
   sleep 2
   remove_coolstore_storage_if_ephemeral ${PRJ_COOLSTORE_TEST[0]}
 }
@@ -547,7 +552,7 @@ function deploy_coolstore_prod_env() {
 
   # driven by the demo type
   if [ "$SCALE_DOWN_PROD" = true ] ; then
-    scale_down_deployments ${PRJ_COOLSTORE_PROD[0]} cart turbine-server hystrix-dashboard pricing inventory inventory-postgresql review review-postgresql rating rating-mongodb
+    scale_down_deployments_by_labels ${PRJ_COOLSTORE_PROD[0]} comp-required!=true
    fi  
 }
 
@@ -712,11 +717,12 @@ function verify_build_and_deployments() {
   echo "Verifying deployments..."
   # verify and retry deployments
   if [ "$ENABLE_CI_CD" = true ] ; then
+    verify_deployments_in_projects ${PRJ_COOLSTORE_PROD[0]} ${PRJ_CI[0]} ${PRJ_SERVICE_DEV[0]}
+
     if [ "$ENABLE_TEST_ENV" = true ] ; then
-      verify_deployments_in_projects ${PRJ_COOLSTORE_TEST[0]} ${PRJ_COOLSTORE_PROD[0]} ${PRJ_CI[0]} ${PRJ_SERVICE_DEV[0]}
-    else
-      verify_deployments_in_projects ${PRJ_COOLSTORE_PROD[0]} ${PRJ_CI[0]} ${PRJ_SERVICE_DEV[0]}
+      verify_deployments_in_projects ${PRJ_COOLSTORE_TEST[0]}
     fi
+
   else
     verify_deployments_in_projects ${PRJ_COOLSTORE_PROD[0]} ${PRJ_CI[0]}
   fi 
@@ -726,7 +732,7 @@ function verify_deployments_in_projects() {
   for project in "$@"
   do
     local _DC=
-    local _DEPLOYMENTS=$(oc get dc catalog-mongodb inventory-postgresql -n $project -o=custom-columns=:.metadata.name,:.status.availableReplicas 2>/dev/null;oc get dc -n $project -o=custom-columns=:.metadata.name,:.status.availableReplicas)
+    local _DEPLOYMENTS=$(oc get dc -l comp-type=database -n $project -o=custom-columns=:.metadata.name,:.status.availableReplicas 2>/dev/null;oc get dc -l comp-type!=database -n $project -o=custom-columns=:.metadata.name,:.status.availableReplicas)
     for dc in $_DEPLOYMENTS; do
       # redeploy if deployment has failed or has taken too long
       if [ $dc = 0 ] && [ -z "$(oc get pods -n $project | grep "$dc-[0-9]\+-deploy")" ] ; then

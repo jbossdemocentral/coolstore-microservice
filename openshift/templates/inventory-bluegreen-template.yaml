@@ -284,6 +284,7 @@ objects:
     name: inventory-postgresql
     labels:
       app: inventory
+      comp-type: database
   spec:
     replicas: 1
     selector:
@@ -294,6 +295,7 @@ objects:
       metadata:
         labels:
           app: inventory
+          comp-type: database
           deploymentconfig: inventory-postgresql
         name: inventory-postgresql
       spec:

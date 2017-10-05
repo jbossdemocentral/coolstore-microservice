@@ -26,6 +26,7 @@ objects:
     name: web-ui
     labels:
       app: web-ui
+      comp-required: "true"
   spec:
     replicas: 1
     selector:
@@ -128,6 +129,7 @@ objects:
     name: coolstore-gw
     labels:
       app: coolstore-gw
+      comp-required: "true"
   spec:
     replicas: 1
     selector:
@@ -363,6 +365,7 @@ objects:
     name: inventory-postgresql
     labels:
       app: inventory
+      comp-type: database
   spec:
     replicas: 1
     selector:
@@ -373,6 +376,7 @@ objects:
       metadata:
         labels:
           app: inventory
+          comp-type: database
           deploymentconfig: inventory-postgresql
         name: inventory-postgresql
       spec:
@@ -465,6 +469,7 @@ objects:
     name: catalog
     labels:
       app: catalog
+      comp-required: "true"
   spec:
     replicas: 1
     selector:
@@ -595,6 +600,8 @@ objects:
   metadata:
     labels:
       app: catalog
+      comp-type: database
+      comp-required: "true"
     name: catalog-mongodb
   spec:
     replicas: 1
@@ -609,6 +616,7 @@ objects:
       metadata:
         labels:
           app: catalog
+          comp-type: database
           deploymentconfig: catalog-mongodb
       spec:
         containers:
@@ -836,6 +844,7 @@ objects:
   metadata:
     labels:
       app: rating
+      comp-type: database
     name: rating-mongodb
   spec:
     replicas: 1
@@ -869,6 +878,7 @@ objects:
       metadata:
         labels:
           app: rating
+          comp-type: database
           deploymentconfig: rating-mongodb
       spec:
         containers:
@@ -1317,6 +1327,7 @@ objects:
     name: review-postgresql
     labels:
       app: review
+      comp-type: database
   spec:
     replicas: 1
     selector:
@@ -1327,6 +1338,7 @@ objects:
       metadata:
         labels:
           app: review
+          comp-type: database
           deploymentconfig: review-postgresql
         name: review-postgresql
       spec:
