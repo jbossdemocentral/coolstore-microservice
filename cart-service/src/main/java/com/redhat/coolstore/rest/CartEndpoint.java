@@ -49,36 +49,14 @@ public class CartEndpoint implements Serializable {
         return shoppingCartService.getShoppingCart(cartId);
     }
 
+
     @POST
     @Path("/{cartId}/{itemId}/{quantity}")
     @Produces(MediaType.APPLICATION_JSON)
     public ShoppingCart add(@PathParam("cartId") String cartId,
                             @PathParam("itemId") String itemId,
                             @PathParam("quantity") int quantity) throws Exception {
-        ShoppingCart cart = shoppingCartService.getShoppingCart(cartId);
-
-        Product product = shoppingCartService.getProduct(itemId);
-        
-        if (product == null) {
-        	LOG.warn("Invalid product {} request to get added to the shopping cart. No product added", itemId);
-        	return cart;
-        }
-
-        ShoppingCartItem sci = new ShoppingCartItem();
-        sci.setProduct(product);
-        sci.setQuantity(quantity);
-        sci.setPrice(product.getPrice());
-        cart.addShoppingCartItem(sci);
-
-        try {
-            shoppingCartService.priceShoppingCart(cart);
-            cart.setShoppingCartItemList(dedupeCartItems(cart.getShoppingCartItemList()));
-        } catch (Exception ex) {
-            cart.removeShoppingCartItem(sci);
-            throw ex;
-        }
-
-        return cart;
+        return shoppingCartService.addItem(cartId, itemId, quantity);
     }
 
     @POST
@@ -87,22 +65,7 @@ public class CartEndpoint implements Serializable {
     public ShoppingCart set(@PathParam("cartId") String cartId,
                             @PathParam("tmpId") String tmpId) throws Exception {
 
-        ShoppingCart cart = shoppingCartService.getShoppingCart(cartId);
-        ShoppingCart tmpCart = shoppingCartService.getShoppingCart(tmpId);
-
-        if (tmpCart != null) {
-            cart.resetShoppingCartItemList();
-            cart.setShoppingCartItemList(tmpCart.getShoppingCartItemList());
-        }
-
-        try {
-            shoppingCartService.priceShoppingCart(cart);
-            cart.setShoppingCartItemList(dedupeCartItems(cart.getShoppingCartItemList()));
-        } catch (Exception ex) {
-            throw ex;
-        }
-
-        return cart;
+        return shoppingCartService.set(cartId, tmpId);
     }
 
     @DELETE
@@ -112,24 +75,7 @@ public class CartEndpoint implements Serializable {
                                @PathParam("itemId") String itemId,
                                @PathParam("quantity") int quantity) throws Exception {
 
-        List<ShoppingCartItem> toRemoveList = new ArrayList<>();
-
-        ShoppingCart cart = shoppingCartService.getShoppingCart(cartId);
-
-        cart.getShoppingCartItemList().stream()
-                .filter(sci -> sci.getProduct().getItemId().equals(itemId))
-                .forEach(sci -> {
-                    if (quantity >= sci.getQuantity()) {
-                        toRemoveList.add(sci);
-                    } else {
-                        sci.setQuantity(sci.getQuantity() - quantity);
-                    }
-                });
-
-        toRemoveList.forEach(cart::removeShoppingCartItem);
-
-        shoppingCartService.priceShoppingCart(cart);
-        return cart;
+        return shoppingCartService.deleteItem(cartId, itemId, quantity);
     }
 
     @POST
@@ -137,31 +83,6 @@ public class CartEndpoint implements Serializable {
     @Produces(MediaType.APPLICATION_JSON)
     public ShoppingCart checkout(@PathParam("cartId") String cartId) {
         // TODO: register purchase of shoppingCart items by specific user in session
-        ShoppingCart cart = shoppingCartService.getShoppingCart(cartId);
-        cart.resetShoppingCartItemList();
-        shoppingCartService.priceShoppingCart(cart);
-        return cart;
-    }
-
-    private List<ShoppingCartItem> dedupeCartItems(List<ShoppingCartItem> cartItems) {
-        List<ShoppingCartItem> result = new ArrayList<>();
-        Map<String, Integer> quantityMap = new HashMap<>();
-        for (ShoppingCartItem sci : cartItems) {
-            if (quantityMap.containsKey(sci.getProduct().getItemId())) {
-                quantityMap.put(sci.getProduct().getItemId(), quantityMap.get(sci.getProduct().getItemId()) + sci.getQuantity());
-            } else {
-                quantityMap.put(sci.getProduct().getItemId(), sci.getQuantity());
-            }
-        }
-
-        for (String itemId : quantityMap.keySet()) {
-            Product p = shoppingCartService.getProduct(itemId);
-            ShoppingCartItem newItem = new ShoppingCartItem();
-            newItem.setQuantity(quantityMap.get(itemId));
-            newItem.setPrice(p.getPrice());
-            newItem.setProduct(p);
-            result.add(newItem);
-        }
-        return result;
+        return shoppingCartService.checkout(cartId);
     }
 }
