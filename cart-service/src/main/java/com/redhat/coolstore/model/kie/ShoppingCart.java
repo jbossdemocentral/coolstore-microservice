@@ -17,13 +17,26 @@ public class ShoppingCart implements Serializable {
 	private double shippingPromoSavings;
 	
 	private double cartTotal;
+
+	private String cartId;
 			
 	private List<ShoppingCartItem> shoppingCartItemList = new ArrayList<ShoppingCartItem>();
 
 	public ShoppingCart() {
-		
 	}
-	
+
+	public ShoppingCart(String cartId) {
+		this.cartId = cartId;
+	}
+
+	public String getCartId() {
+		return cartId;
+	}
+
+	public void setCartId(String cartId) {
+		this.cartId = cartId;
+	}
+
 	public List<ShoppingCartItem> getShoppingCartItemList() {
 		return shoppingCartItemList;
 	}
@@ -102,7 +115,8 @@ public class ShoppingCart implements Serializable {
 
 	@Override
 	public String toString() {
-		return "ShoppingCart [cartItemTotal=" + cartItemTotal
+		return "ShoppingCart [cartId=" + cartId
+				+ ", cartItemTotal=" + cartItemTotal
 				+ ", cartItemPromoSavings=" + cartItemPromoSavings
 				+ ", shippingTotal=" + shippingTotal
 				+ ", shippingPromoSavings=" + shippingPromoSavings
