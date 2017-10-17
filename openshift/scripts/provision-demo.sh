@@ -44,6 +44,7 @@ ARG_COMMAND=
 ARG_RUN_VERIFY=false
 ARG_DEMO=
 ARG_DELETE_BUILDS=true
+ARG_RHPDS=false
 
 while :; do
     case $1 in
@@ -119,6 +120,9 @@ while :; do
             ;;
         --ephemeral)
             ARG_EPHEMERAL=true
+            ;;
+        --rhpds)
+            ARG_RHPDS=true
             ;;
         --run-verify)
             ARG_RUN_VERIFY=true
@@ -759,6 +763,14 @@ function deploy_guides() {
   local _DEMO_CONTENT_URL_PREFIX="https://raw.githubusercontent.com/osevg/workshopper-content/master"
   local _DEMO_URLS="$_DEMO_CONTENT_URL_PREFIX/_workshops/$WORKSHOP_YAML"
 
+  local _SLIDES="slideshare"
+  local _DISPLAY_SIMULATION_LINKS="false"
+
+  if [ "$ARG_RHPDS" = true ] ; then
+    _SLIDES="google"
+    _DISPLAY_SIMULATION_LINKS="true"
+  fi
+
   oc new-app --name=guides --docker-image=osevg/workshopper:latest -n ${PRJ_CI[0]} \
       -e WORKSHOPS_URLS=$_DEMO_URLS \
       -e CONTENT_URL_PREFIX=$_DEMO_CONTENT_URL_PREFIX \
@@ -771,6 +783,8 @@ function deploy_guides() {
       -e GOGS_DEV_USER=$GOGS_USER -e GOGS_DEV_PASSWORD=$GOGS_PASSWORD \
       -e GOGS_REVIEWER_USER=$GOGS_ADMIN_USER \
       -e GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD \
+      -e SLIDES=$_SLIDES \
+      -e DISPLAY_SIMULATION_LINKS=$_DISPLAY_SIMULATION_LINKS \
       -e OCP_VERSION=3.5 -n ${PRJ_CI[0]}
   oc expose svc/guides -n ${PRJ_CI[0]}
   oc set probe dc/guides -n ${PRJ_CI[0]} --readiness --liveness --get-url=http://:8080/ --failure-threshold=5 --initial-delay-seconds=30
