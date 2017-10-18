@@ -250,6 +250,7 @@ function print_info() {
   echo "Demo name:           $ARG_DEMO"
   echo "OpenShift master:    $OPENSHIFT_MASTER"
   echo "Current user:        $LOGGEDIN_USER"
+  echo "Project owner:       $OPENSHIFT_USER"
   echo "Project suffix:      $PRJ_SUFFIX"
   echo "Ephemeral:           $ARG_EPHEMERAL"
   echo "GitHub repo:         $GITHUB_URI"
