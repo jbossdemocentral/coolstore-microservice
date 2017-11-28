@@ -102,6 +102,7 @@ objects:
   metadata:
     labels:
       app: web-ui
+      comp-required: "true"
     name: web-ui
   spec:
     ports:
@@ -117,6 +118,7 @@ objects:
     name: web-ui
     labels:
       app: web-ui
+      comp-required: "true"
   spec:
     host: web-ui-${HOSTNAME_SUFFIX}
     to:
@@ -206,6 +208,7 @@ objects:
     labels:
       app: coolstore-gw
       hystrix.enabled: "true"
+      comp-required: "true"
     name: coolstore-gw
   spec:
     ports:
@@ -220,6 +223,7 @@ objects:
     name: coolstore-gw
     labels:
       app: coolstore-gw
+      comp-required: "true"
   spec:
     host: gw-${HOSTNAME_SUFFIX}
     to:
@@ -559,6 +563,7 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'
     labels:
       app: catalog
+      comp-required: "true"
     name: catalog
   spec:
     ports:
@@ -572,6 +577,7 @@ objects:
   metadata:
     labels:
       app: catalog
+      comp-required: "true"
     name: catalog
   spec:
     host: catalog-${HOSTNAME_SUFFIX}
@@ -584,6 +590,7 @@ objects:
   metadata:
     labels:
       app: catalog
+      comp-required: "true"
     name: catalog-mongodb
   spec:
     ports:
@@ -699,6 +706,7 @@ objects:
   metadata:
     labels:
       app: catalog
+      comp-required: "true"
     name: catalog-mongodb-pv
   spec:
     accessModes:
