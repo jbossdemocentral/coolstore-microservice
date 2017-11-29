@@ -1096,6 +1096,8 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: pricing
+    labels:
+      app: pricing
   spec:
     replicas: 1
     selector:
