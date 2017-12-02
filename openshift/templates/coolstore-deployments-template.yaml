@@ -236,6 +236,7 @@ objects:
     name: inventory
     labels:
       app: inventory
+      uses-database: "true"
   spec:
     replicas: 1
     selector:
@@ -474,6 +475,7 @@ objects:
     labels:
       app: catalog
       comp-required: "true"
+      uses-database: "true"
   spec:
     replicas: 1
     selector:
@@ -721,6 +723,7 @@ objects:
     name: rating
     labels:
       app: rating
+      uses-database: "true"
   spec:
     replicas: 1
     selector:
@@ -1226,6 +1229,7 @@ objects:
     name: review
     labels:
       app: review
+      uses-database: "true"
   spec:
     replicas: 1
     selector:
