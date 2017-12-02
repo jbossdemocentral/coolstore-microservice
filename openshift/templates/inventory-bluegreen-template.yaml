@@ -126,7 +126,7 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
-      app: inventory-live
+      app: inventory
       variant: blue
     name: inventory-blue
   spec:
@@ -251,7 +251,7 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
-      app: inventory-idle
+      app: inventory
       variant: green
     name: inventory-green
   spec:

@@ -18,63 +18,100 @@ objects:
     runPolicy: Serial
     strategy:
       jenkinsPipelineStrategy:
+        env:
+          - name: INVENTORY_DEV_PROJECT
+            value: ${DEV_PROJECT}
+          - name: COOLSTORE_TEST_PROJECT
+            value: ${TEST_PROJECT}
+          - name: COOLSTORE_PROD_PROJECT
+            value: ${PROD_PROJECT}
         jenkinsfile: |-
-          node ('maven') {
-            stage 'Build'
-            openshiftBuild(buildConfig: 'inventory', namespace: '${DEV_PROJECT}', showBuildLogs: 'true')
-            openshiftVerifyBuild(buildConfig: 'inventory', namespace: '${DEV_PROJECT}', waitTime: 900000)
+          def tag,altTag
 
-            stage 'Run Tests in DEV'
-            sleep 10
+          pipeline {
+            agent any
+            stages {
+              stage('Build') {
+                steps {
+                  script {
+                    openshift.withCluster() {
+                      openshift.withProject(env.INVENTORY_DEV_PROJECT) {
+                        openshift.startBuild("inventory", "--wait=true")
+                      }
+                    }
+                  }
+                }
+              }
 
-            stage 'Deploy to TEST'
-            openshiftTag(sourceStream: 'inventory', sourceTag: 'latest', namespace: '${DEV_PROJECT}', destinationStream: 'inventory', destinationTag: 'test', destinationNamespace: '${TEST_PROJECT}')
-            sleep 10
+              stage('Run Tests in DEV') {
+                steps {
+                  sleep 10
+                }
+              }
 
-            stage 'Run Tests in TEST'
-            sleep 30
-          }
+              stage('Deploy to TEST') {
+                steps {
+                  script {
+                    openshift.withCluster() {
+                      openshift.tag("${env.INVENTORY_DEV_PROJECT}/inventory:latest", "${env.COOLSTORE_TEST_PROJECT}/inventory:test")
+                    }
+                  }        
+                }
+              }
 
-          def tag="blue"
-          def altTag="green"
+              stage('Run Tests in TEST') {
+                steps {
+                  sleep 10
+                }
+              }
 
-          node {
-            stage 'Deploy to PROD (Not Live)'
+              stage('Deploy to PROD (Not Live)') {
+                steps {
+                  script {
+                    openshift.withCluster() {
+                      openshift.withProject(env.COOLSTORE_PROD_PROJECT) {
+                        def route = openshift.selector("route", "inventory").object()
+                        def backends = []
+                        backends.add(route.spec.to)
+                        backends.addAll(route.spec.alternateBackends)
+                        def svc = backends.find {it.weight == 100}
+                        tag = svc.name == "inventory-green" ? "blue" : "green"
+                        altTag = svc.name == "inventory-green" ? "green" : "blue"
 
-            sh "oc get route inventory -n ${PROD_PROJECT} -o json > routejson"
-            def json = readJSON text: readFile('routejson').trim()
-            def activeService
-            if (json.spec.to.weight == 100) {
-              activeService = json.spec.to.name
-            } else {
-              for (backend in json.spec.alternateBackends) {
-                  if (backend.weight == 100) { activeService = backend.name }
-              }    
+                        openshift.tag("${env.COOLSTORE_TEST_PROJECT}/inventory:test", "${env.COOLSTORE_PROD_PROJECT}/inventory:prod-${tag}")
+                        openshift.selector("dc", "inventory-${tag}").rollout().status()
+                      }
+                    }
+                  }
+                }
+              }
+
+              stage('Smoke Tests in PROD (Not Live)') {
+                steps {
+                  sleep 10
+                }
+              }
+
+              stage('Approve Go Live') {
+                steps {
+                  timeout(time:15, unit:'MINUTES') {
+                      input message: "Go Live in Production (switch to new version)?", ok: "Go Live"
+                  }
+                }
+              }
+
+              stage('Go Live') {
+                steps {
+                  script {
+                    openshift.withCluster() {
+                      openshift.withProject(env.COOLSTORE_PROD_PROJECT) {
+                        openshift.set("route-backends", "inventory", "--adjust", "inventory-${tag}=100%")
+                      }
+                    }
+                  }
+                }
+              }
             }
-
-            if (activeService == "inventory-blue") {
-              tag = "green"
-              altTag = "blue"
-            }
-            openshiftTag(sourceStream: 'inventory', sourceTag: 'test', namespace: '${TEST_PROJECT}', destinationStream: 'inventory', destinationTag: "prod-${tag}", destinationNamespace: '${PROD_PROJECT}')
-            sleep 10
-            openshiftVerifyDeployment(deploymentConfig: "inventory-${tag}", replicaCount: 1, verifyReplicaCount: true, namespace: '${PROD_PROJECT}')
-
-            stage 'Smoke Tests in PROD (Not Live)'
-            sleep 30
-          }
-
-          stage 'Approve Go Live'
-          timeout(time:30, unit:'MINUTES') {
-            input message:'Go Live in Production (switch to new version)?'
-          }
-
-          node {
-            stage 'Go Live'
-            sh "oc set route-backends inventory inventory-${tag}=100 inventory-${altTag}=0 -n ${PROD_PROJECT}"
-            sh "oc label svc inventory-${altTag} app=inventory-idle --overwrite -n ${PROD_PROJECT}"
-            sh "oc label svc inventory-${tag} app=inventory-live --overwrite -n ${PROD_PROJECT}"
-            sleep 5
           }
       type: JenkinsPipeline
     triggers:
