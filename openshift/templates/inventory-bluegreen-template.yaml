@@ -18,6 +18,7 @@ objects:
     labels:
       app: inventory
       variant: blue
+      uses-database: "true"
   spec:
     replicas: 1
     selector:
@@ -144,6 +145,7 @@ objects:
     labels:
       app: inventory
       variant: green
+      uses-database: "true"
   spec:
     replicas: 1
     selector:
