@@ -358,7 +358,7 @@ function deploy_nexus() {
 # Wait till Nexus is ready
 function wait_for_nexus_to_be_ready() {
   if [ -z "$ARG_MAVEN_MIRROR_URL" ] ; then # no maven mirror specified
-    oc rollout status dc nexus
+    oc rollout status dc nexus -n ${PRJ_CI[0]}
   fi
 }
 
@@ -381,8 +381,8 @@ function deploy_gogs() {
   sleep 5
 
   # wait for Gogs to be ready
-  oc rollout status dc gogs-postgresql
-  oc rollout status dc gogs
+  oc rollout status dc gogs-postgresql -n ${PRJ_CI[0]}
+  oc rollout status dc gogs -n ${PRJ_CI[0]}
 
   sleep 10
 
