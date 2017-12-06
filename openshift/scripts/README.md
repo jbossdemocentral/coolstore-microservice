@@ -59,6 +59,14 @@ OPTIONS:
    --run-verify              Run verify after provisioning
 ```
 
+**NOTE:** OpenShift 3.7 by default uses an older version of Jenkins. Import all Jenkins image tags in order to use the newer Jenkins image 
+for this demo:
+```
+$ oc login -u system:admin
+$ oc import-image jenkins --from="registry.access.redhat.com/openshift3/jenkins-2-rhel7" --confirm --all -n openshift
+$ oc login -u USER
+```
+
 Example
 ============
 Provision a minimal demo on a local cluster without persistent storage:

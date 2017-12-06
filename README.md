@@ -56,10 +56,18 @@ Deploy CoolStore Microservices with CI/CD
 ================
 In order to deploy the complete demo infrastructure for demonstrating Microservices, CI/CD, 
 agile integrations and more, either order the demo via RHPDS or use the following script to provision the demo
-on any OpenShift environment:
+on any OpenShift environment.
 
+**NOTE:** OpenShift 3.7 by default uses an older version of Jenkins. Import all Jenkins image tags in order to use the newer Jenkins image 
+for this demo:
 ```
-$ oc login MASTER-URL
+$ oc login -u system:admin
+$ oc import-image jenkins --from="registry.access.redhat.com/openshift3/jenkins-2-rhel7" --confirm --all -n openshift
+$ oc login -u USER
+```
+
+And then provision the demo:  
+```
 $ openshift/scripts/provision-demo.sh deploy msa-cicd-eap
 ```
 
