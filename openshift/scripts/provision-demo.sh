@@ -708,6 +708,7 @@ function verify_deployments_in_projects() {
         echo "Starting a new deployment for $project/$dc ..."
         echo
         oc rollout cancel dc/$dc -n $project >/dev/null
+        oc rollout status dc/$dc -n $project
         sleep 5
         oc rollout latest dc/$dc -n $project
         oc rollout status dc/$dc -n $project
