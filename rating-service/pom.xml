@@ -13,6 +13,7 @@
     <vertx.version>3.4.1</vertx.version>
     <vertx-maven-plugin.version>1.0.7</vertx-maven-plugin.version>
     <vertx.verticle>com.redhat.coolstore.rating.verticle.MainVerticle</vertx.verticle>
+    <arquillian.cube.version>1.10.0</arquillian.cube.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -115,7 +116,13 @@
     <dependency>
       <groupId>org.arquillian.cube</groupId>
       <artifactId>arquillian-cube-docker-junit-rule</artifactId>
-      <version>1.10.0</version>
+      <version>${arquillian.cube.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.arquillian.cube</groupId>
+      <artifactId>arquillian-cube-requirement</artifactId>
+      <version>${arquillian.cube.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

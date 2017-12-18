@@ -12,7 +12,9 @@ import org.arquillian.ape.junit.rule.ArquillianPersistenceRule;
 import org.arquillian.ape.nosql.NoSqlPopulator;
 import org.arquillian.ape.nosql.NoSqlPopulatorConfigurator;
 import org.arquillian.ape.nosql.mongodb.MongoDb;
+import org.arquillian.cube.docker.impl.requirement.RequiresDocker;
 import org.arquillian.cube.docker.junit.rule.ContainerDslRule;
+import org.arquillian.cube.requirement.RequirementRule;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.After;
 import org.junit.Before;
@@ -24,6 +26,7 @@ import org.junit.runner.RunWith;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(VertxUnitRunner.class)
+@RequiresDocker
 public class ApeCubeRatingServiceTest {
 
     public static final String TEST_DATABASE = "test";
@@ -38,6 +41,9 @@ public class ApeCubeRatingServiceTest {
     //Defines APE (Arquillian Persistence Extension to work as rule)
     @Rule
     public ArquillianPersistenceRule arquillianPersistenceRule = new ArquillianPersistenceRule();
+
+    @Rule
+    public RequirementRule requirementRule = new RequirementRule();
 
     // Defines to use MongoDb as NoSql Populator
     @MongoDb
