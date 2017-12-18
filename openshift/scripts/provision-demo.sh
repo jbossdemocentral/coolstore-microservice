@@ -467,7 +467,7 @@ function deploy_jenkins() {
 
   # import jenkins image tags
   if [ $LOGGEDIN_USER == 'system:admin' ] ; then
-    oc $ARG_OC_OP import-image jenkins:v3.7 --from="registry.access.redhat.com/openshift3/jenkins-2-rhel7" --confirm -n openshift 2>/dev/null
+    oc $ARG_OC_OP import-image jenkins:v3.7 --from="registry.access.redhat.com/openshift3/jenkins-2-rhel7:v3.7" --confirm -n openshift 2>/dev/null
     sleep 10
   fi
   
