@@ -6,7 +6,7 @@ It demonstrates how to wire up small microservices into a larger application usi
 
 Development Branch
 ------------------
-:warning: **Please note that master is our development branch and may contain untested features.** For stable branch use a version branch like `1.0.x`
+:warning: **Please note that master is our development branch and may contain untested features.** For stable branch use a version branch like `1.2.x`
 
 Services
 --------
@@ -28,8 +28,6 @@ There are several individual microservices and infrastructure components that ma
 Prerequisites
 ================
 In order to deploy the CoolStore microservices application, you need an OpenShift environment with
-* 4+ GB memory quota if deploying CoolStore
-* 16+ GB memory quota if deploying the [complete demo](openshift/scripts)
 * RHEL and JBoss imagestreams installed (check _Troubleshooting_ section for details)
 * Nexus Repository (or other maven repository managers) with [proxy repositories](https://books.sonatype.com/nexus-book/reference/confignx-sect-manage-repo.html) defined for [JBoss Enterprise Maven Repository](https://access.redhat.com/maven-repository)
 
@@ -52,34 +50,12 @@ curl http://rating:8080/api/rating/329299
 curl http://review:8080/api/review/329299
 ```
 
-Deploy CoolStore Microservices with CI/CD
+Deploy Demo: CoolStore Microservices with CI/CD 
 ================
-In order to deploy the complete demo infrastructure for demonstrating Microservices, CI/CD, 
-agile integrations and more, either order the demo via RHPDS or use the following script to provision the demo
-on any OpenShift environment.
 
-**NOTE:** OpenShift 3.7 by default uses an older version of Jenkins. Import all Jenkins image tags in order to use the newer Jenkins image 
-for this demo:
-```
-$ oc login -u system:admin
-$ oc import-image jenkins --from="registry.access.redhat.com/openshift3/jenkins-2-rhel7" --confirm --all -n openshift
-$ oc login -u USER
-```
+Use the Ansible deployer for deploying the CoolStore demos: 
+https://github.com/siamaksade/openshift-demos-ansible
 
-And then provision the demo:  
-```
-$ openshift/scripts/provision-demo.sh deploy msa-cicd-eap
-```
-
-You can delete the demo projects and containers with:
-```
-$ openshift/scripts/provision-demo.sh delete msa-cicd-eap
-```
-
-![CI/CD Demo](docs/images/cicd-projects.png?raw=true)
-![CI/CD Demo](docs/images/cicd-pipeline.png?raw=true)
-
-Read the [script docs](openshift/scripts) for further details and how to run the demo on a local cluster with `oc cluster`.
 
 Troubleshooting
 ================
@@ -87,12 +63,8 @@ Troubleshooting
 
   ```
   oc login -u system:admin
-  oc delete -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
-  oc delete -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
-  oc delete -n openshift -f 'https://raw.githubusercontent.com/jboss-fuse/application-templates/GA/fis-image-streams.json'
-  oc create -n openshift -f 'https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json'
-  oc create -n openshift -f 'https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v1.3/image-streams/image-streams-rhel7.json'
-  oc create -n openshift -f 'https://raw.githubusercontent.com/jboss-fuse/application-templates/GA/fis-image-streams.json'
+  oc replace -n openshift -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v3.7/xpaas-streams/fis-image-streams.json
+  oc replace -n openshift -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v3.7/xpaas-streams/jboss-image-streams.json
   ```
 * If you attempt to deploy any of the services, and nothing happens, it may just be taking a while to download the Docker builder images. Visit the OpenShift web console and navigate to
 Browse->Events and look for errors, and re-run the 'oc delete ; oc create' commands to re-install the images (as outlined at the beginning.)
