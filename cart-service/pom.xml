@@ -33,7 +33,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 		<netflix.feign.version>8.15.1</netflix.feign.version>
-		<version.org.kie>6.4.0.Final-redhat-10</version.org.kie>
+		<version.org.kie>6.4.0.Final</version.org.kie>
 	</properties>
 
 	<dependencies>
