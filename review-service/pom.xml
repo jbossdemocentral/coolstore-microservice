@@ -203,18 +203,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.arquillian.ape</groupId>
-      <artifactId>arquillian-ape-sql-standalone-dbunit</artifactId>
-      <version>${version.ape}</version>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.8.0</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.dbunit</groupId>
-      <artifactId>dbunit</artifactId>
-      <scope>test</scope>
-      <version>2.5.3</version>
-    </dependency>
-
   </dependencies>
 
   <build>

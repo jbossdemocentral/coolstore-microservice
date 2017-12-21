@@ -1,9 +1,0 @@
-REVIEW:
-
-  - reviewId: 1234
-    itemId: 9876
-    username: Alex
-    content: This is the best car
-    rating: 5.0
-    title: Super Car
-    createDate: 2015-05-10 00:00:00
