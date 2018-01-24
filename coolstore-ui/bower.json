@@ -16,6 +16,6 @@
     },
     "resolutions": {
         "angular": "1.5.10",
-        "jquery": "3.2.1"
+        "jquery": "3.3.1"
     }
 }
