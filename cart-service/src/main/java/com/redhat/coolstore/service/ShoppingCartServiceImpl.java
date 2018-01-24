@@ -53,7 +53,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 					sc.setCartItemTotal(sc.getCartItemTotal() + sci.getPrice() * sci.getQuantity());
 				}
 				
-				ss.calculateShipping(sc);				
+				ss.calculateShipping(sc);
 			}
 			
 			ps.applyShippingPromotions(sc);
