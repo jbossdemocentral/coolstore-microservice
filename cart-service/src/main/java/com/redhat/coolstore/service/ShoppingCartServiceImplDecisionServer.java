@@ -66,7 +66,7 @@ public class ShoppingCartServiceImplDecisionServer extends ShoppingCartServiceIm
     }
 
     @Override
-    void priceShoppingCart(ShoppingCart sc) {
+    public void priceShoppingCart(ShoppingCart sc) {
         if (sc != null) {
 
             initShoppingCartForPricing(sc);

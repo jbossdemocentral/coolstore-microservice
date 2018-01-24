@@ -47,7 +47,7 @@ public class ShoppingCart implements Serializable {
 
 	public void resetShoppingCartItemList() {
 		shoppingCartItemList = new ArrayList<ShoppingCartItem>();
-	}
+  }
 
 	public void addShoppingCartItem(ShoppingCartItem sci) {
 		

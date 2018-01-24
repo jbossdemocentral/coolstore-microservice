@@ -15,4 +15,6 @@ public interface ShoppingCartService {
     public ShoppingCart addItem(String cartId, String itemId, int quantity);
 
     public ShoppingCart set(String cartId, String tmpId);
+
+    public void priceShoppingCart(ShoppingCart sc);
 }

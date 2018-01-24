@@ -13,7 +13,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.4.2.RELEASE</version>
+        <version>1.5.9.RELEASE</version>
     </parent>
 
     <repositories>
@@ -47,7 +47,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
         <netflix.feign.version>8.15.1</netflix.feign.version>
-        <version.org.kie>6.4.0.Final-redhat-10</version.org.kie>
+        <!-- <version.org.kie>6.4.0.Final-redhat-10</version.org.kie> -->
+        <version.org.kie>6.4.0.Final</version.org.kie>
         <version.org.infinispan>6.3.1.Final-redhat-1</version.org.infinispan>
     </properties>
 
@@ -112,6 +113,20 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+          <groupId>io.specto</groupId>
+          <artifactId>hoverfly-java</artifactId>
+          <version>0.9.0</version>
+          <scope>test</scope>
+        </dependency>
+
+        <dependency>
+          <groupId>org.assertj</groupId>
+          <artifactId>assertj-core</artifactId>
+          <version>3.8.0</version>
+          <scope>test</scope>
         </dependency>
     </dependencies>
 

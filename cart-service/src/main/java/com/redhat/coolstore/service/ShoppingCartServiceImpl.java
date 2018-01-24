@@ -77,7 +77,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         return cart;
     }
 
-    void priceShoppingCart(ShoppingCart sc) {
+    public void priceShoppingCart(ShoppingCart sc) {
         if (sc != null) {
             initShoppingCartForPricing(sc);
 
