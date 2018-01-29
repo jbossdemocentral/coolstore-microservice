@@ -571,9 +571,9 @@ function images_exists() {
   fi
 
   # check if all images exist
-  for buildconfig in web-ui inventory cart catalog coolstore-gw pricing rating review
+  for is in web-ui inventory cart catalog coolstore-gw pricing rating review
   do
-    oc $ARG_OC_OP get bc $buildconfig -n $COOLSTORE_IMAGES_NAMESPACE > /dev/null 2>&1
+    oc $ARG_OC_OP get is $is -n $COOLSTORE_IMAGES_NAMESPACE > /dev/null 2>&1
     if [ ! $? -eq 0 ]; then
       return 1
     fi
