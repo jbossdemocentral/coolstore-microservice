@@ -796,6 +796,8 @@ function echo_header() {
 # MAIN: DEPLOY DEMO                                                            #
 ################################################################################
 
+set -x
+
 if [ "$LOGGEDIN_USER" == 'system:admin' ] && [ -z "$ARG_USERNAME" ] ; then
   # for verify and delete, --project-suffix is enough
   if [ "$ARG_COMMAND" == "delete" ] || [ "$ARG_COMMAND" == "verify" ] && [ -z "$ARG_PROJECT_SUFFIX" ]; then
