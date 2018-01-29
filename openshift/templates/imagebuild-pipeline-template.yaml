@@ -34,9 +34,9 @@ objects:
           value: ${MAVEN_MIRROR_URL}
         jenkinsfile: >-
           node {
-            stage('Update BuildConfigs') {
-              sh "oc delete bc -l demo=coolstore-microservice"
+            stage('Update Build Configs') {
               sh "oc process -f https://raw.githubusercontent.com/${env.GITHUB_ACCOUNT}/coolstore-microservice/${env.GITHUB_REF}/openshift/templates/coolstore-builds-template.yaml --param=GIT_URI=https://github.com/${env.GITHUB_ACCOUNT}/coolstore-microservice.git --param=GIT_REF=${env.GITHUB_REF} --param=MAVEN_MIRROR_URL=${env.MAVEN_MIRROR_URL} | oc create -f - || true"
+              sh "oc process -f https://raw.githubusercontent.com/${env.GITHUB_ACCOUNT}/coolstore-microservice/${env.GITHUB_REF}/openshift/templates/coolstore-builds-template.yaml --param=GIT_URI=https://github.com/${env.GITHUB_ACCOUNT}/coolstore-microservice.git --param=GIT_REF=${env.GITHUB_REF} --param=MAVEN_MIRROR_URL=${env.MAVEN_MIRROR_URL} | oc replace -f - || true"
             }
             
             stage('Build Images') {
