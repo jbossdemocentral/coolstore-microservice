@@ -734,8 +734,8 @@ function verify_deployments_in_projects() {
 function deploy_guides() {
   echo_header "Deploying Demo Guides"
 
-  local _DEMO_CONTENT_URL_PREFIX="https://raw.githubusercontent.com/osevg/workshopper-content/master"
-  local _DEMO_URLS="$_DEMO_CONTENT_URL_PREFIX/_workshops/$WORKSHOP_YAML"
+  local _DEMO_CONTENT_URL_PREFIX="https://raw.githubusercontent.com/siamaksade/coolstore-demo-guides/openshift-3.7"
+  local _DEMO_URLS="$_DEMO_CONTENT_URL_PREFIX/$WORKSHOP_YAML"
 
   oc $ARG_OC_OP new-app --name=guides --docker-image=osevg/workshopper:latest -n ${PRJ_CI[0]} \
       -e WORKSHOPS_URLS=$_DEMO_URLS \
@@ -748,8 +748,7 @@ function deploy_guides() {
       -e HYSTRIX_PROD_URL=http://hystrix-dashboard-${PRJ_COOLSTORE_PROD[0]}.$DOMAIN \
       -e GOGS_DEV_USER=$GOGS_USER -e GOGS_DEV_PASSWORD=$GOGS_PASSWORD \
       -e GOGS_REVIEWER_USER=$GOGS_ADMIN_USER \
-      -e GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD \
-      -e OCP_VERSION=3.5 -n ${PRJ_CI[0]}
+      -e GOGS_REVIEWER_PASSWORD=$GOGS_ADMIN_PASSWORD -n ${PRJ_CI[0]}
   oc $ARG_OC_OP expose svc/guides -n ${PRJ_CI[0]}
   oc $ARG_OC_OP set probe dc/guides -n ${PRJ_CI[0]} --readiness --liveness --get-url=http://:8080/ --failure-threshold=5 --initial-delay-seconds=30
   oc $ARG_OC_OP set resources dc/guides --limits=cpu=500m,memory=1Gi --requests=cpu=100m,memory=512Mi -n ${PRJ_CI[0]}
