@@ -13,6 +13,7 @@
     <vertx.version>3.4.1</vertx.version>
     <vertx-maven-plugin.version>1.0.7</vertx-maven-plugin.version>
     <vertx.verticle>com.redhat.coolstore.rating.verticle.MainVerticle</vertx.verticle>
+    <arquillian.cube.version>1.10.0</arquillian.cube.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -73,6 +74,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.8.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-unit</artifactId>
       <scope>test</scope>
@@ -83,9 +90,51 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.arquillian.ape</groupId>
+      <artifactId>arquillian-ape-nosql-mongodb</artifactId>
+      <version>2.0.0-alpha.6</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.arquillian.ape</groupId>
+      <artifactId>arquillian-ape-junit-rule</artifactId>
+      <version>2.0.0-alpha.6</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.lordofthejars</groupId>
+      <artifactId>nosqlunit-mongodb</artifactId>
+      <version>1.0.0-rc.5</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver</artifactId>
+      <version>3.4.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.arquillian.cube</groupId>
+      <artifactId>arquillian-cube-docker-junit-rule</artifactId>
+      <version>${arquillian.cube.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.arquillian.cube</groupId>
+      <artifactId>arquillian-cube-requirement</artifactId>
+      <version>${arquillian.cube.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>2.7.22</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <version>3.0.6</version>
       <scope>test</scope>
     </dependency>
     <dependency>
