@@ -9,6 +9,7 @@ metadata:
     iconClass: icon-java
     tags: microservice,jboss,spring
   name: coolstore
+message: "When using this template, the rating, review, turbine-server and hystrix-dashboard pods are slaced to zero by default to limit resource usage. Scale them up if you need these services or use the provisioning script instead."
 objects:
 - apiVersion: v1
   groupNames: null
