@@ -178,7 +178,7 @@ PRJ_DEVELOPER=developer-$PRJ_SUFFIX
 
 # config
 GITHUB_ACCOUNT=${GITHUB_ACCOUNT:-jbossdemocentral}
-GITHUB_REF=${GITHUB_REF:-stable-ocp-3.7}
+GITHUB_REF=${GITHUB_REF:-stable-ocp-3.9}
 GITHUB_URI=https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git
 COOLSTORE_IMAGES_NAMESPACE=${COOLSTORE_IMAGES_NAMESPACE:-coolstore-builds}
 
@@ -727,7 +727,7 @@ function verify_deployments_in_projects() {
 function deploy_guides() {
   echo_header "Deploying Demo Guides"
 
-  local _DEMO_CONTENT_URL_PREFIX="https://raw.githubusercontent.com/siamaksade/coolstore-demo-guides/openshift-3.7"
+  local _DEMO_CONTENT_URL_PREFIX="https://raw.githubusercontent.com/siamaksade/coolstore-demo-guides/openshift-3.9"
   local _DEMO_URLS="$_DEMO_CONTENT_URL_PREFIX/$WORKSHOP_YAML"
 
   oc $ARG_OC_OP new-app --name=guides --docker-image=osevg/workshopper:latest -n ${PRJ_CI[0]} \

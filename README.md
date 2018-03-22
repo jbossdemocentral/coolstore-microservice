@@ -1,4 +1,4 @@
-Red Hat Cool Store Microservice Demo [![Build Status](https://travis-ci.org/jbossdemocentral/coolstore-microservice.svg?branch=stable-ocp-3.7)](https://travis-ci.org/jbossdemocentral/coolstore-microservice)
+Red Hat Cool Store Microservice Demo [![Build Status](https://travis-ci.org/jbossdemocentral/coolstore-microservice.svg?branch=stable-ocp-3.9)](https://travis-ci.org/jbossdemocentral/coolstore-microservice)
 ====================================
 This is an example demo showing a retail store consisting of several microservices based on [Red Hat OpenShift Application Runtimes](https://www.redhat.com/en/resources/openshift-application-runtimes-datasheet) (Spring Boot, WildFly Swarm, Vert.x, JBoss EAP and Node.js) deployed to [OpenShift](https://access.redhat.com/documentation/en/openshift-container-platform).
 
@@ -52,36 +52,9 @@ curl http://review:8080/api/review/329299
 
 Deploy Demo: CoolStore Microservices with CI/CD 
 ================
-<<<<<<< HEAD
-In order to deploy the complete demo infrastructure for demonstrating Microservices, CI/CD, 
-agile integrations and more, either order the demo via RHPDS or use the following script to provision the demo
-on any OpenShift environment.
-
-**NOTE:** OpenShift 3.7 by default uses an older version of Jenkins. Import all Jenkins image tags in order to use the newer Jenkins image 
-for this demo:
-```
-$ oc login -u system:admin
-$ oc import-image jenkins --from="registry.access.redhat.com/openshift3/jenkins-2-rhel7" --confirm --all -n openshift
-$ oc login -u USER
-```
-
-And then provision the demo:  
-```
-$ openshift/scripts/provision-demo.sh deploy msa-cicd-eap
-```
-
-You can delete the demo projects and containers with:
-```
-$ openshift/scripts/provision-demo.sh delete msa-cicd-eap
-```
-
-![CI/CD Demo](docs/images/cicd-projects.png?raw=true)
-![CI/CD Demo](docs/images/cicd-pipeline.png?raw=true)
-=======
 
 Use the Ansible deployer for deploying the CoolStore demos: 
 https://github.com/siamaksade/openshift-demos-ansible
->>>>>>> master
 
 
 Troubleshooting
@@ -90,8 +63,9 @@ Troubleshooting
 
   ```
   oc login -u system:admin
-  oc create -n openshift -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v3.7/xpaas-streams/fis-image-streams.json
-  oc create -n openshift -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v3.7/xpaas-streams/jboss-image-streams.json
+  oc create -n openshift -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v3.9/xpaas-streams/fis-image-streams.json
+  oc create -n openshift -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v3.9/xpaas-streams/jboss-image-streams.json
   ```
+
 * If you attempt to deploy any of the services, and nothing happens, it may just be taking a while to download the Docker builder images. Visit the OpenShift web console and navigate to
 Browse->Events and look for errors, and re-run the 'oc delete ; oc create' commands to re-install the images (as outlined at the beginning.)
