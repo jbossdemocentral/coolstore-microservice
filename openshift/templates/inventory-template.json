@@ -10,7 +10,7 @@
         }
     },
     "labels": {
-        "app": "inventory",
+        "application": "inventory",
         "hystrix.enabled": "true"
     },
     "parameters": [{
@@ -160,7 +160,7 @@
                         "name": "${APPLICATION_NAME}",
                         "labels": {
                             "deploymentConfig": "${APPLICATION_NAME}",
-                            "app": "${APPLICATION_NAME}"
+                            "application": "${APPLICATION_NAME}"
                         }
                     },
                     "spec": {
@@ -341,7 +341,7 @@
             "metadata": {
                 "name": "${APPLICATION_NAME}-postgresql",
                 "labels": {
-                    "app": "${APPLICATION_NAME}"
+                    "application": "${APPLICATION_NAME}"
                 },
                 "annotations": {
                     "description": "The database server's port."
@@ -354,7 +354,7 @@
             "metadata": {
                 "name": "${APPLICATION_NAME}-postgresql",
                 "labels": {
-                    "app": "${APPLICATION_NAME}",
+                    "application": "${APPLICATION_NAME}",
                     "comp-type": "database"
                 }
             },
@@ -389,7 +389,7 @@
                         "name": "${APPLICATION_NAME}-postgresql",
                         "labels": {
                             "deploymentConfig": "${APPLICATION_NAME}-postgresql",
-                            "app": "${APPLICATION_NAME}",
+                            "application": "${APPLICATION_NAME}",
                             "comp-type": "database"
                         }
                     },

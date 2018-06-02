@@ -101,7 +101,7 @@ objects:
       description: The Gogs server's http port
       service.alpha.openshift.io/dependencies: '[{"name":"${APPLICATION_NAME}-postgresql","namespace":"","kind":"Service"}]'
     labels:
-      app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}
   spec:
     ports:
@@ -110,7 +110,7 @@ objects:
       protocol: TCP
       targetPort: 3000
     selector:
-      app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
       deploymentconfig: ${APPLICATION_NAME}
     sessionAffinity: None
     type: ClusterIP
@@ -122,7 +122,7 @@ objects:
     annotations:
       description: Route for application's http service.
     labels:
-      app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}
   spec:
     host: ${HOSTNAME}
@@ -132,12 +132,12 @@ objects:
   apiVersion: v1
   metadata:
     labels:
-      app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}
   spec:
     replicas: 1
     selector:
-      app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
       deploymentconfig: ${APPLICATION_NAME}
     strategy:
       resources: {}
@@ -152,7 +152,7 @@ objects:
       metadata:
         creationTimestamp: null
         labels:
-          app: ${APPLICATION_NAME}
+          application: ${APPLICATION_NAME}
           deploymentconfig: ${APPLICATION_NAME}
       spec:
         containers:
@@ -225,7 +225,7 @@ objects:
   apiVersion: v1
   metadata:
     labels:
-      app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}
   spec:
     tags:

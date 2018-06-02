@@ -25,12 +25,12 @@ objects:
   metadata:
     name: web-ui
     labels:
-      app: web-ui
+      application: web-ui
       comp-required: "true"
   spec:
     replicas: 1
     selector:
-      app: web-ui
+      application: web-ui
       deploymentconfig: web-ui
     strategy:
       resources: {}
@@ -38,7 +38,7 @@ objects:
     template:
       metadata:
         labels:
-          app: web-ui
+          application: web-ui
           deploymentconfig: web-ui
       spec:
         containers:
@@ -101,7 +101,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: web-ui
+      application: web-ui
       comp-required: "true"
     name: web-ui
   spec:
@@ -117,7 +117,7 @@ objects:
   metadata:
     name: web-ui
     labels:
-      app: web-ui
+      application: web-ui
       comp-required: "true"
   spec:
     host: web-ui-${HOSTNAME_SUFFIX}
@@ -130,7 +130,7 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      app: coolstore-gw
+      application: coolstore-gw
       comp-required: "true"
   spec:
     replicas: 1
@@ -142,7 +142,7 @@ objects:
     template:
       metadata:
         labels:
-          app: coolstore-gw
+          application: coolstore-gw
           deploymentconfig: coolstore-gw
         name: coolstore-gw
       spec:
@@ -206,7 +206,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: coolstore-gw
+      application: coolstore-gw
       hystrix.enabled: "true"
       comp-required: "true"
     name: coolstore-gw
@@ -222,7 +222,7 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      app: coolstore-gw
+      application: coolstore-gw
       comp-required: "true"
   spec:
     host: gw-${HOSTNAME_SUFFIX}
@@ -235,7 +235,7 @@ objects:
   metadata:
     name: inventory
     labels:
-      app: inventory
+      application: inventory
       uses-database: "true"
   spec:
     replicas: 1
@@ -247,7 +247,7 @@ objects:
     template:
       metadata:
         labels:
-          app: inventory
+          application: inventory
           deploymentconfig: inventory
         name: inventory
       spec:
@@ -343,7 +343,7 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
-      app: inventory
+      application: inventory
     name: inventory
   spec:
     ports:
@@ -356,7 +356,7 @@ objects:
   kind: Route
   metadata:
     labels:
-      app: inventory
+      application: inventory
     name: inventory
   spec:
     host: inventory-${HOSTNAME_SUFFIX}
@@ -369,7 +369,7 @@ objects:
   metadata:
     name: inventory-postgresql
     labels:
-      app: inventory
+      application: inventory
       comp-type: database
   spec:
     replicas: 1
@@ -380,7 +380,7 @@ objects:
     template:
       metadata:
         labels:
-          app: inventory
+          application: inventory
           comp-type: database
           deploymentconfig: inventory-postgresql
         name: inventory-postgresql
@@ -447,7 +447,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: inventory
+      application: inventory
     name: inventory-postgresql
   spec:
     ports:
@@ -459,7 +459,7 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     labels:
-      app: inventory
+      application: inventory
     name: inventory-postgresql-pv
   spec:
     accessModes:
@@ -473,7 +473,7 @@ objects:
   metadata:
     name: catalog
     labels:
-      app: catalog
+      application: catalog
       comp-required: "true"
       uses-database: "true"
   spec:
@@ -486,7 +486,7 @@ objects:
     template:
       metadata:
         labels:
-          app: catalog
+          application: catalog
           deploymentconfig: catalog
         name: catalog
       spec:
@@ -564,7 +564,7 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'
     labels:
-      app: catalog
+      application: catalog
       comp-required: "true"
     name: catalog
   spec:
@@ -578,7 +578,7 @@ objects:
   kind: Route
   metadata:
     labels:
-      app: catalog
+      application: catalog
       comp-required: "true"
     name: catalog
   spec:
@@ -591,7 +591,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: catalog
+      application: catalog
       comp-required: "true"
     name: catalog-mongodb
   spec:
@@ -608,7 +608,7 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
-      app: catalog
+      application: catalog
       comp-type: database
       comp-required: "true"
     name: catalog-mongodb
@@ -624,7 +624,7 @@ objects:
     template:
       metadata:
         labels:
-          app: catalog
+          application: catalog
           comp-type: database
           deploymentconfig: catalog-mongodb
       spec:
@@ -707,7 +707,7 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     labels:
-      app: catalog
+      application: catalog
       comp-required: "true"
     name: catalog-mongodb-pv
   spec:
@@ -722,7 +722,7 @@ objects:
   metadata:
     name: rating
     labels:
-      app: rating
+      application: rating
       uses-database: "true"
   spec:
     replicas: 1
@@ -734,7 +734,7 @@ objects:
     template:
       metadata:
         labels:
-          app: rating
+          application: rating
           deploymentconfig: rating
         name: rating
       spec:
@@ -800,7 +800,7 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"rating-mongodb","namespace":"","kind":"Service"}]'
     labels:
-      app: rating
+      application: rating
     name: rating
   spec:
     ports:
@@ -813,7 +813,7 @@ objects:
   kind: Route
   metadata:
     labels:
-      app: rating
+      application: rating
     name: rating
   spec:
     host: rating-${HOSTNAME_SUFFIX}
@@ -826,7 +826,7 @@ objects:
   metadata:
     name: rating-config
     labels:
-      app: rating
+      application: rating
   data:
     rating-config.yaml: |-
       rating.http.port: 8080
@@ -838,7 +838,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: rating
+      application: rating
     name: rating-mongodb
   spec:
     ports:
@@ -854,7 +854,7 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
-      app: rating
+      application: rating
       comp-type: database
     name: rating-mongodb
   spec:
@@ -888,7 +888,7 @@ objects:
     template:
       metadata:
         labels:
-          app: rating
+          application: rating
           comp-type: database
           deploymentconfig: rating-mongodb
       spec:
@@ -971,7 +971,7 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     labels:
-      app: rating
+      application: rating
     name: rating-mongodb-pv
   spec:
     accessModes:
@@ -985,7 +985,7 @@ objects:
   metadata:
     name: cart
     labels:
-      app: cart
+      application: cart
   spec:
     replicas: 1
     selector:
@@ -996,7 +996,7 @@ objects:
     template:
       metadata:
         labels:
-          app: cart
+          application: cart
           deploymentconfig: cart
         name: cart
       spec:
@@ -1073,7 +1073,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: cart
+      application: cart
     name: cart
   spec:
     ports:
@@ -1086,7 +1086,7 @@ objects:
   kind: Route
   metadata:
     labels:
-      app: cart
+      application: cart
     name: cart
   spec:
     host: cart-${HOSTNAME_SUFFIX}
@@ -1100,7 +1100,7 @@ objects:
   metadata:
     name: pricing
     labels:
-      app: pricing
+      application: pricing
   spec:
     replicas: 1
     selector:
@@ -1201,7 +1201,7 @@ objects:
     annotations:
       description: The pricing service's http port.
     labels:
-      app: pricing
+      application: pricing
     name: pricing
   spec:
     ports:
@@ -1228,7 +1228,7 @@ objects:
   metadata:
     name: review
     labels:
-      app: review
+      application: review
       uses-database: "true"
   spec:
     replicas: 1
@@ -1240,7 +1240,7 @@ objects:
     template:
       metadata:
         labels:
-          app: review
+          application: review
           deploymentconfig: review
         name: review
       spec:
@@ -1318,7 +1318,7 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"review-postgresql","namespace":"","kind":"Service"}]'
     labels:
-      app: review
+      application: review
     name: review
   spec:
     ports:
@@ -1344,7 +1344,7 @@ objects:
   metadata:
     name: review-postgresql
     labels:
-      app: review
+      application: review
       comp-type: database
   spec:
     replicas: 1
@@ -1355,7 +1355,7 @@ objects:
     template:
       metadata:
         labels:
-          app: review
+          application: review
           comp-type: database
           deploymentconfig: review-postgresql
         name: review-postgresql
@@ -1411,7 +1411,7 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     labels:
-      app: review
+      application: review
     name: review-postgresql-pv
   spec:
     accessModes:
@@ -1423,7 +1423,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: review
+      application: review
     name: review-postgresql
   spec:
     ports:
@@ -1436,7 +1436,7 @@ objects:
   metadata:
     name: review-config
     labels:
-      app: review
+      application: review
   data:
     review-config.yml: |-
       project:
@@ -1454,7 +1454,7 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
-      app: datagrid
+      application: datagrid
       application: datagrid
       comp: datagrid
     name: datagrid
@@ -1551,7 +1551,6 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: datagrid
       application: datagrid
     name: datagrid-hotrod
   spec:

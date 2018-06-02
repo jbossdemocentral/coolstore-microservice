@@ -16,7 +16,7 @@ objects:
     name: web-ui
     labels:
       comp-required: "true"
-      app: web-ui
+      application: web-ui
   spec:
     tags:
     - name: latest
@@ -26,7 +26,7 @@ objects:
     name: web-ui
     labels:
       comp-required: "true"
-      app: web-ui
+      application: web-ui
   spec:
     output:
       to:
@@ -65,7 +65,7 @@ objects:
     name: coolstore-gw
     labels:
       comp-required: "true"
-      app: coolstore-gw
+      application: coolstore-gw
   status:
     dockerImageRepository: ""
 - apiVersion: v1
@@ -74,7 +74,7 @@ objects:
     name: coolstore-gw
     labels:
       comp-required: "true"
-      app: coolstore-gw
+      application: coolstore-gw
   spec:
     output:
       to:
@@ -112,7 +112,7 @@ objects:
   metadata:
     name: inventory
     labels:
-      app: inventory
+      application: inventory
   spec:
     tags:
     - name: latest
@@ -121,7 +121,7 @@ objects:
   metadata:
     name: inventory
     labels:
-      app: inventory
+      application: inventory
   spec:
     output:
       to:
@@ -158,7 +158,7 @@ objects:
     name: catalog
     labels:
       comp-required: "true"
-      app: catalog
+      application: catalog
   spec:
     tags:
     - name: latest
@@ -168,7 +168,7 @@ objects:
     name: catalog
     labels:
       comp-required: "true"
-      app: catalog
+      application: catalog
   spec:
     output:
       to:
@@ -204,7 +204,7 @@ objects:
   metadata:
     name: cart
     labels:
-      app: cart
+      application: cart
   spec:
     tags:
     - name: latest
@@ -213,7 +213,7 @@ objects:
   metadata:
     name: cart
     labels:
-      app: cart
+      application: cart
   spec:
     output:
       to:
@@ -248,7 +248,7 @@ objects:
   metadata:
     name: pricing
     labels:
-      app: pricing
+      application: pricing
   spec:
     tags:
     - name: latest
@@ -257,7 +257,7 @@ objects:
   metadata:
     name: pricing
     labels:
-      app: pricing
+      application: pricing
   spec:
     output:
       to:
@@ -294,7 +294,7 @@ objects:
   metadata:
     name: rating
     labels:
-      app: rating
+      application: rating
   spec:
     tags:
     - name: latest
@@ -303,7 +303,7 @@ objects:
   metadata:
     name: rating
     labels:
-      app: rating
+      application: rating
   spec:
     output:
       to:
@@ -331,7 +331,7 @@ objects:
   metadata:
     name: review
     labels:
-      app: review
+      application: review
   spec:
     tags:
     - name: latest
@@ -340,7 +340,7 @@ objects:
   metadata:
     name: review
     labels:
-      app: review
+      application: review
   spec:
     output:
       to:

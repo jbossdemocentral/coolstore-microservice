@@ -27,7 +27,7 @@ objects:
   metadata:
     name: web-ui
     labels:
-      app: web-ui
+      application: web-ui
   spec:
     tags:
     - name: latest
@@ -36,7 +36,7 @@ objects:
   metadata:
     name: web-ui
     labels:
-      app: web-ui
+      application: web-ui
   spec:
     output:
       to:
@@ -69,11 +69,11 @@ objects:
   metadata:
     name: web-ui
     labels:
-      app: web-ui
+      application: web-ui
   spec:
     replicas: 1
     selector:
-      app: web-ui
+      application: web-ui
       deploymentconfig: web-ui
     strategy:
       resources: {}
@@ -81,7 +81,7 @@ objects:
     template:
       metadata:
         labels:
-          app: web-ui
+          application: web-ui
           deploymentconfig: web-ui
       spec:
         containers:
@@ -105,7 +105,7 @@ objects:
             initialDelaySeconds: 30
             periodSeconds: 10
             successThreshold: 1
-            timeoutSeconds: 5            
+            timeoutSeconds: 5
           readinessProbe:
             failureThreshold: 10
             httpGet:
@@ -136,7 +136,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: web-ui
+      application: web-ui
     name: web-ui
   spec:
     ports:
@@ -160,7 +160,7 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      app: coolstore-gw
+      application: coolstore-gw
   spec: {}
   status:
     dockerImageRepository: ""
@@ -169,7 +169,7 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      app: coolstore-gw
+      application: coolstore-gw
   spec:
     output:
       to:
@@ -203,7 +203,7 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      app: coolstore-gw
+      application: coolstore-gw
   spec:
     replicas: 1
     selector:
@@ -214,7 +214,7 @@ objects:
     template:
       metadata:
         labels:
-          app: coolstore-gw
+          application: coolstore-gw
           deploymentconfig: coolstore-gw
         name: coolstore-gw
       spec:
@@ -258,7 +258,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: coolstore-gw
+      application: coolstore-gw
       hystrix.enabled: "true"
     name: coolstore-gw
   spec:
@@ -273,7 +273,7 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      app: coolstore-gw
+      application: coolstore-gw
   spec:
     to:
       kind: Service
@@ -284,7 +284,7 @@ objects:
   metadata:
     name: inventory
     labels:
-      app: inventory
+      application: inventory
   spec:
     tags:
     - name: latest
@@ -293,7 +293,7 @@ objects:
   metadata:
     name: inventory
     labels:
-      app: inventory
+      application: inventory
   spec:
     output:
       to:
@@ -324,7 +324,7 @@ objects:
   metadata:
     name: inventory
     labels:
-      app: inventory
+      application: inventory
   spec:
     replicas: 1
     selector:
@@ -335,7 +335,7 @@ objects:
     template:
       metadata:
         labels:
-          app: inventory
+          application: inventory
           deploymentconfig: inventory
         name: inventory
       spec:
@@ -429,7 +429,7 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
-      app: inventory
+      application: inventory
     name: inventory
   spec:
     ports:
@@ -443,7 +443,7 @@ objects:
   metadata:
     name: inventory-postgresql
     labels:
-      app: inventory
+      application: inventory
       comp-type: database
   spec:
     replicas: 1
@@ -454,7 +454,7 @@ objects:
     template:
       metadata:
         labels:
-          app: inventory
+          application: inventory
           comp-type: database
           deploymentconfig: inventory-postgresql
         name: inventory-postgresql
@@ -509,7 +509,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: inventory
+      application: inventory
     name: inventory-postgresql
   spec:
     ports:
@@ -523,7 +523,7 @@ objects:
   metadata:
     name: catalog
     labels:
-      app: catalog
+      application: catalog
   spec:
     tags:
     - name: latest
@@ -561,7 +561,7 @@ objects:
   metadata:
     name: catalog
     labels:
-      app: catalog
+      application: catalog
   spec:
     replicas: 1
     selector:
@@ -572,7 +572,7 @@ objects:
     template:
       metadata:
         labels:
-          app: catalog
+          application: catalog
           deploymentconfig: catalog
         name: catalog
       spec:
@@ -638,7 +638,7 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'
     labels:
-      app: catalog
+      application: catalog
     name: catalog
   spec:
     ports:
@@ -651,7 +651,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: catalog
+      application: catalog
     name: catalog-mongodb
   spec:
     ports:
@@ -667,7 +667,7 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
-      app: catalog
+      application: catalog
       comp-type: database
     name: catalog-mongodb
   spec:
@@ -682,7 +682,7 @@ objects:
     template:
       metadata:
         labels:
-          app: catalog
+          application: catalog
           comp-type: database
           deploymentconfig: catalog-mongodb
       spec:
@@ -762,7 +762,7 @@ objects:
   metadata:
     name: rating
     labels:
-      app: rating
+      application: rating
   spec:
     tags:
     - name: latest
@@ -800,7 +800,7 @@ objects:
   metadata:
     name: rating
     labels:
-      app: rating
+      application: rating
   spec:
     replicas: 0
     selector:
@@ -811,7 +811,7 @@ objects:
     template:
       metadata:
         labels:
-          app: rating
+          application: rating
           deploymentconfig: rating
         name: rating
       spec:
@@ -877,7 +877,7 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"rating-mongodb","namespace":"","kind":"Service"}]'
     labels:
-      app: rating
+      application: rating
     name: rating
   spec:
     ports:
@@ -890,7 +890,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: rating
+      application: rating
     name: rating-mongodb
   spec:
     ports:
@@ -906,7 +906,7 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
-      app: rating
+      application: rating
       comp-type: database
     name: rating-mongodb
   spec:
@@ -940,7 +940,7 @@ objects:
     template:
       metadata:
         labels:
-          app: rating
+          application: rating
           comp-type: database
           deploymentconfig: rating-mongodb
       spec:
@@ -1020,7 +1020,7 @@ objects:
   metadata:
     name: rating-config
     labels:
-      app: rating
+      application: rating
   data:
     rating-config.yaml: |-
       rating.http.port: 8080
@@ -1035,7 +1035,7 @@ objects:
   metadata:
     name: cart
     labels:
-      app: cart
+      application: cart
   spec:
     tags:
     - name: latest
@@ -1044,7 +1044,7 @@ objects:
   metadata:
     name: cart
     labels:
-      app: cart
+      application: cart
   spec:
     output:
       to:
@@ -1075,7 +1075,7 @@ objects:
   metadata:
     name: cart
     labels:
-      app: cart
+      application: cart
   spec:
     replicas: 1
     selector:
@@ -1086,7 +1086,7 @@ objects:
     template:
       metadata:
         labels:
-          app: cart
+          application: cart
           deploymentconfig: cart
         name: cart
       spec:
@@ -1159,7 +1159,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: cart
+      application: cart
     name: cart
   spec:
     ports:
@@ -1311,7 +1311,7 @@ objects:
     annotations:
       description: The pricing service's http port.
     labels:
-      app: pricing
+      application: pricing
     name: pricing
   spec:
     ports:
@@ -1327,7 +1327,7 @@ objects:
   metadata:
     name: review
     labels:
-      app: review
+      application: review
   spec:
     tags:
     - name: latest
@@ -1365,7 +1365,7 @@ objects:
   metadata:
     name: review
     labels:
-      app: review
+      application: review
   spec:
     replicas: 0
     selector:
@@ -1376,7 +1376,7 @@ objects:
     template:
       metadata:
         labels:
-          app: review
+          application: review
           deploymentconfig: review
         name: review
       spec:
@@ -1454,7 +1454,7 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"review-postgresql","namespace":"","kind":"Service"}]'
     labels:
-      app: review
+      application: review
     name: review
   spec:
     ports:
@@ -1469,7 +1469,7 @@ objects:
     name: review-postgresql
     labels:
       comp-type: database
-      app: review
+      application: review
   spec:
     replicas: 0
     selector:
@@ -1479,7 +1479,7 @@ objects:
     template:
       metadata:
         labels:
-          app: review
+          application: review
           comp-type: database
           deploymentconfig: review-postgresql
         name: review-postgresql
@@ -1534,7 +1534,7 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: review
+      application: review
     name: review-postgresql
   spec:
     ports:
@@ -1547,7 +1547,7 @@ objects:
   metadata:
     name: review-config
     labels:
-      app: review
+      application: review
   data:
     review-config.yml: |-
       project:
@@ -1567,7 +1567,7 @@ objects:
   metadata:
     labels:
       component: turbine-server
-      app: netflix
+      application: netflix
     name: turbine-server
   spec:
     dockerImageRepository: docker.io/siamaksade/turbine-server # temporary till fabric8 images remove privillegd requirement
@@ -1581,14 +1581,14 @@ objects:
   metadata:
     labels:
       component: turbine-server
-      app: netflix
+      application: netflix
     name: turbine-server
   spec:
     replicas: 0
     selector:
       deploymentconfig: turbine-server
       component: turbine-server
-      app: netflix
+      application: netflix
     strategy:
       type: Recreate
     template:
@@ -1596,7 +1596,7 @@ objects:
         labels:
           deploymentconfig: turbine-server
           component: turbine-server
-          app: netflix
+          application: netflix
       spec:
         containers:
         - image: 'turbine-server'
@@ -1645,7 +1645,7 @@ objects:
   metadata:
     labels:
       component: turbine-server
-      app: netflix
+      application: netflix
     name: turbine-server
   spec:
     ports:
@@ -1656,13 +1656,13 @@ objects:
     selector:
       deploymentconfig: turbine-server
       component: turbine-server
-      app: netflix
+      application: netflix
 - apiVersion: v1
   kind: Route
   metadata:
     labels:
       component: turbine-server
-      app: netflix
+      application: netflix
     name: turbine-server
   spec:
     port:
@@ -1677,7 +1677,7 @@ objects:
   metadata:
     labels:
       component: hystrix-dashboard
-      app: netflix
+      application: netflix
     name: hystrix-dashboard
   spec:
     dockerImageRepository: docker.io/siamaksade/hystrix-dashboard # temporary till fabric8 images remove privillegd requirement
@@ -1691,14 +1691,14 @@ objects:
   metadata:
     labels:
       component: hystrix-dashboard
-      app: netflix
+      application: netflix
     name: hystrix-dashboard
   spec:
     replicas: 0
     selector:
       deploymentconfig: hystrix-dashboard
       component: hystrix-dashboard
-      app: netflix
+      application: netflix
     strategy:
       type: Recreate
     template:
@@ -1706,7 +1706,7 @@ objects:
         labels:
           deploymentconfig: hystrix-dashboard
           component: hystrix-dashboard
-          app: netflix
+          application: netflix
       spec:
         containers:
         - image: 'hystrix-dashboard'
@@ -1755,7 +1755,7 @@ objects:
   metadata:
     labels:
       component: hystrix-dashboard
-      app: netflix
+      application: netflix
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"turbine-server","namespace":"","kind":"Service"}]'
     name: hystrix-dashboard
@@ -1768,13 +1768,13 @@ objects:
     selector:
       deploymentconfig: hystrix-dashboard
       component: hystrix-dashboard
-      app: netflix
+      application: netflix
 - apiVersion: v1
   kind: Route
   metadata:
     labels:
       component: hystrix-dashboard
-      app: netflix
+      application: netflix
     name: hystrix-dashboard
   spec:
     port:
