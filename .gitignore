@@ -16,3 +16,4 @@ data
 logs/
 tmp/
 .vscode/
+/coolstore-ui/package-lock.json
