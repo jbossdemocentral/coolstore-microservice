@@ -10,7 +10,11 @@ objects:
   kind: BuildConfig
   metadata:
     labels:
+      app: inventory
+      application: inventory
       build: ${PIPELINE_NAME}
+      coolstore: inventory-service
+      demo: coolstore-microservice
     name: ${PIPELINE_NAME}
     annotations:
       pipeline.alpha.openshift.io/uses: '[{"name": "jenkins", "namespace": "", "kind": "DeploymentConfig"}]'
@@ -55,7 +59,7 @@ objects:
                     openshift.withCluster() {
                       openshift.tag("${env.INVENTORY_DEV_PROJECT}/inventory:latest", "${env.COOLSTORE_TEST_PROJECT}/inventory:test")
                     }
-                  }        
+                  }
                 }
               }
 

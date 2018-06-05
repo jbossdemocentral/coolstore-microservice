@@ -16,9 +16,12 @@ objects:
   metadata:
     name: inventory-blue
     labels:
+      app: inventory
       application: inventory
-      variant: blue
+      coolstore: inventory-service
+      demo: coolstore-microservice
       uses-database: "true"
+      variant: blue
   spec:
     replicas: 1
     selector:
@@ -29,9 +32,12 @@ objects:
     template:
       metadata:
         labels:
+          app: inventory
           application: inventory
-          variant: blue
+          coolstore: inventory-service
+          demo: coolstore-microservice
           deploymentconfig: inventory-blue
+          variant: blue
         name: inventory-blue
       spec:
         containers:
@@ -127,7 +133,10 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
+      app: inventory
       application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
       variant: blue
     name: inventory-blue
   spec:
@@ -143,9 +152,12 @@ objects:
   metadata:
     name: inventory-green
     labels:
+      app: inventory
       application: inventory
-      variant: green
+      coolstore: inventory-service
+      demo: coolstore-microservice
       uses-database: "true"
+      variant: green
   spec:
     replicas: 1
     selector:
@@ -156,9 +168,12 @@ objects:
     template:
       metadata:
         labels:
+          app: inventory
           application: inventory
-          variant: green
+          coolstore: inventory-service
+          demo: coolstore-microservice
           deploymentconfig: inventory-green
+          variant: green
         name: inventory-green
       spec:
         containers:
@@ -253,7 +268,10 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
+      app: inventory
       application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
       variant: green
     name: inventory-green
   spec:
@@ -267,7 +285,10 @@ objects:
   kind: Route
   metadata:
     labels:
+      app: inventory
       application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
       variant: green
     name: inventory
   spec:
@@ -285,8 +306,11 @@ objects:
   metadata:
     name: inventory-postgresql
     labels:
+      app: inventory
       application: inventory
       comp-type: database
+      coolstore: inventory-service
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -296,8 +320,11 @@ objects:
     template:
       metadata:
         labels:
+          app: inventory
           application: inventory
           comp-type: database
+          coolstore: inventory-service
+          demo: coolstore-microservice
           deploymentconfig: inventory-postgresql
         name: inventory-postgresql
       spec:
@@ -363,7 +390,10 @@ objects:
   kind: Service
   metadata:
     labels:
+      app: inventory
       application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
     name: inventory-postgresql
   spec:
     ports:
@@ -375,7 +405,10 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     labels:
+      app: inventory
       application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
     name: inventory-postgresql-pv
   spec:
     accessModes:

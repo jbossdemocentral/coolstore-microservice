@@ -27,7 +27,10 @@ objects:
   metadata:
     name: web-ui
     labels:
+      app: web-ui
       application: web-ui
+      coolstore: ui
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -36,7 +39,10 @@ objects:
   metadata:
     name: web-ui
     labels:
+      app: web-ui
       application: web-ui
+      coolstore: ui
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -69,7 +75,10 @@ objects:
   metadata:
     name: web-ui
     labels:
+      app: web-ui
       application: web-ui
+      coolstore: ui
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -81,7 +90,10 @@ objects:
     template:
       metadata:
         labels:
+          app: web-ui
           application: web-ui
+          coolstore: ui
+          demo: coolstore-microservice
           deploymentconfig: web-ui
       spec:
         containers:
@@ -136,7 +148,10 @@ objects:
   kind: Service
   metadata:
     labels:
+      app: web-ui
       application: web-ui
+      coolstore: ui
+      demo: coolstore-microservice
     name: web-ui
   spec:
     ports:
@@ -150,6 +165,11 @@ objects:
   kind: Route
   metadata:
     name: web-ui
+    labels:
+      app: web-ui
+      application: web-ui
+      coolstore: ui
+      demo: coolstore-microservice
   spec:
     to:
       kind: Service
@@ -160,7 +180,10 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
+      app: coolstore-gw
       application: coolstore-gw
+      coolstore: gw
+      demo: coolstore-microservice
   spec: {}
   status:
     dockerImageRepository: ""
@@ -169,7 +192,10 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
+      app: coolstore-gw
       application: coolstore-gw
+      coolstore: gw
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -203,7 +229,10 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
+      app: coolstore-gw
       application: coolstore-gw
+      coolstore: gw
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -214,7 +243,10 @@ objects:
     template:
       metadata:
         labels:
+          app: coolstore-gw
           application: coolstore-gw
+          coolstore: gw
+          demo: coolstore-microservice
           deploymentconfig: coolstore-gw
         name: coolstore-gw
       spec:
@@ -258,7 +290,10 @@ objects:
   kind: Service
   metadata:
     labels:
+      app: coolstore-gw
       application: coolstore-gw
+      coolstore: gw
+      demo: coolstore-microservice
       hystrix.enabled: "true"
     name: coolstore-gw
   spec:
@@ -273,7 +308,10 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
+      app: coolstore-gw
       application: coolstore-gw
+      coolstore: gw
+      demo: coolstore-microservice
   spec:
     to:
       kind: Service
@@ -284,7 +322,10 @@ objects:
   metadata:
     name: inventory
     labels:
+      app: inventory
       application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -293,7 +334,10 @@ objects:
   metadata:
     name: inventory
     labels:
+      app: inventory
       application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -324,7 +368,10 @@ objects:
   metadata:
     name: inventory
     labels:
+      app: inventory
       application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -335,7 +382,10 @@ objects:
     template:
       metadata:
         labels:
+          app: inventory
           application: inventory
+          coolstore: inventory-service
+          demo: coolstore-microservice
           deploymentconfig: inventory
         name: inventory
       spec:
@@ -429,7 +479,10 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
+      app: inventory
       application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
     name: inventory
   spec:
     ports:
@@ -443,8 +496,11 @@ objects:
   metadata:
     name: inventory-postgresql
     labels:
+      app: inventory
       application: inventory
       comp-type: database
+      coolstore: inventory-service
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -454,8 +510,11 @@ objects:
     template:
       metadata:
         labels:
+          app: inventory
           application: inventory
           comp-type: database
+          coolstore: inventory-service
+          demo: coolstore-microservice
           deploymentconfig: inventory-postgresql
         name: inventory-postgresql
       spec:
@@ -509,7 +568,10 @@ objects:
   kind: Service
   metadata:
     labels:
+      app: inventory
       application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
     name: inventory-postgresql
   spec:
     ports:
@@ -523,7 +585,10 @@ objects:
   metadata:
     name: catalog
     labels:
+      app: catalog
       application: catalog
+      coolstore: catalog-service
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -531,6 +596,11 @@ objects:
   kind: BuildConfig
   metadata:
     name: catalog
+    labels:
+      app: catalog
+      application: catalog
+      coolstore: catalog-service
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -561,7 +631,10 @@ objects:
   metadata:
     name: catalog
     labels:
+      app: catalog
       application: catalog
+      coolstore: catalog-service
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -572,7 +645,10 @@ objects:
     template:
       metadata:
         labels:
+          app: catalog
           application: catalog
+          coolstore: catalog-service
+          demo: coolstore-microservice
           deploymentconfig: catalog
         name: catalog
       spec:
@@ -638,7 +714,10 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'
     labels:
+      app: catalog
       application: catalog
+      coolstore: catalog-service
+      demo: coolstore-microservice
     name: catalog
   spec:
     ports:
@@ -651,7 +730,10 @@ objects:
   kind: Service
   metadata:
     labels:
+      app: catalog
       application: catalog
+      coolstore: catalog-service
+      demo: coolstore-microservice
     name: catalog-mongodb
   spec:
     ports:
@@ -667,8 +749,11 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
+      app: catalog
       application: catalog
       comp-type: database
+      coolstore: catalog-service
+      demo: coolstore-microservice
     name: catalog-mongodb
   spec:
     replicas: 1
@@ -682,8 +767,11 @@ objects:
     template:
       metadata:
         labels:
+          app: catalog
           application: catalog
           comp-type: database
+          coolstore: catalog-service
+          demo: coolstore-microservice
           deploymentconfig: catalog-mongodb
       spec:
         containers:
@@ -762,7 +850,10 @@ objects:
   metadata:
     name: rating
     labels:
+      app: rating
       application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -770,6 +861,11 @@ objects:
   kind: BuildConfig
   metadata:
     name: rating
+    labels:
+      app: rating
+      application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -800,7 +896,10 @@ objects:
   metadata:
     name: rating
     labels:
+      app: rating
       application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
   spec:
     replicas: 0
     selector:
@@ -811,7 +910,10 @@ objects:
     template:
       metadata:
         labels:
+          app: rating
           application: rating
+          coolstore: rating-service
+          demo: coolstore-microservice
           deploymentconfig: rating
         name: rating
       spec:
@@ -877,7 +979,10 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"rating-mongodb","namespace":"","kind":"Service"}]'
     labels:
+      app: rating
       application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
     name: rating
   spec:
     ports:
@@ -890,7 +995,10 @@ objects:
   kind: Service
   metadata:
     labels:
+      app: rating
       application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
     name: rating-mongodb
   spec:
     ports:
@@ -906,8 +1014,11 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
+      app: rating
       application: rating
       comp-type: database
+      coolstore: rating-service
+      demo: coolstore-microservice
     name: rating-mongodb
   spec:
     replicas: 0
@@ -940,8 +1051,11 @@ objects:
     template:
       metadata:
         labels:
+          app: rating
           application: rating
           comp-type: database
+          coolstore: rating-service
+          demo: coolstore-microservice
           deploymentconfig: rating-mongodb
       spec:
         containers:
@@ -1020,7 +1134,10 @@ objects:
   metadata:
     name: rating-config
     labels:
+      app: rating
       application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
   data:
     rating-config.yaml: |-
       rating.http.port: 8080
@@ -1035,7 +1152,10 @@ objects:
   metadata:
     name: cart
     labels:
+      app: cart
       application: cart
+      coolstore: cart-service
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -1044,7 +1164,10 @@ objects:
   metadata:
     name: cart
     labels:
+      app: cart
       application: cart
+      coolstore: cart-service
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -1075,7 +1198,10 @@ objects:
   metadata:
     name: cart
     labels:
+      app: cart
       application: cart
+      coolstore: cart-service
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -1086,7 +1212,10 @@ objects:
     template:
       metadata:
         labels:
+          app: cart
           application: cart
+          coolstore: cart-service
+          demo: coolstore-microservice
           deploymentconfig: cart
         name: cart
       spec:
@@ -1159,7 +1288,10 @@ objects:
   kind: Service
   metadata:
     labels:
+      app: cart
       application: cart
+      coolstore: cart-service
+      demo: coolstore-microservice
     name: cart
   spec:
     ports:
@@ -1173,6 +1305,11 @@ objects:
   kind: ImageStream
   metadata:
     name: pricing
+    labels:
+      app: pricing
+      application: pricing
+      coolstore: pricing-service
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -1180,6 +1317,11 @@ objects:
   kind: BuildConfig
   metadata:
     name: pricing
+    labels:
+      app: pricing
+      application: pricing
+      coolstore: pricing-service
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -1211,6 +1353,11 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: pricing
+    labels:
+      app: pricing
+      application: pricing
+      coolstore: pricing-service
+      demo: coolstore-microservice
   spec:
     replicas: 0
     selector:
@@ -1221,7 +1368,10 @@ objects:
     template:
       metadata:
         labels:
+          app: pricing
           application: pricing
+          coolstore: pricing-service
+          demo: coolstore-microservice
           deploymentconfig: pricing
         name: pricing
       spec:
@@ -1311,7 +1461,10 @@ objects:
     annotations:
       description: The pricing service's http port.
     labels:
+      app: pricing
       application: pricing
+      coolstore: pricing-service
+      demo: coolstore-microservice
     name: pricing
   spec:
     ports:
@@ -1327,7 +1480,10 @@ objects:
   metadata:
     name: review
     labels:
+      app: review
       application: review
+      coolstore: review-service
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -1335,6 +1491,11 @@ objects:
   kind: BuildConfig
   metadata:
     name: review
+    labels:
+      app: review
+      application: review
+      coolstore: review-service
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -1365,7 +1526,10 @@ objects:
   metadata:
     name: review
     labels:
+      app: review
       application: review
+      coolstore: review-service
+      demo: coolstore-microservice
   spec:
     replicas: 0
     selector:
@@ -1376,7 +1540,10 @@ objects:
     template:
       metadata:
         labels:
+          app: review
           application: review
+          coolstore: review-service
+          demo: coolstore-microservice
           deploymentconfig: review
         name: review
       spec:
@@ -1454,7 +1621,10 @@ objects:
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"review-postgresql","namespace":"","kind":"Service"}]'
     labels:
+      app: review
       application: review
+      coolstore: review-service
+      demo: coolstore-microservice
     name: review
   spec:
     ports:
@@ -1468,8 +1638,11 @@ objects:
   metadata:
     name: review-postgresql
     labels:
-      comp-type: database
+      app: review
       application: review
+      comp-type: database
+      coolstore: review-service
+      demo: coolstore-microservice
   spec:
     replicas: 0
     selector:
@@ -1479,8 +1652,11 @@ objects:
     template:
       metadata:
         labels:
+          app: review
           application: review
           comp-type: database
+          coolstore: review-service
+          demo: coolstore-microservice
           deploymentconfig: review-postgresql
         name: review-postgresql
       spec:
@@ -1534,7 +1710,10 @@ objects:
   kind: Service
   metadata:
     labels:
+      app: review
       application: review
+      coolstore: review-service
+      demo: coolstore-microservice
     name: review-postgresql
   spec:
     ports:
@@ -1547,7 +1726,10 @@ objects:
   metadata:
     name: review-config
     labels:
+      app: review
       application: review
+      coolstore: review-service
+      demo: coolstore-microservice
   data:
     review-config.yml: |-
       project:
@@ -1566,8 +1748,10 @@ objects:
   kind: ImageStream
   metadata:
     labels:
-      component: turbine-server
+      app: netflix
       application: netflix
+      component: turbine-server
+      demo: coolstore-microservice
     name: turbine-server
   spec:
     dockerImageRepository: docker.io/siamaksade/turbine-server # temporary till fabric8 images remove privillegd requirement
@@ -1580,8 +1764,10 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
-      component: turbine-server
+      app: netflix
       application: netflix
+      component: turbine-server
+      demo: coolstore-microservice
     name: turbine-server
   spec:
     replicas: 0
@@ -1594,9 +1780,11 @@ objects:
     template:
       metadata:
         labels:
-          deploymentconfig: turbine-server
-          component: turbine-server
+          app: netflix
           application: netflix
+          component: turbine-server
+          demo: coolstore-microservice
+          deploymentconfig: turbine-server
       spec:
         containers:
         - image: 'turbine-server'
@@ -1644,8 +1832,10 @@ objects:
   kind: Service
   metadata:
     labels:
-      component: turbine-server
+      app: netflix
       application: netflix
+      component: turbine-server
+      demo: coolstore-microservice
     name: turbine-server
   spec:
     ports:
@@ -1661,8 +1851,10 @@ objects:
   kind: Route
   metadata:
     labels:
-      component: turbine-server
+      app: netflix
       application: netflix
+      component: turbine-server
+      demo: coolstore-microservice
     name: turbine-server
   spec:
     port:
@@ -1676,8 +1868,10 @@ objects:
   kind: ImageStream
   metadata:
     labels:
-      component: hystrix-dashboard
+      app: netflix
       application: netflix
+      component: hystrix-dashboard
+      demo: coolstore-microservice
     name: hystrix-dashboard
   spec:
     dockerImageRepository: docker.io/siamaksade/hystrix-dashboard # temporary till fabric8 images remove privillegd requirement
@@ -1690,8 +1884,10 @@ objects:
   kind: DeploymentConfig
   metadata:
     labels:
-      component: hystrix-dashboard
+      app: netflix
       application: netflix
+      component: hystrix-dashboard
+      demo: coolstore-microservice
     name: hystrix-dashboard
   spec:
     replicas: 0
@@ -1704,9 +1900,11 @@ objects:
     template:
       metadata:
         labels:
-          deploymentconfig: hystrix-dashboard
-          component: hystrix-dashboard
+          app: netflix
           application: netflix
+          component: hystrix-dashboard
+          demo: coolstore-microservice
+          deploymentconfig: hystrix-dashboard
       spec:
         containers:
         - image: 'hystrix-dashboard'
@@ -1754,8 +1952,10 @@ objects:
   kind: Service
   metadata:
     labels:
-      component: hystrix-dashboard
+      app: netflix
       application: netflix
+      component: hystrix-dashboard
+      demo: coolstore-microservice
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"turbine-server","namespace":"","kind":"Service"}]'
     name: hystrix-dashboard
@@ -1773,8 +1973,10 @@ objects:
   kind: Route
   metadata:
     labels:
-      component: hystrix-dashboard
+      app: netflix
       application: netflix
+      component: hystrix-dashboard
+      demo: coolstore-microservice
     name: hystrix-dashboard
   spec:
     port:

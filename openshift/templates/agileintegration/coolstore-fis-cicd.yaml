@@ -15,7 +15,10 @@ objects:
   metadata:
     name: coolstore-gw-pre
     labels:
+      app: coolstore-gw
       application: coolstore-gw
+      coolstore: gw
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -48,7 +51,10 @@ objects:
   metadata:
     name: coolstore-gw-pre
     labels:
+      app: coolstore-gw
       application: coolstore-gw
+      coolstore: gw
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -59,7 +65,10 @@ objects:
     template:
       metadata:
         labels:
+          app: coolstore-gw
           application: coolstore-gw
+          coolstore: gw
+          demo: coolstore-microservice
           deploymentconfig: coolstore-gw-pre
         name: coolstore-gw-pre
       spec:
@@ -101,6 +110,8 @@ objects:
     labels:
       app: coolstore-gw
       application: coolstore-gw-pre
+      coolstore: gw
+      demo: coolstore-microservice
       hystrix.enabled: "true"
     name: coolstore-gwgreen
   spec:
@@ -114,6 +125,11 @@ objects:
   kind: ImageStream
   metadata:
     name: coolstore-gwgreen
+    labels:
+      app: coolstore-gw
+      application: coolstore-gw
+      coolstore: gw
+      demo: coolstore-microservice
   spec: {}
   status:
     dockerImageRepository: ""
@@ -122,7 +138,10 @@ objects:
   metadata:
     name: coolstore-gwgreen
     labels:
+      app: coolstore-gw
       application: coolstore-gw
+      coolstore: gw
+      demo: coolstore-microservice
   spec:
     to:
       kind: Service

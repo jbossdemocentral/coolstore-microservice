@@ -4,6 +4,9 @@ metadata:
   annotations:
     description: This template creates a pipelie to pre-build coolstore images in a builder project
   name: coolstore-imagebuild-template
+labels:
+  demo: coolstore-microservice
+  template: imagebuild-pipeline
 objects:
 - apiVersion: v1
   kind: BuildConfig
@@ -11,6 +14,10 @@ objects:
     name: coolstore-imagebuild-pipeline
     annotations:
       pipeline.alpha.openshift.io/uses: '[{"name": "jenkins", "namespace": "", "kind": "DeploymentConfig"}]'
+    labels:
+      app: coolstore-imagebuild-pipeline
+      application: coolstore-imagebuild-pipeline
+      demo: coolstore-microservice
   spec:
     triggers:
       - type: GitHub
@@ -50,7 +57,7 @@ objects:
                           def objects = openshift.process(pipeline_template, "--param", "GIT_URI=${github_repo}", "--param", "GIT_REF=${env.GITHUB_REF}", "--param", "MAVEN_MIRROR_URL=${env.MAVEN_MIRROR_URL}")
 
                           openshift.selector( 'bc', [ demo: 'coolstore-microservice' ] ).delete()
-                          
+
                           try {
                               openshift.create(objects)
                           } catch (e) {

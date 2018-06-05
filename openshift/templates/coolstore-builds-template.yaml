@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Template
 labels:
   demo: coolstore-microservice
+  template: coolstore-builds
 metadata:
   annotations:
     description: CoolStore demo microservices application buildconfigs template
@@ -15,8 +16,11 @@ objects:
   metadata:
     name: web-ui
     labels:
-      comp-required: "true"
+      app: web-ui
       application: web-ui
+      comp-required: "true"
+      coolstore: ui
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -25,8 +29,11 @@ objects:
   metadata:
     name: web-ui
     labels:
-      comp-required: "true"
+      app: web-ui
       application: web-ui
+      comp-required: "true"
+      coolstore: ui
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -64,8 +71,11 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      comp-required: "true"
+      app: coolstore-gw
       application: coolstore-gw
+      comp-required: "true"
+      coolstore: gw
+      demo: coolstore-microservice
   status:
     dockerImageRepository: ""
 - apiVersion: v1
@@ -73,8 +83,11 @@ objects:
   metadata:
     name: coolstore-gw
     labels:
-      comp-required: "true"
+      app: coolstore-gw
       application: coolstore-gw
+      comp-required: "true"
+      coolstore: gw
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -112,7 +125,10 @@ objects:
   metadata:
     name: inventory
     labels:
+      app: inventory
       application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -121,7 +137,10 @@ objects:
   metadata:
     name: inventory
     labels:
+      app: inventory
       application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -157,8 +176,11 @@ objects:
   metadata:
     name: catalog
     labels:
-      comp-required: "true"
+      app: catalog
       application: catalog
+      comp-required: "true"
+      coolstore: catalog-service
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -167,8 +189,11 @@ objects:
   metadata:
     name: catalog
     labels:
-      comp-required: "true"
+      app: catalog
       application: catalog
+      comp-required: "true"
+      coolstore: catalog-service
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -204,7 +229,10 @@ objects:
   metadata:
     name: cart
     labels:
+      app: cart
       application: cart
+      coolstore: cart-service
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -213,7 +241,10 @@ objects:
   metadata:
     name: cart
     labels:
+      app: cart
       application: cart
+      coolstore: cart-service
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -248,7 +279,10 @@ objects:
   metadata:
     name: pricing
     labels:
+      app: pricing
       application: pricing
+      coolstore: pricing-service
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -257,7 +291,10 @@ objects:
   metadata:
     name: pricing
     labels:
+      app: pricing
       application: pricing
+      coolstore: pricing-service
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -294,7 +331,10 @@ objects:
   metadata:
     name: rating
     labels:
+      app: rating
       application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -303,7 +343,10 @@ objects:
   metadata:
     name: rating
     labels:
+      app: rating
       application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
   spec:
     output:
       to:
@@ -331,7 +374,10 @@ objects:
   metadata:
     name: review
     labels:
+      app: review
       application: review
+      coolstore: review-service
+      demo: coolstore-microservice
   spec:
     tags:
     - name: latest
@@ -340,7 +386,10 @@ objects:
   metadata:
     name: review
     labels:
+      app: review
       application: review
+      coolstore: review-service
+      demo: coolstore-microservice
   spec:
     output:
       to:

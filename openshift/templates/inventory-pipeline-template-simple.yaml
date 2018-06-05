@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Template
 labels:
   demo: coolstore-microservice
-  template: inventory-pipeline
+  template: inventory-pipeline-simple
 metadata:
   name: inventory-pipeline
 objects:
@@ -10,7 +10,11 @@ objects:
   kind: BuildConfig
   metadata:
     labels:
+      app: inventory
+      application: inventory
       build: ${PIPELINE_NAME}
+      coolstore: inventory-service
+      demo: coolstore-microservice
     name: ${PIPELINE_NAME}
     annotations:
       pipeline.alpha.openshift.io/uses: '[{"name": "jenkins", "namespace": "", "kind": "DeploymentConfig"}]'
@@ -96,7 +100,7 @@ objects:
                 }
               }
             }
-          }          
+          }
       type: JenkinsPipeline
     triggers:
     - github:

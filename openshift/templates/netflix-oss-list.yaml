@@ -7,7 +7,9 @@ items:
   kind: ImageStream
   metadata:
     labels:
+      app: turbine-server
       application: turbine-server
+      demo: coolstore-microservice
       group: netflix-oss
     name: turbine-server
   spec:
@@ -21,7 +23,9 @@ items:
   kind: DeploymentConfig
   metadata:
     labels:
+      app: turbine-server
       application: turbine-server
+      demo: coolstore-microservice
       group: netflix-oss
     name: turbine-server
   spec:
@@ -35,7 +39,9 @@ items:
     template:
       metadata:
         labels:
+          app: turbine-server
           application: turbine-server
+          demo: coolstore-microservice
           group: netflix-oss
           deploymentconfig: turbine-server
       spec:
@@ -99,7 +105,9 @@ items:
   kind: Service
   metadata:
     labels:
+      app: turbine-server
       application: turbine-server
+      demo: coolstore-microservice
       group: netflix-oss
     name: turbine-server
   spec:
@@ -116,7 +124,9 @@ items:
   kind: Route
   metadata:
     labels:
+      app: turbine-server
       application: turbine-server
+      demo: coolstore-microservice
       group: netflix-oss
     name: turbine-server
   spec:
@@ -131,7 +141,9 @@ items:
   kind: ImageStream
   metadata:
     labels:
+      app: hystrix-dashboard
       application: hystrix-dashboard
+      demo: coolstore-microservice
       group: netflix-oss
     name: hystrix-dashboard
   spec:
@@ -145,7 +157,9 @@ items:
   kind: DeploymentConfig
   metadata:
     labels:
+      app: hystrix-dashboard
       application: hystrix-dashboard
+      demo: coolstore-microservice
       group: netflix-oss
     name: hystrix-dashboard
   spec:
@@ -159,7 +173,9 @@ items:
     template:
       metadata:
         labels:
+          app: hystrix-dashboard
           application: hystrix-dashboard
+          demo: coolstore-microservice
           group: netflix-oss
           deploymentconfig: hystrix-dashboard
       spec:
@@ -218,7 +234,9 @@ items:
   kind: Service
   metadata:
     labels:
+      app: hystrix-dashboard
       application: hystrix-dashboard
+      demo: coolstore-microservice
       group: netflix-oss
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"turbine-server","namespace":"","kind":"Service"}]'
@@ -237,7 +255,9 @@ items:
   kind: Route
   metadata:
     labels:
+      app: hystrix-dashboard
       application: hystrix-dashboard
+      demo: coolstore-microservice
       group: netflix-oss
     name: hystrix-dashboard
   spec:
