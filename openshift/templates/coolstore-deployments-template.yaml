@@ -291,9 +291,9 @@ objects:
               fieldRef:
                 fieldPath: metadata.namespace
           - name: MQ_CLUSTER_PASSWORD
-            value: 7mzX0pLV03
+            value: ${MQ_CLUSTER_PASSWORD}
           - name: JGROUPS_CLUSTER_PASSWORD
-            value: CqUo3fYDTv
+            value: ${JGROUPS_CLUSTER_PASSWORD}
           - name: AUTO_DEPLOY_EXPLODED
             value: "false"
           - name: DB_SERVICE_PREFIX_MAPPING
@@ -548,9 +548,9 @@ objects:
         containers:
         - env:
           - name: JWS_ADMIN_USERNAME
-            value: Skq3VtCd
+            value: ${JWS_ADMIN_USERNAME}
           - name: JWS_ADMIN_PASSWORD
-            value: oktt6yhw
+            value: ${JWS_ADMIN_PASSWORD}
           - name: DB_USERNAME
             value: ${CATALOG_DB_USERNAME}
           - name: DB_PASSWORD
@@ -1236,9 +1236,9 @@ objects:
         containers:
         - env:
           - name: MQ_CLUSTER_PASSWORD
-            value: 7mzX0pLV03
+            value: ${MQ_CLUSTER_PASSWORD}
           - name: JGROUPS_CLUSTER_PASSWORD
-            value: CqUo3fYDTv
+            value: ${JGROUPS_CLUSTER_PASSWORD}
           - name: AUTO_DEPLOY_EXPLODED
             value: "false"
           - name: KIE_CONTAINER_DEPLOYMENT
@@ -1645,7 +1645,7 @@ objects:
           - name: MEMCACHED_CACHE
             value: default
           - name: JGROUPS_CLUSTER_PASSWORD
-            value: BlonpvoQ
+            value: ${DATAGRID_JGROUPS_CLUSTER_PASSWORD}
           image: jboss-datagrid65-openshift
           imagePullPolicy: Always
           livenessProbe:
@@ -1728,6 +1728,21 @@ parameters:
   displayName: Hostname suffix used for routes
   name: HOSTNAME_SUFFIX
   required: true
+- description: MQ cluster password
+  displayName: MQ cluster password
+  value: 7mzX0pLV03
+  name: MQ_CLUSTER_PASSWORD
+  required: true
+- description: JGroups cluster password
+  displayName: JGroups cluster password
+  value: CqUo3fYDTv
+  name: JGROUPS_CLUSTER_PASSWORD
+  required: true
+- description: Datagrid JGroups cluster password
+  displayName: Datagrid JGroups cluster password
+  value: BlonpvoQ
+  name: DATAGRID_JGROUPS_CLUSTER_PASSWORD
+  required: true
 - description: Inventory Service database user name
   from: user[a-zA-Z0-9]{3}
   generate: expression
@@ -1747,6 +1762,14 @@ parameters:
   from: '[a-zA-Z0-9]{8}'
   generate: expression
   name: CATALOG_DB_PASSWORD
+  required: true
+- description: JWS user name
+  value: Skq3VtCd
+  name: JWS_ADMIN_USERNAME
+  required: true
+- description: JWS user password
+  value: oktt6yhw
+  name: JWS_ADMIN_PASSWORD
   required: true
 - description: Decision Server Username
   name: KIE_SERVER_USER

@@ -22,10 +22,10 @@ objects:
     triggers:
       - type: GitHub
         github:
-          secret: wDmoEUkbBp
+          secret: ${GITHUB_WEBHOOK_SECRET}
       - type: Generic
         generic:
-          secret: wDmoEUkbBp
+          secret: ${GENERIC_WEBHOOK_SECRET}
     runPolicy: SerialLatestOnly
     source:
       type: None
@@ -98,4 +98,16 @@ parameters:
   displayName: Maven mirror url
   name: MAVEN_MIRROR_URL
   value: https://mirror.openshift.com/nexus/content/groups/public/
+  required: true
+- description: GitHub webhook secret
+  displayName: GitHub Webhook Secret
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: GITHUB_WEBHOOK_SECRET
+  required: true
+- description: Generic webhook secret
+  displayName: Generic Webhook Secret
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: GENERIC_WEBHOOK_SECRET
   required: true
