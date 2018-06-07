@@ -1287,7 +1287,7 @@ objects:
             timeoutSeconds: 1
           resources:
             limits:
-              memory: 500Mi
+              memory: 1Gi
             requests:
               memory: 200Mi
         volumes:
