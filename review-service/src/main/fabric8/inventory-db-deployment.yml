@@ -3,7 +3,7 @@ kind: DeploymentConfig
 metadata:
   name: inventory-database
   labels:
-    app: inventory-database
+    application: inventory-database
   annotations:
     openshift.io/generated-by: OpenShiftNewApp
 spec:
@@ -23,12 +23,12 @@ spec:
   replicas: 1
   test: false
   selector:
-    app: inventory-database
+    application: inventory-database
     deploymentconfig: inventory-database
   template:
     metadata:
       labels:
-        app: inventory-database
+        application: inventory-database
         deploymentconfig: inventory-database
     spec:
       volumes:

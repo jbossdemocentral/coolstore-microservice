@@ -8,6 +8,8 @@ items:
   metadata:
     labels:
       app: turbine-server
+      application: turbine-server
+      demo: coolstore-microservice
       group: netflix-oss
     name: turbine-server
   spec:
@@ -22,12 +24,14 @@ items:
   metadata:
     labels:
       app: turbine-server
+      application: turbine-server
+      demo: coolstore-microservice
       group: netflix-oss
     name: turbine-server
   spec:
     replicas: 1
     selector:
-      app: turbine-server
+      application: turbine-server
       group: netflix-oss
       deploymentconfig: turbine-server
     strategy:
@@ -36,6 +40,8 @@ items:
       metadata:
         labels:
           app: turbine-server
+          application: turbine-server
+          demo: coolstore-microservice
           group: netflix-oss
           deploymentconfig: turbine-server
       spec:
@@ -100,6 +106,8 @@ items:
   metadata:
     labels:
       app: turbine-server
+      application: turbine-server
+      demo: coolstore-microservice
       group: netflix-oss
     name: turbine-server
   spec:
@@ -109,7 +117,7 @@ items:
       protocol: TCP
       targetPort: 8080
     selector:
-      app: turbine-server
+      application: turbine-server
       group: netflix-oss
       deploymentconfig: turbine-server
 - apiVersion: v1
@@ -117,6 +125,8 @@ items:
   metadata:
     labels:
       app: turbine-server
+      application: turbine-server
+      demo: coolstore-microservice
       group: netflix-oss
     name: turbine-server
   spec:
@@ -132,6 +142,8 @@ items:
   metadata:
     labels:
       app: hystrix-dashboard
+      application: hystrix-dashboard
+      demo: coolstore-microservice
       group: netflix-oss
     name: hystrix-dashboard
   spec:
@@ -146,12 +158,14 @@ items:
   metadata:
     labels:
       app: hystrix-dashboard
+      application: hystrix-dashboard
+      demo: coolstore-microservice
       group: netflix-oss
     name: hystrix-dashboard
   spec:
     replicas: 1
     selector:
-      app: hystrix-dashboard
+      application: hystrix-dashboard
       group: netflix-oss
       deploymentconfig: hystrix-dashboard
     strategy:
@@ -160,6 +174,8 @@ items:
       metadata:
         labels:
           app: hystrix-dashboard
+          application: hystrix-dashboard
+          demo: coolstore-microservice
           group: netflix-oss
           deploymentconfig: hystrix-dashboard
       spec:
@@ -219,6 +235,8 @@ items:
   metadata:
     labels:
       app: hystrix-dashboard
+      application: hystrix-dashboard
+      demo: coolstore-microservice
       group: netflix-oss
     annotations:
       service.alpha.openshift.io/dependencies: '[{"name":"turbine-server","namespace":"","kind":"Service"}]'
@@ -230,7 +248,7 @@ items:
       protocol: TCP
       targetPort: 8080
     selector:
-      app: hystrix-dashboard
+      application: hystrix-dashboard
       deploymentconfig: hystrix-dashboard
       group: netflix-oss
 - apiVersion: v1
@@ -238,6 +256,8 @@ items:
   metadata:
     labels:
       app: hystrix-dashboard
+      application: hystrix-dashboard
+      demo: coolstore-microservice
       group: netflix-oss
     name: hystrix-dashboard
   spec:

@@ -5,6 +5,9 @@ metadata:
     description: The Gogs git server (https://gogs.io/)
     tags: instant-app,gogs,go,golang
   name: gogs
+labels:
+  demo: coolstore-microservice
+  template: gogs-persistent
 objects:
 - kind: Service
   apiVersion: v1
@@ -12,6 +15,10 @@ objects:
     annotations:
       description: Exposes the database server
     name: ${APPLICATION_NAME}-postgresql
+    labels:
+      app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
+      demo: coolstore-microservice
   spec:
     ports:
     - name: postgresql
@@ -25,6 +32,10 @@ objects:
     annotations:
       description: Defines how to deploy the database
     name: ${APPLICATION_NAME}-postgresql
+    labels:
+      app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -34,6 +45,9 @@ objects:
     template:
       metadata:
         labels:
+          app: ${APPLICATION_NAME}
+          application: ${APPLICATION_NAME}
+          demo: coolstore-microservice
           name: ${APPLICATION_NAME}-postgresql
         name: ${APPLICATION_NAME}-postgresql
       spec:
@@ -102,6 +116,8 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"${APPLICATION_NAME}-postgresql","namespace":"","kind":"Service"}]'
     labels:
       app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
+      demo: coolstore-microservice
     name: ${APPLICATION_NAME}
   spec:
     ports:
@@ -110,7 +126,7 @@ objects:
       protocol: TCP
       targetPort: 3000
     selector:
-      app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
       deploymentconfig: ${APPLICATION_NAME}
     sessionAffinity: None
     type: ClusterIP
@@ -123,6 +139,8 @@ objects:
       description: Route for application's http service.
     labels:
       app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
+      demo: coolstore-microservice
     name: ${APPLICATION_NAME}
   spec:
     host: ${HOSTNAME}
@@ -133,11 +151,13 @@ objects:
   metadata:
     labels:
       app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
+      demo: coolstore-microservice
     name: ${APPLICATION_NAME}
   spec:
     replicas: 1
     selector:
-      app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
       deploymentconfig: ${APPLICATION_NAME}
     strategy:
       resources: {}
@@ -153,6 +173,8 @@ objects:
         creationTimestamp: null
         labels:
           app: ${APPLICATION_NAME}
+          application: ${APPLICATION_NAME}
+          demo: coolstore-microservice
           deploymentconfig: ${APPLICATION_NAME}
       spec:
         containers:
@@ -226,6 +248,8 @@ objects:
   metadata:
     labels:
       app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
+      demo: coolstore-microservice
     name: ${APPLICATION_NAME}
   spec:
     tags:
@@ -251,6 +275,10 @@ objects:
   apiVersion: v1
   metadata:
     name: gogs-data
+    labels:
+      app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
+      demo: coolstore-microservice
   spec:
     accessModes:
       - ReadWriteOnce
@@ -261,6 +289,10 @@ objects:
   apiVersion: v1
   metadata:
     name: gogs-postgres-data
+    labels:
+      app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
+      demo: coolstore-microservice
   spec:
     accessModes:
       - ReadWriteOnce
@@ -271,6 +303,10 @@ objects:
   apiVersion: v1
   metadata:
     name: gogs-config
+    labels:
+      app: ${APPLICATION_NAME}
+      application: ${APPLICATION_NAME}
+      demo: coolstore-microservice
   data:
     other: |
       export USER="gogs"

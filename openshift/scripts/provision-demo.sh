@@ -178,7 +178,7 @@ PRJ_DEVELOPER=developer-$PRJ_SUFFIX
 
 # config
 GITHUB_ACCOUNT=${GITHUB_ACCOUNT:-jbossdemocentral}
-GITHUB_REF=${GITHUB_REF:-master}
+GITHUB_REF=${GITHUB_REF:-stable-ocp-3.9}
 GITHUB_URI=https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git
 COOLSTORE_IMAGES_NAMESPACE=${COOLSTORE_IMAGES_NAMESPACE:-coolstore-builds}
 
@@ -464,14 +464,7 @@ EOM
 # Deploy Jenkins
 function deploy_jenkins() {
   echo_header "Deploying Jenkins..."
-
-  # import jenkins image tags
-  if [ $LOGGEDIN_USER == 'system:admin' ] ; then
-    oc $ARG_OC_OP import-image jenkins:v3.7 --from="registry.access.redhat.com/openshift3/jenkins-2-rhel7:v3.7" --confirm -n openshift 2>/dev/null
-    sleep 10
-  fi
-  
-  oc $ARG_OC_OP new-app jenkins-ephemeral -l app=jenkins -p MEMORY_LIMIT=1Gi --param=JENKINS_IMAGE_STREAM_TAG=jenkins:v3.7 -n ${PRJ_CI[0]}
+  oc $ARG_OC_OP new-app jenkins-ephemeral -l app=jenkins -p MEMORY_LIMIT=1Gi -n ${PRJ_CI[0]}
   sleep 2
   oc $ARG_OC_OP set resources dc/jenkins --limits=cpu=1,memory=2Gi --requests=cpu=200m,memory=1Gi -n ${PRJ_CI[0]}
 }
@@ -734,7 +727,7 @@ function verify_deployments_in_projects() {
 function deploy_guides() {
   echo_header "Deploying Demo Guides"
 
-  local _DEMO_CONTENT_URL_PREFIX="https://raw.githubusercontent.com/siamaksade/coolstore-demo-guides/openshift-3.7"
+  local _DEMO_CONTENT_URL_PREFIX="https://raw.githubusercontent.com/siamaksade/coolstore-demo-guides/openshift-3.9"
   local _DEMO_URLS="$_DEMO_CONTENT_URL_PREFIX/$WORKSHOP_YAML"
 
   oc $ARG_OC_OP new-app --name=guides --docker-image=osevg/workshopper:latest -n ${PRJ_CI[0]} \
@@ -794,6 +787,8 @@ function echo_header() {
 ################################################################################
 # MAIN: DEPLOY DEMO                                                            #
 ################################################################################
+
+set -x
 
 if [ "$LOGGEDIN_USER" == 'system:admin' ] && [ -z "$ARG_USERNAME" ] ; then
   # for verify and delete, --project-suffix is enough

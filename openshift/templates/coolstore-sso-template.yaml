@@ -9,6 +9,10 @@ metadata:
     version: 1.3.2
   name: sso-service
 labels:
+  app: sso
+  application: sso
+  coolstore: sso-service
+  demo: coolstore-microservice
   template: sso-service
   xpaas: 1.3.2
 objects:
@@ -19,11 +23,14 @@ objects:
     - port: 8080
       targetPort: 8080
     selector:
-      deploymentConfig: "sso"
+      deploymentConfig: sso
   metadata:
-    name: "sso"
+    name: sso
     labels:
-      application: "sso"
+      app: sso
+      application: sso
+      coolstore: sso-service
+      demo: coolstore-microservice
     annotations:
       description: The web server's http port.
       service.alpha.openshift.io/dependencies: '[{"name":"sso-postgresql","namespace":"","kind":"Service"}]'
@@ -34,11 +41,14 @@ objects:
     - port: 8443
       targetPort: 8443
     selector:
-      deploymentConfig: "sso"
+      deploymentConfig: sso
   metadata:
     name: secure-sso
     labels:
-      application: "sso"
+      app: sso
+      application: sso
+      coolstore: sso-service
+      demo: coolstore-microservice
     annotations:
       description: The web server's https port.
       service.alpha.openshift.io/dependencies: '[{"name":"sso-postgresql","namespace":"","kind":"Service"}]'
@@ -53,29 +63,38 @@ objects:
   metadata:
     name: sso-postgresql
     labels:
-      application: "sso"
+      app: sso
+      application: sso
       component: "database"
+      coolstore: sso-service
+      demo: coolstore-microservice
     annotations:
       description: The database server port.
 - kind: Route
   apiVersion: v1
   id: "sso-http"
   metadata:
-    name: "sso"
+    name: sso
     labels:
-      application: "sso"
+      app: sso
+      application: sso
+      coolstore: sso-service
+      demo: coolstore-microservice
     annotations:
       description: Route for application's http service.
   spec:
     to:
-      name: "sso"
+      name: sso
 - kind: Route
   apiVersion: v1
   id: "sso-https"
   metadata:
     name: secure-sso
     labels:
-      application: "sso"
+      app: sso
+      application: sso
+      coolstore: sso-service
+      demo: coolstore-microservice
     annotations:
       description: Route for application's https service.
   spec:
@@ -87,7 +106,11 @@ objects:
   apiVersion: v1
   metadata:
     labels:
+      app: sso
+      application: sso
       build: sso
+      coolstore: sso-service
+      demo: coolstore-microservice
     name: sso
   spec:
     tags:
@@ -98,9 +121,12 @@ objects:
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
-    name: "sso"
+    name: sso
     labels:
-      application: "sso"
+      app: sso
+      application: sso
+      coolstore: sso-service
+      demo: coolstore-microservice
   spec:
     strategy:
       type: Recreate
@@ -109,26 +135,29 @@ objects:
       imageChangeParams:
         automatic: true
         containerNames:
-        - "sso"
+        - sso
         from:
           kind: ImageStreamTag
           name: sso:latest
     - type: ConfigChange
     replicas: 1
     selector:
-      deploymentConfig: "sso"
+      deploymentConfig: sso
     template:
       metadata:
-        name: "sso"
+        name: sso
         labels:
-          deploymentConfig: "sso"
-          application: "sso"
+          app: sso
+          application: sso
+          coolstore: sso-service
+          demo: coolstore-microservice
+          deploymentConfig: sso
       spec:
         serviceAccountName: "sso-service-account"
         terminationGracePeriodSeconds: 75
         containers:
-        - name: "sso"
-          image: "sso"
+        - name: sso
+          image: sso
           imagePullPolicy: Always
           volumeMounts:
           - name: eap-keystore-volume
@@ -234,8 +263,11 @@ objects:
   metadata:
     name: "sso-postgresql"
     labels:
-      application: "sso-postgresql"
+      app: sso
+      application: sso
+      coolstore: sso-service
       component: database
+      demo: coolstore-microservice
   spec:
     strategy:
       type: Recreate
@@ -257,9 +289,12 @@ objects:
       metadata:
         name: "sso-postgresql"
         labels:
-          deploymentConfig: "sso-postgresql"
-          application: "sso"
+          app: sso
+          application: sso
           component: "database"
+          coolstore: sso-service
+          demo: coolstore-microservice
+          deploymentConfig: "sso-postgresql"
       spec:
         terminationGracePeriodSeconds: 60
         containers:
@@ -296,7 +331,10 @@ objects:
   metadata:
     name: "sso-service-account"
     labels:
-      application: "sso"
+      app: sso
+      application: sso
+      coolstore: sso-service
+      demo: coolstore-microservice
   sercrets:
     - name: "sso-app-secret"
 - kind: Secret
@@ -304,6 +342,11 @@ objects:
   name: sso-app-secret
   metadata:
     name: sso-app-secret
+    labels:
+      app: sso
+      application: sso
+      coolstore: sso-service
+      demo: coolstore-microservice
     annotations:
       description: Default secret file with name 'jboss' and password 'mykeystorepass'
   data:
@@ -313,6 +356,11 @@ objects:
   apiVersion: v1
   metadata:
     name: sso-config-files
+    labels:
+      app: sso
+      application: sso
+      coolstore: sso-service
+      demo: coolstore-microservice
   data:
     client.js: |2
       var request = require('request');
@@ -374,7 +422,7 @@ objects:
                 auth: {
                     bearer: token
                 },
-                json: { 
+                json: {
                     clientId: coolstore_gw_client_id,
                     enabled: true,
                     protocol: "openid-connect",
@@ -572,7 +620,11 @@ objects:
   apiVersion: v1
   metadata:
     labels:
+      app: sso
+      application: sso
       build: sso
+      coolstore: sso-service
+      demo: coolstore-microservice
     name: sso
   spec:
     output:
@@ -595,6 +647,11 @@ objects:
   apiVersion: v1
   metadata:
     name: sso-config-client
+    labels:
+      app: sso
+      application: sso
+      coolstore: sso-service
+      demo: coolstore-microservice
   spec:
     containers:
     - name: sso-config

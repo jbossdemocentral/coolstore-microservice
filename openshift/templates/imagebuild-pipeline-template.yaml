@@ -4,6 +4,9 @@ metadata:
   annotations:
     description: This template creates a pipelie to pre-build coolstore images in a builder project
   name: coolstore-imagebuild-template
+labels:
+  demo: coolstore-microservice
+  template: imagebuild-pipeline
 objects:
 - apiVersion: v1
   kind: BuildConfig
@@ -11,14 +14,18 @@ objects:
     name: coolstore-imagebuild-pipeline
     annotations:
       pipeline.alpha.openshift.io/uses: '[{"name": "jenkins", "namespace": "", "kind": "DeploymentConfig"}]'
+    labels:
+      app: coolstore-imagebuild-pipeline
+      application: coolstore-imagebuild-pipeline
+      demo: coolstore-microservice
   spec:
     triggers:
       - type: GitHub
         github:
-          secret: wDmoEUkbBp
+          secret: ${GITHUB_WEBHOOK_SECRET}
       - type: Generic
         generic:
-          secret: wDmoEUkbBp
+          secret: ${GENERIC_WEBHOOK_SECRET}
     runPolicy: SerialLatestOnly
     source:
       type: None
@@ -50,7 +57,7 @@ objects:
                           def objects = openshift.process(pipeline_template, "--param", "GIT_URI=${github_repo}", "--param", "GIT_REF=${env.GITHUB_REF}", "--param", "MAVEN_MIRROR_URL=${env.MAVEN_MIRROR_URL}")
 
                           openshift.selector( 'bc', [ demo: 'coolstore-microservice' ] ).delete()
-                          
+
                           try {
                               openshift.create(objects)
                           } catch (e) {
@@ -86,9 +93,21 @@ parameters:
 - displayName: Git Branch/Tag
   name: GITHUB_REF
   required: true
-  value: master
+  value: stable-ocp-3.9
 - description: Maven mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/content/groups/public/)
   displayName: Maven mirror url
   name: MAVEN_MIRROR_URL
   value: https://mirror.openshift.com/nexus/content/groups/public/
+  required: true
+- description: GitHub webhook secret
+  displayName: GitHub Webhook Secret
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: GITHUB_WEBHOOK_SECRET
+  required: true
+- description: Generic webhook secret
+  displayName: Generic Webhook Secret
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: GENERIC_WEBHOOK_SECRET
   required: true

@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Template
 labels:
   demo: coolstore-microservice
+  template: coolstore-deployments
 metadata:
   annotations:
     description: CoolStore demo microservices deployments persistent template
@@ -26,11 +27,14 @@ objects:
     name: web-ui
     labels:
       app: web-ui
+      application: web-ui
       comp-required: "true"
+      coolstore: ui
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
-      app: web-ui
+      application: web-ui
       deploymentconfig: web-ui
     strategy:
       resources: {}
@@ -39,6 +43,9 @@ objects:
       metadata:
         labels:
           app: web-ui
+          application: web-ui
+          coolstore: ui
+          demo: coolstore-microservice
           deploymentconfig: web-ui
       spec:
         containers:
@@ -102,7 +109,10 @@ objects:
   metadata:
     labels:
       app: web-ui
+      application: web-ui
       comp-required: "true"
+      coolstore: ui
+      demo: coolstore-microservice
     name: web-ui
   spec:
     ports:
@@ -118,7 +128,10 @@ objects:
     name: web-ui
     labels:
       app: web-ui
+      application: web-ui
       comp-required: "true"
+      coolstore: ui
+      demo: coolstore-microservice
   spec:
     host: web-ui-${HOSTNAME_SUFFIX}
     to:
@@ -131,7 +144,10 @@ objects:
     name: coolstore-gw
     labels:
       app: coolstore-gw
+      application: coolstore-gw
       comp-required: "true"
+      coolstore: gw
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -143,6 +159,9 @@ objects:
       metadata:
         labels:
           app: coolstore-gw
+          application: coolstore-gw
+          coolstore: gw
+          demo: coolstore-microservice
           deploymentconfig: coolstore-gw
         name: coolstore-gw
       spec:
@@ -207,8 +226,11 @@ objects:
   metadata:
     labels:
       app: coolstore-gw
-      hystrix.enabled: "true"
+      application: coolstore-gw
       comp-required: "true"
+      coolstore: gw
+      demo: coolstore-microservice
+      hystrix.enabled: "true"
     name: coolstore-gw
   spec:
     ports:
@@ -223,7 +245,10 @@ objects:
     name: coolstore-gw
     labels:
       app: coolstore-gw
+      application: coolstore-gw
       comp-required: "true"
+      coolstore: gw
+      demo: coolstore-microservice
   spec:
     host: gw-${HOSTNAME_SUFFIX}
     to:
@@ -236,6 +261,9 @@ objects:
     name: inventory
     labels:
       app: inventory
+      application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
       uses-database: "true"
   spec:
     replicas: 1
@@ -248,6 +276,9 @@ objects:
       metadata:
         labels:
           app: inventory
+          application: inventory
+          coolstore: inventory-service
+          demo: coolstore-microservice
           deploymentconfig: inventory
         name: inventory
       spec:
@@ -260,9 +291,9 @@ objects:
               fieldRef:
                 fieldPath: metadata.namespace
           - name: MQ_CLUSTER_PASSWORD
-            value: 7mzX0pLV03
+            value: ${MQ_CLUSTER_PASSWORD}
           - name: JGROUPS_CLUSTER_PASSWORD
-            value: CqUo3fYDTv
+            value: ${JGROUPS_CLUSTER_PASSWORD}
           - name: AUTO_DEPLOY_EXPLODED
             value: "false"
           - name: DB_SERVICE_PREFIX_MAPPING
@@ -344,6 +375,9 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
       app: inventory
+      application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
     name: inventory
   spec:
     ports:
@@ -357,6 +391,9 @@ objects:
   metadata:
     labels:
       app: inventory
+      application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
     name: inventory
   spec:
     host: inventory-${HOSTNAME_SUFFIX}
@@ -370,7 +407,10 @@ objects:
     name: inventory-postgresql
     labels:
       app: inventory
+      application: inventory
       comp-type: database
+      coolstore: inventory-service
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -381,7 +421,10 @@ objects:
       metadata:
         labels:
           app: inventory
+          application: inventory
           comp-type: database
+          coolstore: inventory-service
+          demo: coolstore-microservice
           deploymentconfig: inventory-postgresql
         name: inventory-postgresql
       spec:
@@ -448,6 +491,9 @@ objects:
   metadata:
     labels:
       app: inventory
+      application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
     name: inventory-postgresql
   spec:
     ports:
@@ -460,6 +506,9 @@ objects:
   metadata:
     labels:
       app: inventory
+      application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
     name: inventory-postgresql-pv
   spec:
     accessModes:
@@ -474,7 +523,10 @@ objects:
     name: catalog
     labels:
       app: catalog
+      application: catalog
       comp-required: "true"
+      coolstore: catalog-service
+      demo: coolstore-microservice
       uses-database: "true"
   spec:
     replicas: 1
@@ -487,15 +539,18 @@ objects:
       metadata:
         labels:
           app: catalog
+          application: catalog
+          coolstore: catalog-service
+          demo: coolstore-microservice
           deploymentconfig: catalog
         name: catalog
       spec:
         containers:
         - env:
           - name: JWS_ADMIN_USERNAME
-            value: Skq3VtCd
+            value: ${JWS_ADMIN_USERNAME}
           - name: JWS_ADMIN_PASSWORD
-            value: oktt6yhw
+            value: ${JWS_ADMIN_PASSWORD}
           - name: DB_USERNAME
             value: ${CATALOG_DB_USERNAME}
           - name: DB_PASSWORD
@@ -565,7 +620,10 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"catalog-mongodb","namespace":"","kind":"Service"}]'
     labels:
       app: catalog
+      application: catalog
       comp-required: "true"
+      coolstore: catalog-service
+      demo: coolstore-microservice
     name: catalog
   spec:
     ports:
@@ -579,7 +637,10 @@ objects:
   metadata:
     labels:
       app: catalog
+      application: catalog
       comp-required: "true"
+      coolstore: catalog-service
+      demo: coolstore-microservice
     name: catalog
   spec:
     host: catalog-${HOSTNAME_SUFFIX}
@@ -592,7 +653,10 @@ objects:
   metadata:
     labels:
       app: catalog
+      application: catalog
       comp-required: "true"
+      coolstore: catalog-service
+      demo: coolstore-microservice
     name: catalog-mongodb
   spec:
     ports:
@@ -609,8 +673,11 @@ objects:
   metadata:
     labels:
       app: catalog
+      application: catalog
       comp-type: database
       comp-required: "true"
+      coolstore: catalog-service
+      demo: coolstore-microservice
     name: catalog-mongodb
   spec:
     replicas: 1
@@ -625,7 +692,10 @@ objects:
       metadata:
         labels:
           app: catalog
+          application: catalog
           comp-type: database
+          coolstore: catalog-service
+          demo: coolstore-microservice
           deploymentconfig: catalog-mongodb
       spec:
         containers:
@@ -708,7 +778,10 @@ objects:
   metadata:
     labels:
       app: catalog
+      application: catalog
       comp-required: "true"
+      coolstore: catalog-service
+      demo: coolstore-microservice
     name: catalog-mongodb-pv
   spec:
     accessModes:
@@ -723,6 +796,9 @@ objects:
     name: rating
     labels:
       app: rating
+      application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
       uses-database: "true"
   spec:
     replicas: 1
@@ -735,6 +811,9 @@ objects:
       metadata:
         labels:
           app: rating
+          application: rating
+          coolstore: rating-service
+          demo: coolstore-microservice
           deploymentconfig: rating
         name: rating
       spec:
@@ -801,6 +880,9 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"rating-mongodb","namespace":"","kind":"Service"}]'
     labels:
       app: rating
+      application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
     name: rating
   spec:
     ports:
@@ -814,6 +896,9 @@ objects:
   metadata:
     labels:
       app: rating
+      application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
     name: rating
   spec:
     host: rating-${HOSTNAME_SUFFIX}
@@ -827,6 +912,9 @@ objects:
     name: rating-config
     labels:
       app: rating
+      application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
   data:
     rating-config.yaml: |-
       rating.http.port: 8080
@@ -839,6 +927,9 @@ objects:
   metadata:
     labels:
       app: rating
+      application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
     name: rating-mongodb
   spec:
     ports:
@@ -855,7 +946,10 @@ objects:
   metadata:
     labels:
       app: rating
+      application: rating
       comp-type: database
+      coolstore: rating-service
+      demo: coolstore-microservice
     name: rating-mongodb
   spec:
     replicas: 1
@@ -888,8 +982,11 @@ objects:
     template:
       metadata:
         labels:
-          app: rating
+          application: rating
+          application: rating
           comp-type: database
+          coolstore: rating-service
+          demo: coolstore-microservice
           deploymentconfig: rating-mongodb
       spec:
         containers:
@@ -972,6 +1069,9 @@ objects:
   metadata:
     labels:
       app: rating
+      application: rating
+      coolstore: rating-service
+      demo: coolstore-microservice
     name: rating-mongodb-pv
   spec:
     accessModes:
@@ -986,6 +1086,9 @@ objects:
     name: cart
     labels:
       app: cart
+      application: cart
+      coolstore: cart-service
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -997,6 +1100,9 @@ objects:
       metadata:
         labels:
           app: cart
+          application: cart
+          coolstore: cart-service
+          demo: coolstore-microservice
           deploymentconfig: cart
         name: cart
       spec:
@@ -1074,6 +1180,9 @@ objects:
   metadata:
     labels:
       app: cart
+      application: cart
+      coolstore: cart-service
+      demo: coolstore-microservice
     name: cart
   spec:
     ports:
@@ -1087,6 +1196,9 @@ objects:
   metadata:
     labels:
       app: cart
+      application: cart
+      coolstore: cart-service
+      demo: coolstore-microservice
     name: cart
   spec:
     host: cart-${HOSTNAME_SUFFIX}
@@ -1101,6 +1213,9 @@ objects:
     name: pricing
     labels:
       app: pricing
+      application: pricing
+      coolstore: pricing-service
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -1111,16 +1226,19 @@ objects:
     template:
       metadata:
         labels:
+          app: pricing
           application: pricing
+          coolstore: pricing-service
+          demo: coolstore-microservice
           deploymentconfig: pricing
         name: pricing
       spec:
         containers:
         - env:
           - name: MQ_CLUSTER_PASSWORD
-            value: 7mzX0pLV03
+            value: ${MQ_CLUSTER_PASSWORD}
           - name: JGROUPS_CLUSTER_PASSWORD
-            value: CqUo3fYDTv
+            value: ${JGROUPS_CLUSTER_PASSWORD}
           - name: AUTO_DEPLOY_EXPLODED
             value: "false"
           - name: KIE_CONTAINER_DEPLOYMENT
@@ -1202,6 +1320,9 @@ objects:
       description: The pricing service's http port.
     labels:
       app: pricing
+      application: pricing
+      coolstore: pricing-service
+      demo: coolstore-microservice
     name: pricing
   spec:
     ports:
@@ -1214,7 +1335,10 @@ objects:
   kind: Route
   metadata:
     labels:
+      app: pricing
       application: pricing
+      coolstore: pricing-service
+      demo: coolstore-microservice
     name: pricing
   spec:
     host: pricing-${HOSTNAME_SUFFIX}
@@ -1229,6 +1353,9 @@ objects:
     name: review
     labels:
       app: review
+      application: review
+      coolstore: review-service
+      demo: coolstore-microservice
       uses-database: "true"
   spec:
     replicas: 1
@@ -1241,6 +1368,9 @@ objects:
       metadata:
         labels:
           app: review
+          application: review
+          coolstore: review-service
+          demo: coolstore-microservice
           deploymentconfig: review
         name: review
       spec:
@@ -1319,6 +1449,9 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"review-postgresql","namespace":"","kind":"Service"}]'
     labels:
       app: review
+      application: review
+      coolstore: review-service
+      demo: coolstore-microservice
     name: review
   spec:
     ports:
@@ -1331,7 +1464,10 @@ objects:
   kind: Route
   metadata:
     labels:
+      app: review
       application: review
+      coolstore: review-service
+      demo: coolstore-microservice
     name: review
   spec:
     host: review-${HOSTNAME_SUFFIX}
@@ -1345,7 +1481,10 @@ objects:
     name: review-postgresql
     labels:
       app: review
+      application: review
       comp-type: database
+      coolstore: review-service
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -1356,7 +1495,10 @@ objects:
       metadata:
         labels:
           app: review
+          application: review
           comp-type: database
+          coolstore: review-service
+          demo: coolstore-microservice
           deploymentconfig: review-postgresql
         name: review-postgresql
       spec:
@@ -1412,6 +1554,9 @@ objects:
   metadata:
     labels:
       app: review
+      application: review
+      coolstore: review-service
+      demo: coolstore-microservice
     name: review-postgresql-pv
   spec:
     accessModes:
@@ -1424,6 +1569,9 @@ objects:
   metadata:
     labels:
       app: review
+      application: review
+      coolstore: review-service
+      demo: coolstore-microservice
     name: review-postgresql
   spec:
     ports:
@@ -1437,6 +1585,9 @@ objects:
     name: review-config
     labels:
       app: review
+      application: review
+      coolstore: review-service
+      demo: coolstore-microservice
   data:
     review-config.yml: |-
       project:
@@ -1457,6 +1608,7 @@ objects:
       app: datagrid
       application: datagrid
       comp: datagrid
+      demo: coolstore-microservice
     name: datagrid
   spec:
     replicas: 1
@@ -1467,7 +1619,9 @@ objects:
     template:
       metadata:
         labels:
+          app: datagrid
           application: datagrid
+          demo: coolstore-microservice
           deploymentConfig: datagrid
         name: datagrid
       spec:
@@ -1491,7 +1645,7 @@ objects:
           - name: MEMCACHED_CACHE
             value: default
           - name: JGROUPS_CLUSTER_PASSWORD
-            value: BlonpvoQ
+            value: ${DATAGRID_JGROUPS_CLUSTER_PASSWORD}
           image: jboss-datagrid65-openshift
           imagePullPolicy: Always
           livenessProbe:
@@ -1553,6 +1707,7 @@ objects:
     labels:
       app: datagrid
       application: datagrid
+      demo: coolstore-microservice
     name: datagrid-hotrod
   spec:
     ports:
@@ -1573,6 +1728,21 @@ parameters:
   displayName: Hostname suffix used for routes
   name: HOSTNAME_SUFFIX
   required: true
+- description: MQ cluster password
+  displayName: MQ cluster password
+  value: 7mzX0pLV03
+  name: MQ_CLUSTER_PASSWORD
+  required: true
+- description: JGroups cluster password
+  displayName: JGroups cluster password
+  value: CqUo3fYDTv
+  name: JGROUPS_CLUSTER_PASSWORD
+  required: true
+- description: Datagrid JGroups cluster password
+  displayName: Datagrid JGroups cluster password
+  value: BlonpvoQ
+  name: DATAGRID_JGROUPS_CLUSTER_PASSWORD
+  required: true
 - description: Inventory Service database user name
   from: user[a-zA-Z0-9]{3}
   generate: expression
@@ -1592,6 +1762,14 @@ parameters:
   from: '[a-zA-Z0-9]{8}'
   generate: expression
   name: CATALOG_DB_PASSWORD
+  required: true
+- description: JWS user name
+  value: Skq3VtCd
+  name: JWS_ADMIN_USERNAME
+  required: true
+- description: JWS user password
+  value: oktt6yhw
+  name: JWS_ADMIN_PASSWORD
   required: true
 - description: Decision Server Username
   name: KIE_SERVER_USER

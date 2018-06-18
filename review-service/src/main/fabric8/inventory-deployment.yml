@@ -11,7 +11,7 @@ spec:
   template:
     metadata:
       labels:
-        app: inventory
+        application: inventory
         deploymentconfig: inventory
     spec:
       containers:

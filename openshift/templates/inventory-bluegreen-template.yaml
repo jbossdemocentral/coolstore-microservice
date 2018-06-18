@@ -17,8 +17,11 @@ objects:
     name: inventory-blue
     labels:
       app: inventory
-      variant: blue
+      application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
       uses-database: "true"
+      variant: blue
   spec:
     replicas: 1
     selector:
@@ -30,8 +33,11 @@ objects:
       metadata:
         labels:
           app: inventory
-          variant: blue
+          application: inventory
+          coolstore: inventory-service
+          demo: coolstore-microservice
           deploymentconfig: inventory-blue
+          variant: blue
         name: inventory-blue
       spec:
         containers:
@@ -43,9 +49,9 @@ objects:
               fieldRef:
                 fieldPath: metadata.namespace
           - name: MQ_CLUSTER_PASSWORD
-            value: 7mzX0pLV03
+            value: ${MQ_CLUSTER_PASSWORD}
           - name: JGROUPS_CLUSTER_PASSWORD
-            value: CqUo3fYDTv
+            value: ${JGROUPS_CLUSTER_PASSWORD}
           - name: AUTO_DEPLOY_EXPLODED
             value: "false"
           - name: DB_SERVICE_PREFIX_MAPPING
@@ -128,6 +134,9 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
       app: inventory
+      application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
       variant: blue
     name: inventory-blue
   spec:
@@ -144,8 +153,11 @@ objects:
     name: inventory-green
     labels:
       app: inventory
-      variant: green
+      application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
       uses-database: "true"
+      variant: green
   spec:
     replicas: 1
     selector:
@@ -157,8 +169,11 @@ objects:
       metadata:
         labels:
           app: inventory
-          variant: green
+          application: inventory
+          coolstore: inventory-service
+          demo: coolstore-microservice
           deploymentconfig: inventory-green
+          variant: green
         name: inventory-green
       spec:
         containers:
@@ -170,9 +185,9 @@ objects:
               fieldRef:
                 fieldPath: metadata.namespace
           - name: MQ_CLUSTER_PASSWORD
-            value: 7mzX0pLV03
+            value: ${MQ_CLUSTER_PASSWORD}
           - name: JGROUPS_CLUSTER_PASSWORD
-            value: CqUo3fYDTv
+            value: ${JGROUPS_CLUSTER_PASSWORD}
           - name: AUTO_DEPLOY_EXPLODED
             value: "false"
           - name: DB_SERVICE_PREFIX_MAPPING
@@ -254,6 +269,9 @@ objects:
       service.alpha.openshift.io/dependencies: '[{"name":"inventory-postgresql","namespace":"","kind":"Service"}]'
     labels:
       app: inventory
+      application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
       variant: green
     name: inventory-green
   spec:
@@ -268,6 +286,9 @@ objects:
   metadata:
     labels:
       app: inventory
+      application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
       variant: green
     name: inventory
   spec:
@@ -286,7 +307,10 @@ objects:
     name: inventory-postgresql
     labels:
       app: inventory
+      application: inventory
       comp-type: database
+      coolstore: inventory-service
+      demo: coolstore-microservice
   spec:
     replicas: 1
     selector:
@@ -297,7 +321,10 @@ objects:
       metadata:
         labels:
           app: inventory
+          application: inventory
           comp-type: database
+          coolstore: inventory-service
+          demo: coolstore-microservice
           deploymentconfig: inventory-postgresql
         name: inventory-postgresql
       spec:
@@ -364,6 +391,9 @@ objects:
   metadata:
     labels:
       app: inventory
+      application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
     name: inventory-postgresql
   spec:
     ports:
@@ -376,6 +406,9 @@ objects:
   metadata:
     labels:
       app: inventory
+      application: inventory
+      coolstore: inventory-service
+      demo: coolstore-microservice
     name: inventory-postgresql-pv
   spec:
     accessModes:
@@ -407,4 +440,14 @@ parameters:
   from: '[a-zA-Z0-9]{8}'
   generate: expression
   name: INVENTORY_DB_PASSWORD
+  required: true
+- description: MQ cluster password
+  displayName: MQ cluster password
+  value: 7mzX0pLV03
+  name: MQ_CLUSTER_PASSWORD
+  required: true
+- description: JGroups cluster password
+  displayName: JGroups cluster password
+  value: CqUo3fYDTv
+  name: JGROUPS_CLUSTER_PASSWORD
   required: true

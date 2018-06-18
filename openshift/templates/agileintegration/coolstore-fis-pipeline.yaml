@@ -1,6 +1,8 @@
 apiVersion: v1
 kind: Template
 labels:
+  app: coolstore-gw-pre
+  application: coolstore-gw-pre
   demo: coolstore-microservice
   template: gateway-pipeline
 metadata:
@@ -10,7 +12,11 @@ objects:
   kind: BuildConfig
   metadata:
     labels:
+      app: coolstore-gw-pre
+      application: coolstore-gw-pre
       build: ${PIPELINE_NAME}
+      coolstore: gw
+      demo: coolstore-microservice
     name: ${PIPELINE_NAME}
     annotations:
       pipeline.alpha.openshift.io/uses: '[{"name": "coolstore-gw-pre", "namespace": "${DEV_PROJECT}", "kind": "BuildConfig"},{"name": "coolstore-gw-pre", "namespace": "${DEV_PROJECT}", "kind": "DeploymentConfig"},,{"name": "coolstore-gw", "namespace": "${DEV_PROJECT}", "kind": "DeploymentConfig"}]'
