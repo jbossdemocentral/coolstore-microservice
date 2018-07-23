@@ -86,7 +86,7 @@ parameters:
 - displayName: Git Branch/Tag
   name: GITHUB_REF
   required: true
-  value: stable-ocp-3.9
+  value: stable-ocp-3.10
 - description: Maven mirror url. If nexus is deployed locally, use nexus url (e.g. http://nexus.ci:8081/content/groups/public/)
   displayName: Maven mirror url
   name: MAVEN_MIRROR_URL
