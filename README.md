@@ -63,8 +63,8 @@ Troubleshooting
 
   ```
   oc login -u system:admin
-  oc create -n openshift -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v3.9/xpaas-streams/fis-image-streams.json
-  oc create -n openshift -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v3.9/xpaas-streams/jboss-image-streams.json
+  oc create -n openshift -f https://raw.githubusercontent.com/openshift/openshift-ansible/release-3.8/roles/openshift_examples/files/examples/v3.9/xpaas-streams/fis-image-streams.json
+  oc create -n openshift -f https://raw.githubusercontent.com/openshift/openshift-ansible/release-3.8/roles/openshift_examples/files/examples/v3.9/xpaas-streams/jboss-image-streams.json
   ```
 
 * If you attempt to deploy any of the services, and nothing happens, it may just be taking a while to download the Docker builder images. Visit the OpenShift web console and navigate to
