@@ -23,6 +23,9 @@ public class ShoppingCart  {
 		this.cartId = cartId;
     }    
 
+    public ShoppingCart() {
+    }  
+
 	public String getCartId() {
 		return cartId;
 	}
