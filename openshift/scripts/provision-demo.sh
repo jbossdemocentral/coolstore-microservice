@@ -17,10 +17,10 @@ function usage() {
     echo "   verify                   Verify the demo is deployed correctly"
     echo "   idle                     Make all demo servies idle"
     echo "   unidle                   Make all demo servies unidle"
-    echo 
+    echo
     echo "DEMOS:"
-    echo "   msa                      Microservices app with all services" 
-    echo "   msa-min                  Microservices app with minimum services" 
+    echo "   msa                      Microservices app with all services"
+    echo "   msa-min                  Microservices app with minimum services"
     echo "   msa-cicd-eap             CI/CD and microservices with JBoss EAP (dev-test-prod)"
     echo "   msa-cicd-eap-min         CI/CD and microservices with JBoss EAP with minimum services (dev-prod)"
     echo "   agile-integration        Agile integration, fault tolerance and CI/CD for integration (dev-test-prod)"
@@ -182,7 +182,7 @@ GITHUB_REF=${GITHUB_REF:-master}
 GITHUB_URI=https://github.com/$GITHUB_ACCOUNT/coolstore-microservice.git
 COOLSTORE_IMAGES_NAMESPACE=${COOLSTORE_IMAGES_NAMESPACE:-coolstore-builds}
 
-# maven 
+# maven
 MAVEN_MIRROR_URL=${ARG_MAVEN_MIRROR_URL:-http://nexus.${PRJ_CI[0]}.svc.cluster.local:8081/content/groups/public}
 
 GOGS_USER=developer
@@ -359,7 +359,7 @@ function deploy_nexus() {
 
     echo_header "Deploying Sonatype Nexus repository manager..."
     echo "Using template $_TEMPLATE"
-    oc $ARG_OC_OP process -f $_TEMPLATE -n ${PRJ_CI[0]} | oc $ARG_OC_OP create -f - -n ${PRJ_CI[0]}
+    oc $ARG_OC_OP process -f $_TEMPLATE -n ${PRJ_CI[0]} -p VOLUME_CAPACITY=20Gi | oc $ARG_OC_OP create -f - -n ${PRJ_CI[0]}
     sleep 5
     oc $ARG_OC_OP set resources dc/nexus --limits=cpu=1,memory=2Gi --requests=cpu=200m,memory=1Gi -n ${PRJ_CI[0]}
   else
@@ -377,7 +377,7 @@ function wait_for_nexus_to_be_ready() {
 # Deploy Gogs
 function deploy_gogs() {
   echo_header "Deploying Gogs git server..."
-  
+
   local _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/rpm/openshift/gogs-persistent-template.yaml"
   if [ "$ARG_EPHEMERAL" = true ] ; then
     _TEMPLATE="https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/rpm/openshift/gogs-template.yaml"
@@ -470,7 +470,7 @@ function deploy_jenkins() {
     oc $ARG_OC_OP import-image jenkins:v3.7 --from="registry.access.redhat.com/openshift3/jenkins-2-rhel7:v3.7" --confirm -n openshift 2>/dev/null
     sleep 10
   fi
-  
+
   oc $ARG_OC_OP new-app jenkins-ephemeral -l app=jenkins -p MEMORY_LIMIT=1Gi --param=JENKINS_IMAGE_STREAM_TAG=jenkins:v3.7 -n ${PRJ_CI[0]}
   sleep 2
   oc $ARG_OC_OP set resources dc/jenkins --limits=cpu=1,memory=2Gi --requests=cpu=200m,memory=1Gi -n ${PRJ_CI[0]}
@@ -504,7 +504,7 @@ function deploy_coolstore_test_env() {
   echo_header "Deploying CoolStore app into ${PRJ_COOLSTORE_TEST[0]} project..."
   echo "Using deployment template $_TEMPLATE"
   oc $ARG_OC_OP process -f $_TEMPLATE --param=APP_VERSION=test --param=HOSTNAME_SUFFIX=${PRJ_COOLSTORE_TEST[0]}.$DOMAIN -n ${PRJ_COOLSTORE_TEST[0]} | oc $ARG_OC_OP create -f - -n ${PRJ_COOLSTORE_TEST[0]}
-  
+
   sleep 2
   scale_down_deployments_by_labels ${PRJ_COOLSTORE_TEST[0]} comp-required!=true,app!=inventory
 
@@ -544,13 +544,13 @@ function deploy_coolstore_prod_env() {
 
   oc $ARG_OC_OP process -f $_TEMPLATE_DEPLOYMENT --param=APP_VERSION=$_APP_VERSION --param=HOSTNAME_SUFFIX=${PRJ_COOLSTORE_PROD[0]}.$DOMAIN -n ${PRJ_COOLSTORE_PROD[0]} | oc $ARG_OC_OP create -f - -n ${PRJ_COOLSTORE_PROD[0]}
   oc $ARG_OC_OP create -f $_TEMPLATE_NETFLIX -n ${PRJ_COOLSTORE_PROD[0]}
-  
+
   remove_coolstore_storage_if_ephemeral ${PRJ_COOLSTORE_PROD[0]}
 
   # driven by the demo type
   if [ "$SCALE_DOWN_PROD" = true ] ; then
     scale_down_deployments_by_labels ${PRJ_COOLSTORE_PROD[0]} comp-required!=true
-   fi  
+   fi
 }
 
 # Deploy service into Inventory DEV project
@@ -606,7 +606,7 @@ function promote_images() {
 
   for is in coolstore-gw web-ui cart catalog pricing rating review
   do
-    
+
     if [ "$ENABLE_TEST_ENV" = true ] ; then
       oc $ARG_OC_OP tag ${PRJ_COOLSTORE_PROD[0]}/$is:latest ${PRJ_COOLSTORE_TEST[0]}/$is:test
     fi
@@ -636,7 +636,7 @@ function deploy_pipeline() {
   echo_header "Configuring CI/CD..."
 
   local _PIPELINE_NAME=inventory-pipeline
-  
+
 
   if [ "$ENABLE_TEST_ENV" = true ] ; then
     local _TEMPLATE=https://raw.githubusercontent.com/$GITHUB_ACCOUNT/coolstore-microservice/$GITHUB_REF/openshift/templates/inventory-pipeline-template.yaml
@@ -702,7 +702,7 @@ function verify_build_and_deployments() {
 
   else
     verify_deployments_in_projects ${PRJ_COOLSTORE_PROD[0]} ${PRJ_CI[0]}
-  fi 
+  fi
 }
 
 function verify_deployments_in_projects() {
@@ -821,7 +821,7 @@ case "$ARG_COMMAND" in
         echo
         echo "Delete completed successfully!"
         ;;
-      
+
     verify)
         echo "Verifying MSA demo ($ARG_DEMO)..."
         print_info
@@ -856,7 +856,7 @@ case "$ARG_COMMAND" in
         fi
 
         print_info
-        
+
         deploy_nexus
 
         if images_exists; then
@@ -865,7 +865,7 @@ case "$ARG_COMMAND" in
           wait_for_nexus_to_be_ready
           build_images
         fi
-        
+
         deploy_coolstore_prod_env
 
         if [ "$ENABLE_CI_CD" = true ] ; then
@@ -894,7 +894,7 @@ case "$ARG_COMMAND" in
         echo
         echo "Provisioning completed successfully!"
         ;;
-        
+
     *)
         echo "Invalid command specified: '$ARG_COMMAND'"
         usage
@@ -906,4 +906,4 @@ popd >/dev/null
 
 END=`date +%s`
 echo "(Completed in $(( ($END - $START)/60 )) min $(( ($END - $START)%60 )) sec)"
-echo 
+echo
