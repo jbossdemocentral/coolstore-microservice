@@ -246,6 +246,7 @@ function print_info() {
   echo "Demo name:           $ARG_DEMO"
   echo "OpenShift master:    $OPENSHIFT_MASTER"
   echo "Current user:        $LOGGEDIN_USER"
+  echo "Project owner:       $OPENSHIFT_USER"
   echo "Project suffix:      $PRJ_SUFFIX"
   echo "Ephemeral:           $ARG_EPHEMERAL"
   echo "GitHub repo:         $GITHUB_URI"
@@ -731,23 +732,24 @@ function verify_build_and_deployments() {
 function verify_deployments_in_projects() {
   for project in "$@"
   do
-    local _DC=
-    local _DEPLOYMENTS=$(oc get dc -l comp-type=database -n $project -o=custom-columns=:.metadata.name,:.status.availableReplicas 2>/dev/null;oc get dc -l comp-type!=database -n $project -o=custom-columns=:.metadata.name,:.status.availableReplicas)
-    for dc in $_DEPLOYMENTS; do
-      # redeploy if deployment has failed or has taken too long
-      if [ $dc = 0 ] && [ -z "$(oc get pods -n $project | grep "$dc-[0-9]\+-deploy")" ] ; then
-        echo "WARNING: Deployment $project/$_DC: FAILED"
+    local deployments="$(oc get dc -l comp-type=database -n $project -o=custom-columns=:.metadata.name 2>/dev/null) $(oc get dc -l comp-type!=database -n $project -o=custom-columns=:.metadata.name 2>/dev/null)"
+    for dc in $deployments; do
+      dc_status=$(oc get dc $dc -n $project -o=custom-columns=:.spec.replicas,:.status.availableReplicas)
+      dc_replicas=$(echo $dc_status | sed "s/^\([0-9]\+\) \([0-9]\+\)$/\1/")
+      dc_available=$(echo $dc_status | sed "s/^\([0-9]\+\) \([0-9]\+\)$/\2/")
+
+      if [ "$dc_available" -lt "$dc_replicas" ] ; then
+        echo "WARNING: Deployment $project/$dc: FAILED"
         echo
-        echo "Starting a new deployment for $project/$_DC ..."
+        echo "Starting a new deployment for $project/$dc ..."
         echo
-        oc rollout cancel dc/$_DC -n $project >/dev/null
+        oc rollout cancel dc/$dc -n $project >/dev/null
         sleep 5
-        oc rollout latest dc/$_DC -n $project
-        oc rollout status dc/$_DC -n $project
-      elif [ $dc = 1 ] ; then
-        echo "Deployment $project/$_DC: OK"
+        oc rollout latest dc/$dc -n $project
+        oc rollout status dc/$dc -n $project
+      else
+        echo "Deployment $project/$dc: OK"
       fi
-      _DC=$dc
     done
   done
 }
