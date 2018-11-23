@@ -247,7 +247,7 @@ objects:
         - "sso-postgresql"
         from:
           kind: ImageStreamTag
-          name: postgresql:latest
+          name: postgresql:9.6
           namespace: openshift
     - type: ConfigChange
     replicas: 1
