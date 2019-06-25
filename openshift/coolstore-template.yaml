@@ -90,6 +90,8 @@ objects:
             value: coolstore-gw
           - name: HOSTNAME_HTTP
             value: web-ui:8080
+          - name: SECURE_COOLSTORE_GW_ENDPOINT
+            value: coolstore-gw-coolstore-demo
           image: web-ui
           imagePullPolicy: Always
           name: web-ui
