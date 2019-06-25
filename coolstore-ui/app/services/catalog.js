@@ -12,8 +12,11 @@ angular.module("app")
     }
     
     console.log("**SECURE_API_END_POINT="+COOLSTORE_CONFIG.SECURE_API_ENDPOINT);
+    console.log("**API_ENDPOINT="+COOLSTORE_CONFIG.API_ENDPOINT);
     console.log("**Location.protocol="+$location.protocol());
     console.log("**baseURL="+baseUrl);
+  
+
 
     factory.getProducts = function() {
 		var deferred = $q.defer();
