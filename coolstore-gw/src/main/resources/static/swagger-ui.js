@@ -21761,9 +21761,13 @@ window.SwaggerUi = Backbone.Router.extend({
       this.authView.remove();
     }
     var url = this.options.url;
+
+    console.log("****ERKAN LOG*****  swagger ui load.  URL="+url);
     if (url && url.indexOf('http') !== 0) {
       url = this.buildUrl(window.location.href.toString(), url);
     }
+    console.log("****ERKAN LOG*****  swagger ui load.  After build URL="+url);
+
     if(this.api) {
       this.options.authorizations = this.api.clientAuthorizations.authz;
     }
