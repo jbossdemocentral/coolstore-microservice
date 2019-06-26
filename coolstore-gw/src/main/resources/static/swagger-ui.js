@@ -3464,6 +3464,8 @@ var SwaggerClient = module.exports = function (url, options) {
 };
 
 SwaggerClient.prototype.initialize = function (url, options) {
+  console.log("****ERKAN***Entering SwaggerClient.prototype.initialize. URL =["+this.url+"]");
+
   this.models = {};
   this.sampleModels = {};
 
@@ -3473,13 +3475,19 @@ SwaggerClient.prototype.initialize = function (url, options) {
     options = url;
     this.url = options.url;
   }
+  console.log("****ERKAN***After URL Type check. URL =["+this.url+"]");
 
   if(this.url && this.url.indexOf('http:') === -1 && this.url.indexOf('https:') === -1) {
     // no protocol, so we can only use window if it exists
     if(typeof(window) !== 'undefined' && window && window.location) {
       this.url = window.location.origin + this.url;
+      console.log("****ERKAN*** window.location.origin =["+window.location.origin +"]");
+      console.log("****ERKAN*** after window.location.origin URL=["+this.url +"]");
+
     }
   }
+
+
 
   options = options || {};
   this.clientAuthorizations.add(options.authorizations);
