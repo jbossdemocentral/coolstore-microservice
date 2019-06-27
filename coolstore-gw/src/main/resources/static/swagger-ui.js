@@ -3648,10 +3648,15 @@ SwaggerClient.prototype.buildFromSpec = function (response) {
   this.host = response.host || '';
   this.info = response.info || {};
   this.produces = response.produces;
-  this.schemes = response.schemes || [];
+  this.schemes = response.schemes || ['https'];
   this.securityDefinitions = _.cloneDeep(response.securityDefinitions);
   this.security = response.security;
   this.title = response.title || '';
+ console.log("***ERKAN****this.title"+this.title);
+ console.log("***ERKAN****this.basePath"+this.basePath);
+ console.log("***ERKAN****this.consumes"+this.consumes);
+ console.log("***ERKAN****this.schemes"+this.schemes);
+ console.log("***ERKAN****this.host"+this.host);
 
   var key, definedTags = {}, k, location, self = this, i;
 
@@ -3701,7 +3706,7 @@ SwaggerClient.prototype.buildFromSpec = function (response) {
     }
   }
 
-
+  
   if (typeof this.url === 'string') {
     location = this.parseUri(this.url);
     console.log("****ERKAN**** location"+ location);
@@ -3753,7 +3758,7 @@ SwaggerClient.prototype.buildFromSpec = function (response) {
   }
   else {
     if (typeof this.schemes === 'undefined' || this.schemes.length === 0) {
-      this.scheme = 'http';
+      this.scheme = 'https';
     }
     else if (typeof this.scheme === 'undefined') {
       this.scheme = this.schemes[0];
