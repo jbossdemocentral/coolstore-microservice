@@ -3704,13 +3704,19 @@ SwaggerClient.prototype.buildFromSpec = function (response) {
 
   if (typeof this.url === 'string') {
     location = this.parseUri(this.url);
+    console.log("****ERKAN**** location"+ location);
+    console.log("****ERKAN**** scheme"+ this.scheme );
+
     if (typeof this.scheme === 'undefined' && typeof this.schemes === 'undefined' || this.schemes.length === 0) {
       if(typeof window !== 'undefined') {
         // use the window scheme
         this.scheme = window.location.protocol.replace(':','');
+        console.log("****ERKAN**** window.location.protocol="+ window.location.protocol);
       }
       else {
         this.scheme = location.scheme || 'http';
+        console.log("****ERKAN**** scheme2"+ this.scheme );
+
       }
     } else if (typeof this.scheme === 'undefined') {
       if(typeof window !== 'undefined') {
