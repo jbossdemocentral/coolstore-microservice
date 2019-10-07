@@ -642,7 +642,7 @@ objects:
             value: catalogdb
           - name: MONGODB_ADMIN_PASSWORD
             value: ${CATALOG_DB_PASSWORD}
-          image: mongodb
+          image: mongo
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 10
@@ -906,7 +906,7 @@ objects:
             value: ratingdb
           - name: MONGODB_ADMIN_PASSWORD
             value: ${RATING_DB_PASSWORD}
-          image: mongodb
+          image: mongo
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 10
