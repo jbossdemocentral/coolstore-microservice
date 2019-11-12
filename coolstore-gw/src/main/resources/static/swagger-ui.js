@@ -3464,6 +3464,8 @@ var SwaggerClient = module.exports = function (url, options) {
 };
 
 SwaggerClient.prototype.initialize = function (url, options) {
+  console.log("****ERKAN***Entering SwaggerClient.prototype.initialize. URL =["+this.url+"]");
+
   this.models = {};
   this.sampleModels = {};
 
@@ -3473,13 +3475,19 @@ SwaggerClient.prototype.initialize = function (url, options) {
     options = url;
     this.url = options.url;
   }
+  console.log("****ERKAN***After URL Type check. URL =["+this.url+"]");
 
   if(this.url && this.url.indexOf('http:') === -1 && this.url.indexOf('https:') === -1) {
     // no protocol, so we can only use window if it exists
     if(typeof(window) !== 'undefined' && window && window.location) {
       this.url = window.location.origin + this.url;
+      console.log("****ERKAN*** window.location.origin =["+window.location.origin +"]");
+      console.log("****ERKAN*** after window.location.origin URL=["+this.url +"]");
+
     }
   }
+
+
 
   options = options || {};
   this.clientAuthorizations.add(options.authorizations);
@@ -3640,10 +3648,15 @@ SwaggerClient.prototype.buildFromSpec = function (response) {
   this.host = response.host || '';
   this.info = response.info || {};
   this.produces = response.produces;
-  this.schemes = response.schemes || [];
+  this.schemes = response.schemes || ['https'];
   this.securityDefinitions = _.cloneDeep(response.securityDefinitions);
   this.security = response.security;
   this.title = response.title || '';
+ console.log("***ERKAN****this.title"+this.title);
+ console.log("***ERKAN****this.basePath"+this.basePath);
+ console.log("***ERKAN****this.consumes"+this.consumes);
+ console.log("***ERKAN****this.schemes"+this.schemes);
+ console.log("***ERKAN****this.host"+this.host);
 
   var key, definedTags = {}, k, location, self = this, i;
 
@@ -3693,16 +3706,22 @@ SwaggerClient.prototype.buildFromSpec = function (response) {
     }
   }
 
-
+  
   if (typeof this.url === 'string') {
     location = this.parseUri(this.url);
+    console.log("****ERKAN**** location"+ location);
+    console.log("****ERKAN**** scheme"+ this.scheme );
+
     if (typeof this.scheme === 'undefined' && typeof this.schemes === 'undefined' || this.schemes.length === 0) {
       if(typeof window !== 'undefined') {
         // use the window scheme
         this.scheme = window.location.protocol.replace(':','');
+        console.log("****ERKAN**** window.location.protocol="+ window.location.protocol);
       }
       else {
         this.scheme = location.scheme || 'http';
+        console.log("****ERKAN**** scheme2"+ this.scheme );
+
       }
     } else if (typeof this.scheme === 'undefined') {
       if(typeof window !== 'undefined') {
@@ -3739,7 +3758,7 @@ SwaggerClient.prototype.buildFromSpec = function (response) {
   }
   else {
     if (typeof this.schemes === 'undefined' || this.schemes.length === 0) {
-      this.scheme = 'http';
+      this.scheme = 'https';
     }
     else if (typeof this.scheme === 'undefined') {
       this.scheme = this.schemes[0];
@@ -21753,9 +21772,13 @@ window.SwaggerUi = Backbone.Router.extend({
       this.authView.remove();
     }
     var url = this.options.url;
+
+    console.log("****ERKAN LOG*****  swagger ui load.  URL="+url);
     if (url && url.indexOf('http') !== 0) {
       url = this.buildUrl(window.location.href.toString(), url);
     }
+    console.log("****ERKAN LOG*****  swagger ui load.  After build URL="+url);
+
     if(this.api) {
       this.options.authorizations = this.api.clientAuthorizations.authz;
     }

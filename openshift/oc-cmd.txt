@@ -1,0 +1,59 @@
+
+#usr/local/bin/minishift -> /usr/local/Caskroom/minishift/1.31.0/minishift-1.31.0-darwin-amd64/minishift
+
+oc login -u developer
+oc new-project coolstore
+oc process -f openshift/coolstore-template.yaml | oc create -f -
+
+oc rsh $(oc get pods -o name -l app=coolstore-gw)
+curl http://catalog:8080/api/products
+curl http://inventory:8080/api/availability/329299
+curl http://cart:8080/api/cart/FOO
+curl http://rating:8080/api/rating/329299
+curl http://review:8080/api/review/329299
+
+#@docker
+sudo -i
+cat /etc/docker/certs.d/registry.access.redhat.com/redhat-ca.crt
+openssl s_client -showcerts -servername registry.access.redhat.com -connect registry.access.redhat.com:443 </dev/null 2>/dev/null | openssl x509 -text > /etc/rhsm/ca/redhat-uep.pem
+
+oc login -u system:admin
+oc delete -n openshift -f https://raw.githubusercontent.com/jboss-fuse/application-templates/master/fis-image-streams.json
+oc create -n openshift -f https://raw.githubusercontent.com/jboss-fuse/application-templates/master/fis-image-streams.json
+oc create -n openshift -f https://raw.githubusercontent.com/jboss-openshift/application-templates/ose-v1.4.14/eap/eap64-image-stream.json
+oc create -n openshift -f https://raw.githubusercontent.com/jboss-openshift/application-templates/ose-v1.4.14/openjdk/openjdk18-image-stream.json
+oc create -n openshift -f https://raw.githubusercontent.com/jboss-openshift/application-templates/ose-v1.4.14/processserver/processserver64-image-stream.json
+oc create -n openshift -f https://raw.githubusercontent.com/jboss-openshift/application-templates/ose-v1.4.14/webserver/jws31-tomcat8-image-stream.json
+oc create -n openshift -f https://raw.githubusercontent.com/jboss-openshift/application-templates/ose-v1.4.14/eap/eap70-image-stream.json
+oc create -n openshift -f https://raw.githubusercontent.com/jboss-openshift/application-templates/ose-v1.4.14/decisionserver/decisionserver64-image-stream.json
+oc create -n openshift -f https://raw.githubusercontent.com/jboss-openshift/application-templates/ose-v1.4.14/datagrid/datagrid65-image-stream.json
+
+hoc create -n openshift -f https://raw.githubusercontent.com/openshift/library/master/arch/x86_64/official/mongodb/imagestreams/mongodb-rhel7.json 
+
+oc get is -n openshift
+oc start-build coolstore-gw -n coolstore-prod-developer
+oc get templates -n openshift
+docker pull registry.access.redhat.com/rhscl/mongodb-32-rhel7
+
+
+./openshift/scripts/provision-demo.sh deploy msa-cicd-eap-min --user developer --maven-mirror-url http://192.168.1.31:8081/repository/public/  --ephemeral
+./openshift/scripts/provision-demo.sh delete msa-cicd-eap-min --user developer --maven-mirror-url http://192.168.1.31:8081/repository/public/  --ephemeral
+
+./openshift/scripts/provision-demo.sh idle msa-cicd-eap-min --user developer --ephemeral
+
+oc idle -n coolstore-prod-developer --all
+oc idle -n inventory-dev-developer --all
+oc idle -n ci-developer --all
+
+docker images |grep jenkins
+docker inspect 19080d270283
+docker history 19080d270283 #for layers
+
+oc process -f https://raw.githubusercontent.com/erkerc/coolstore-microservice/stable-ocp3.10/openshift/templates
+
+oc scale deployment/webconsole --replicas=0 
+oc get route w3 --export -o yaml
+oc edit configmap/webconsole-config
+
+master restart api api
+master restart controller controller

@@ -90,6 +90,8 @@ objects:
             value: coolstore-gw
           - name: HOSTNAME_HTTP
             value: web-ui:8080
+          - name: SECURE_COOLSTORE_GW_ENDPOINT
+            value: coolstore-gw-coolstore-demo
           image: web-ui
           imagePullPolicy: Always
           name: web-ui
@@ -802,7 +804,7 @@ objects:
     labels:
       app: rating
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: rating
     strategy:
@@ -910,7 +912,7 @@ objects:
       comp-type: database
     name: rating-mongodb
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: rating-mongodb
     strategy:
@@ -1212,7 +1214,7 @@ objects:
   metadata:
     name: pricing
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: pricing
     strategy:
@@ -1367,7 +1369,7 @@ objects:
     labels:
       app: review
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: review
     strategy:
@@ -1471,7 +1473,7 @@ objects:
       comp-type: database
       app: review
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: review-postgresql
     strategy:
@@ -1584,7 +1586,7 @@ objects:
       app: netflix
     name: turbine-server
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: turbine-server
       component: turbine-server
@@ -1694,7 +1696,7 @@ objects:
       app: netflix
     name: hystrix-dashboard
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: hystrix-dashboard
       component: hystrix-dashboard
@@ -1788,7 +1790,7 @@ parameters:
   displayName: Git source repository
   name: GIT_URI
   required: true
-  value: https://github.com/jbossdemocentral/coolstore-microservice
+  value: https://github.com/erkerc/coolstore-microservice
 - displayName: Git branch/tag reference
   name: GIT_REF
   required: true

@@ -1,4 +1,4 @@
-s<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -34,12 +34,15 @@ s<!DOCTYPE html>
   <script type="text/javascript">
     $(function () {
       var url = window.location.search.match(/url=([^&]+)/);
+      console.log("**url Initial="+url);
+
       if (url && url.length > 1) {
         url = decodeURIComponent(url[1]);
       } else {
         url = "/api/api-docs";
       }
-
+      console.log("**url Final="+url);
+  
       hljs.configure({
         highlightSizeThreshold: 5000
       });
