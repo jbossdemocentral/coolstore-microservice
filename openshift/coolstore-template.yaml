@@ -752,7 +752,7 @@ objects:
         - catalog-mongodb
         from:
           kind: ImageStreamTag
-          name: mongodb:3.2
+          name: mongodb:3.4
           namespace: ${IMAGE_STREAM_NAMESPACE}
       type: ImageChange
     - type: ConfigChange
@@ -1010,7 +1010,7 @@ objects:
         - rating-mongodb
         from:
           kind: ImageStreamTag
-          name: mongodb:3.2
+          name: mongodb:3.4
           namespace: ${IMAGE_STREAM_NAMESPACE}
       type: ImageChange
     - type: ConfigChange
