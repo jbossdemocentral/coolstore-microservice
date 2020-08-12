@@ -804,7 +804,7 @@ objects:
     labels:
       app: rating
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: rating
     strategy:
@@ -913,7 +913,7 @@ objects:
       app.openshift.io/runtime: mongodb
     name: rating-mongodb
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: rating-mongodb
     strategy:
@@ -1215,7 +1215,7 @@ objects:
   metadata:
     name: pricing
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: pricing
     strategy:
@@ -1370,7 +1370,7 @@ objects:
     labels:
       app: review
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: review
     strategy:
@@ -1475,7 +1475,7 @@ objects:
       app: review
       app.openshift.io/runtime: postgresql
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: review-postgresql
     strategy:
@@ -1588,7 +1588,7 @@ objects:
       app: netflix
     name: turbine-server
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: turbine-server
       component: turbine-server
@@ -1698,7 +1698,7 @@ objects:
       app: netflix
     name: hystrix-dashboard
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: hystrix-dashboard
       component: hystrix-dashboard
