@@ -1791,8 +1791,8 @@ parameters:
 - description: Git source URI for application
   displayName: Git source repository
   name: GIT_URI
-  required: true
-  value: https://github.com/jbossdemocentral/coolstore-microservice
+  required: true 
+  value: https://github.com/peter-ho-organization/coolstore-microservice
 - displayName: Git branch/tag reference
   name: GIT_REF
   required: true
