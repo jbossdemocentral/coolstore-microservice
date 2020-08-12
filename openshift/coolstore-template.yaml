@@ -445,6 +445,7 @@ objects:
     labels:
       app: inventory
       comp-type: database
+      app.openshift.io/runtime: postgresql
   spec:
     replicas: 1
     selector:
@@ -669,6 +670,7 @@ objects:
     labels:
       app: catalog
       comp-type: database
+      app.openshift.io/runtime: mongodb
     name: catalog-mongodb
   spec:
     replicas: 1
@@ -908,6 +910,7 @@ objects:
     labels:
       app: rating
       comp-type: database
+      app.openshift.io/runtime: mongodb
     name: rating-mongodb
   spec:
     replicas: 0
@@ -1470,6 +1473,7 @@ objects:
     labels:
       comp-type: database
       app: review
+      app.openshift.io/runtime: postgresql
   spec:
     replicas: 0
     selector:
