@@ -13,7 +13,7 @@
     <properties>
        <spring-boot.version>1.4.1.RELEASE</spring-boot.version>
         <fabric8.version>2.2.192</fabric8.version>
-        <jkube.version>1.0.0-rc-1</jkube.version>
+        <jkube.version>1.0.1</jkube.version>
         <jkube.generator.from>fabric8/s2i-java:3.0-java8</jkube.generator.from>
         <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
