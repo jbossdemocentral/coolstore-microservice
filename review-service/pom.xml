@@ -39,7 +39,7 @@
 
     <version.wildfly.swarm>2017.12.1</version.wildfly.swarm>
     <version.resteasy>3.0.19.Final</version.resteasy>
-    <version.postgresql>9.4.1207</version.postgresql>
+    <version.postgresql>42.2.25</version.postgresql>
     <version.h2>1.4.196</version.h2>
 
     <failOnMissingWebXml>false</failOnMissingWebXml>
