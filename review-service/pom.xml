@@ -38,7 +38,7 @@
     <fabric8.maven.plugin.version>3.5.19</fabric8.maven.plugin.version>
 
     <version.wildfly.swarm>2017.12.1</version.wildfly.swarm>
-    <version.resteasy>3.0.19.Final</version.resteasy>
+    <version.resteasy>3.14.0.Final</version.resteasy>
     <version.postgresql>9.4.1207</version.postgresql>
     <version.h2>1.4.196</version.h2>
 
